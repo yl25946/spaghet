@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <array>
 #include <optional>
+#include <string>
 
 #include "utils.h"
 #include "mask.h"
@@ -11,9 +12,7 @@
 // #include "board.h"
 
 // toss random imports and shit in here
-
-// name of engine
-#define NAME "Spaghet 1.0"
+#define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
 
 // FEN dedug positions
 #define empty_board "8/8/8/8/8/8/8/8 b - - "
