@@ -1,6 +1,6 @@
 run: 
-	@g++ src/*.cpp -o main
-	@./main
+	@clang++ src/*.cpp 
+	@./a
 
 clean: 
 	@del /S *.exe
