@@ -7,33 +7,10 @@ int main()
     // initializes the attack tables
     init_leapers_attacks();
 
-    // mask piece attacks at given square
-    uint64_t attack_mask = mask_bishop_attacks(d4);
-
-    for (int rank = 0; rank < 8; ++rank)
-    {
-        for (int file = 0; file < 8; ++file)
-        {
-            int square = rank * 8 + file;
-
-            std::cout << count_bits(mask_bishop_attacks(square)) << ", ";
-        }
-
-        std::cout << "\n";
-    }
-
-    std::cout << "\n";
-    for (int rank = 0; rank < 8; ++rank)
-    {
-        for (int file = 0; file < 8; ++file)
-        {
-            int square = rank * 8 + file;
-
-            std::cout << count_bits(mask_rook_attacks(square)) << ", ";
-        }
-
-        std::cout << "\n";
-    }
+    // print_bitboard((uint64_t)(random_U32()));
+    // slices the first 16 bits
+    print_bitboard(random_uint64());
+    print_bitboard(generate_magic_number());
 
     return 0;
 }
