@@ -329,13 +329,13 @@ uint64_t find_magic_number(int square, int relevant_bits, int bishop_flag)
     for (int i = 0; i < occupancy_indices; ++i)
     {
         // initialize our occupancies
-        occupancies[i] = set_occupancy(i, bishop ? bishop_relevant_bits[square] : rook_relevant_bits[square], attack_mask);
+        occupancies[i] = set_occupancy(i, relevant_bits, attack_mask);
 
         attacks[i] = bishop ? bishop_attacks_on_the_fly(square, occupancies[i]) : rook_attacks_on_the_fly(square, occupancies[i]);
     }
 
     // test magic numbers until we find one
-    while (true)
+    for (int i = 0; i < 100000000; ++i)
     {
         // generate a magic number candidate
         int magic_number_candidate = generate_magic_number();
@@ -354,7 +354,7 @@ uint64_t find_magic_number(int square, int relevant_bits, int bishop_flag)
 
         // test magic numbers by looping through all occupancies testing them individually
         // compares every attack to a used attacks table to test for collisions, if it finds one, then we move on
-        for (; !fail && index << occupancy_indices; ++index)
+        for (; !fail && index < occupancy_indices; ++index)
         {
             // initialze magic index, found on programming wiki
             int magic_index = (int)((occupancies[index] * magic_number_candidate) >> (64 - relevant_bits));
