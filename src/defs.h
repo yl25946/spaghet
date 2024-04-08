@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <array>
 #include <optional>
+#include <cstring>
 #include <string>
 #include <random>
 
@@ -12,6 +13,7 @@
 #include "magic_bitboards.h"
 // #include "board.h"
 #include "rand.h"
+#include "movegen.h"
 
 // toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
@@ -128,4 +130,12 @@ enum
     white,
     black,
     both
+};
+
+// distinguish betwene rook and bishop in magic bitboard calculation
+// if(bishop) returns true while if(rook) return false
+enum
+{
+    rook,
+    bishop
 };

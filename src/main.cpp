@@ -4,13 +4,12 @@ int main()
 {
     std::cout << NAME << "\n\n\n\n";
 
-    // initializes the attack tables
     init_leapers_attacks();
 
-    // print_bitboard((uint64_t)(random_U32()));
-    // slices the first 16 bits
-    print_bitboard(random_uint64());
-    print_bitboard(generate_magic_number());
+    for (int square = 0; square < 64; ++square)
+    {
+        printf("0x%llxULL,\n", bishop_magic_numbers[square]);
+    }
 
     return 0;
 }
