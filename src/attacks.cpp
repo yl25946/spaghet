@@ -1,4 +1,4 @@
-#include "mask.h"
+#include "attacks.h"
 
 // taken from
 /*
@@ -365,14 +365,14 @@ void init_sliders_attacks()
         uint64_t rook_attack_mask = rook_masks[square];
 
         // init occpancy indices
-        int bishop_occupancy_indices = 1 << bishop_relevant_bits[square];
-        int rook_occupancy_indices = 1 << rook_relevant_bits[square];
+        int bishop_occupancy_indices = 1 << count_bits(bishop_attack_mask);
+        int rook_occupancy_indices = 1 << count_bits(rook_attack_mask);
 
         // loop over bishop and rook occupancies
         for (int index = 0; index < bishop_occupancy_indices; ++index)
         {
             // creates current occupancy
-            uint64_t occupancy = set_occupancy(index, bishop_relevant_bits[index], bishop_attack_mask);
+            uint64_t occupancy = set_occupancy(index, bishop_relevant_bits[square], bishop_attack_mask);
 
             // init magic index
             int magic_index = (occupancy * bishop_magic_numbers[square]) >> (64 - bishop_relevant_bits[square]);
@@ -384,7 +384,7 @@ void init_sliders_attacks()
         for (int index = 0; index < rook_occupancy_indices; ++index)
         {
             // creates current occupancy
-            uint64_t occupancy = set_occupancy(index, rook_relevant_bits[index], rook_attack_mask);
+            uint64_t occupancy = set_occupancy(index, rook_relevant_bits[square], rook_attack_mask);
 
             // init magic index
             int magic_index = (occupancy * rook_magic_numbers[square]) >> (64 - rook_relevant_bits[square]);

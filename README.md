@@ -5,4 +5,4 @@ Chess engine based on BBC
 - 
 - Bitboards
 - Pregenerated Attack Lookup Tables
-- Pregenerated Magic Bitboards
+- Pregenerated Magic Bitboards (self-generated)

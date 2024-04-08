@@ -9,7 +9,7 @@
 #include <random>
 
 #include "utils.h"
-#include "mask.h"
+#include "attacks.h"
 #include "magic_bitboards.h"
 // #include "board.h"
 #include "rand.h"
