@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "main.h"
 
 int main()
 {

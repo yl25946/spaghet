@@ -1,6 +1,8 @@
 #pragma once
 
 #include "defs.h"
+#include "attacks.h"
+#include "rand.h"
 
 extern const uint8_t bishop_relevant_bits[64];
 

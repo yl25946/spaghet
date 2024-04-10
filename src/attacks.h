@@ -1,6 +1,7 @@
 #pragma once
 
 #include "defs.h"
+#include "magic_bitboards.h"
 
 // Contains all the attack tables
 extern uint64_t pawn_attacks[2][64];

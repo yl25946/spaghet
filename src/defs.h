@@ -9,12 +9,12 @@
 #include <random>
 #include <map>
 
-#include "utils.h"
-#include "attacks.h"
-#include "magic_bitboards.h"
-#include "board.h"
-#include "rand.h"
-#include "movegen.h"
+// #include "utils.h"
+// #include "attacks.h"
+// #include "magic_bitboards.h"
+// #include "board.h"
+// #include "rand.h"
+// #include "movegen.h"
 
 // toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
