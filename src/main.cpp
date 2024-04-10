@@ -7,21 +7,13 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    uint64_t occupancy = 0ULL;
-    set_bit(occupancy, c5);
-    set_bit(occupancy, f2);
-    set_bit(occupancy, g7);
-    set_bit(occupancy, b2);
-    set_bit(occupancy, g5);
-    set_bit(occupancy, e2);
-    set_bit(occupancy, e7);
+    Board b;
+    b.pieces[pawn] = 0ULL;
+    set_bit(b.pieces[pawn], e2);
 
-    print_bitboard(occupancy);
+    print_bitboard(b.pieces[pawn]);
 
-    print_bitboard(get_bishop_attacks(d4, occupancy));
-
-    print_bitboard(get_rook_attacks(e5, occupancy));
-
+    std::cout << "piece: " << ascii_pieces[char_pieces['P']];
     // init_magic_numbers();
 
     return 0;

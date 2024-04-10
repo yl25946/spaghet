@@ -4,3 +4,4 @@
 #include "utils.h"
 #include "attacks.h"
 #include "magic_bitboards.h"
+#include "board.h"
