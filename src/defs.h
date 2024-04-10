@@ -111,7 +111,7 @@ extern const char ascii_pieces[];
 extern std::map<char, int> char_pieces;
 
 // encode pieces
-enum piece_to_int
+enum
 {
     P,
     N,
@@ -156,10 +156,10 @@ enum Pieces
 };
 
 // which side can castle
-enum castle_rights
+enum
 {
-    white_king = 1,
-    white_queen = 2,
-    black_king = 4,
-    black_queen = 8,
+    white_king_castle = 1,
+    white_queen_castle = 2,
+    black_king_castle = 4,
+    black_queen_castle = 8,
 };

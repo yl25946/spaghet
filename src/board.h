@@ -12,8 +12,8 @@ public:
     // mailbox for speedup
     std::array<Pieces, 64> board;
 
-    uint8_t side_to_move = color::white;
-    uint8_t epSq = square::no_square;
+    uint8_t side_to_move = white;
+    uint8_t epSq = no_square;
     // castling rights,
     uint8_t rights = 0;
 
