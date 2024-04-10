@@ -1,4 +1,4 @@
-run: 
+clang: 
 	@clang++ src/*.cpp -march=native
 	@./a
 
