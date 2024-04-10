@@ -388,7 +388,7 @@ void init_magic_numbers()
     for (int square = 0; square < 64; ++square)
     {
         // init magic numbers
-        printf(" 0x%llxULL,\n", find_magic_number(square, rook_relevant_bits[square], rook));
-        // printf("0x%llxULL,\n", find_magic_number(square, bishop_relevant_bits[square], bishop));
+        // printf(" 0x%llxULL,\n", find_magic_number(square, rook_relevant_bits[square], Rook));
+        // printf("0x%llxULL,\n", find_magic_number(square, bishop_relevant_bits[square], Bishop));
     }
 }

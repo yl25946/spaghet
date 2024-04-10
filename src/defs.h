@@ -7,11 +7,12 @@
 #include <cstring>
 #include <string>
 #include <random>
+#include <map>
 
 #include "utils.h"
 #include "attacks.h"
 #include "magic_bitboards.h"
-// #include "board.h"
+#include "board.h"
 #include "rand.h"
 #include "movegen.h"
 
@@ -35,7 +36,7 @@
 #define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
 
 // board squares
-enum
+enum square
 {
     a8,
     b8,
@@ -106,9 +107,11 @@ enum
 
 // convert squares to coordinates
 extern const char *square_to_coordinate[];
+extern const char ascii_pieces[];
+extern std::map<char, int> char_pieces;
 
 // encode pieces
-enum
+enum piece_to_int
 {
     P,
     N,
@@ -125,7 +128,7 @@ enum
 };
 
 // sides to move (colors)
-enum
+enum color
 {
     white,
     black,
@@ -134,8 +137,29 @@ enum
 
 // distinguish betwene rook and bishop in magic bitboard calculation
 // if(bishop) returns true while if(rook) return false
-enum
+// enum
+// {
+//     Rook,
+//     Bishop
+// };
+
+// pieces for a mailbox implementation
+enum Pieces
 {
+    pawn,
+    knight,
+    bishop,
     rook,
-    bishop
+    queen,
+    king,
+    none,
+};
+
+// which side can castle
+enum castle_rights
+{
+    white_king = 1,
+    white_queen = 2,
+    black_king = 4,
+    black_queen = 8,
 };
