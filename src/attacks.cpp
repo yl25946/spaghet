@@ -342,8 +342,8 @@ void init_leapers_attacks()
 {
     for (int square = 0; square < 64; ++square)
     {
-        pawn_attacks[white][square] = mask_pawn_attacks(white, square);
-        pawn_attacks[black][square] = mask_pawn_attacks(black, square);
+        pawn_attacks[WHITE][square] = mask_pawn_attacks(WHITE, square);
+        pawn_attacks[BLACK][square] = mask_pawn_attacks(BLACK, square);
 
         knight_attacks[square] = mask_knight_attacks(square);
 

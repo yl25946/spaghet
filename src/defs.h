@@ -108,7 +108,7 @@ enum square
 // convert squares to coordinates
 extern const char *square_to_coordinate[];
 extern const char ascii_pieces[];
-extern const char *unicode_pieces[];
+// extern const char *unicode_pieces[];
 extern std::map<char, int> char_pieces;
 
 // encode pieces
@@ -159,6 +159,7 @@ enum Pieces
     BLACK_QUEEN,
     WHITE_KING,
     BLACK_KING,
+    NO_PIECE
 };
 
 // which side can castle
