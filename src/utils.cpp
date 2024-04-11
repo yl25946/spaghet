@@ -28,3 +28,21 @@ void print_bitboard(uint64_t bitboard)
 
     std::cout << "Bitboard: " << bitboard;
 }
+
+// random number generator
+std::mt19937_64 random_uint64_generator{seed};
+
+uint64_t random_uint64()
+{
+    return random_uint64_generator();
+}
+
+uint64_t generate_magic_number()
+{
+    return random_uint64() & random_uint64() & random_uint64();
+}
+
+// bool isWhite(uint8_t piece)
+// {
+//     return !(piece & 1);
+// }

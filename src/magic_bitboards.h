@@ -2,7 +2,7 @@
 
 #include "defs.h"
 #include "attacks.h"
-#include "rand.h"
+#include "utils.h"
 
 extern const uint8_t bishop_relevant_bits[64];
 

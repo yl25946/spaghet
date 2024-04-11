@@ -13,7 +13,7 @@
 // #include "attacks.h"
 // #include "magic_bitboards.h"
 // #include "board.h"
-// #include "rand.h"
+// #include "utils.h"
 // #include "movegen.h"
 
 // toss random imports and shit in here
@@ -115,25 +115,25 @@ extern std::map<char, int> char_pieces;
 enum
 {
     P,
-    N,
-    B,
-    R,
-    Q,
-    K,
     p,
+    N,
     n,
+    B,
     b,
+    R,
     r,
+    Q,
     q,
-    k
+    K,
+    k,
 };
 
 // sides to move (colors)
 enum color
 {
-    white,
-    black,
-    both
+    WHITE,
+    BLACK,
+    BOTH
 };
 
 // distinguish betwene rook and bishop in magic bitboard calculation
@@ -147,20 +147,25 @@ enum color
 // pieces for a mailbox implementation
 enum Pieces
 {
-    pawn,
-    knight,
-    bishop,
-    rook,
-    queen,
-    king,
-    none,
+    WHITE_PAWN,
+    BLACK_PAWN,
+    WHITE_KNIGHT,
+    BLACK_KNIGHT,
+    WHITE_BISHOP,
+    BLACK_BISHOP,
+    WHITE_ROOK,
+    BLACK_ROOK,
+    WHITE_QUEEN,
+    BLACK_QUEEN,
+    WHITE_KING,
+    BLACK_KING,
 };
 
 // which side can castle
 enum
 {
-    white_king_castle = 1,
-    white_queen_castle = 2,
-    black_king_castle = 4,
-    black_queen_castle = 8,
+    WHITE_KING_CASTLE = 1,
+    WHITE_QUEEN_CASTLE = 2,
+    BLACK_KING_CASTLE = 4,
+    BLACK_QUEEN_CASTLE = 8,
 };
