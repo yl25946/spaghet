@@ -7,7 +7,7 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    Board b(start_position);
+    Board b(&start_position);
     b.print();
 
     return 0;

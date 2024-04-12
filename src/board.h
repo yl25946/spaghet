@@ -13,18 +13,18 @@ public:
     std::array<uint8_t, 64> board;
 
     uint8_t side_to_move = WHITE;
-    uint8_t epSq = no_square;
+    uint8_t en_passant_square = no_square;
     // castling rights,
     uint8_t rights = 0;
 
     uint64_t hash = 0;
 
-    uint8_t hmc;
+    uint8_t hmc = 0;
 
     //   std::array<Accumulator, 2> acc;
 
     // creates a board object with a fen
-    Board(std::string fen);
+    Board(std::string *fen);
 
     // converts position into a fen
     std::string fen();
