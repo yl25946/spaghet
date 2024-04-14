@@ -112,6 +112,7 @@ extern const char ascii_pieces[];
 extern std::map<char, int> char_pieces;
 
 // encode pieces
+// NOTE: this enum and the enum Pieces enum are the same, it is okay to mix and match
 enum
 {
     P,
@@ -145,6 +146,7 @@ enum color
 // };
 
 // pieces for a mailbox implementation
+// NOTE: this enum and the char pieces enum are the same, it is okay to mix and match
 enum Pieces
 {
     WHITE_PAWN,

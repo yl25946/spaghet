@@ -19,12 +19,12 @@ public:
 
     uint64_t hash = 0;
 
-    uint8_t hmc = 0;
+    uint8_t half_move_counter = 0;
 
     //   std::array<Accumulator, 2> acc;
 
     // creates a board object with a fen
-    Board(std::string *fen);
+    Board(std::string &fen);
 
     // converts position into a fen
     std::string fen();
