@@ -9,7 +9,7 @@ int main()
 
     Board b(cmk_position);
     b.print();
-    for (uint64_t num : b.colors)
+    for (uint64_t num : b.pieces)
     {
         print_bitboard(num);
     }

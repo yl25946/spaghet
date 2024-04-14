@@ -10,18 +10,12 @@ Board::Board(std::string &fen)
     int char_it = 0;
     int square = 0;
     // we break this whenever we get a space
-    while (true)
+    while (fen[char_it] != ' ')
     {
-        if (fen[char_it] == ' ')
-        {
-            ++char_it;
-            break;
-        }
         // if it is a piece name
         if (std::isalpha(fen[char_it]))
         {
             int piece = char_pieces[fen[char_it]];
-            std::cout << piece << " ";
             // initialize the bitboard
             // divide by two since we aren't keeping track of color
             set_bit(pieces[piece / 2], square);
@@ -46,6 +40,8 @@ Board::Board(std::string &fen)
             ++char_it;
         }
     }
+
+    ++char_it;
 
     // checks castling
     if (fen[char_it] == 'w')
