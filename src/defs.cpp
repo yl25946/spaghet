@@ -74,7 +74,7 @@ const char *unicode_pieces[12] = {
     "♙", "♟︎", "♘", "♞", "♗", "♝", "♖", "♜", "♕", "♛", "♔", "♚"};
 
 // convert ASCII character pieces to encoded constants
-std::map<char, int> char_pieces = {
+std::map<char, uint8_t> char_pieces = {
     {'P', P}, {'N', N}, {'B', B}, {'R', R}, {'Q', Q}, {'K', K}, {'p', p}, {'n', n}, {'b', b}, {'r', r}, {'q', q}, {'k', k}};
 
 std::string empty_board = "8/8/8/8/8/8/8/8 b - - ";

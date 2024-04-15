@@ -8,7 +8,7 @@ Board::Board(std::string &fen)
     colors.fill(0);
 
     int char_it = 0;
-    int square = 0;
+    uint8_t square = 0;
     // we break this whenever we get a space
     while (fen[char_it] != ' ')
     {
@@ -43,7 +43,7 @@ Board::Board(std::string &fen)
 
     ++char_it;
 
-    // checks castling
+    // checks who moves
     if (fen[char_it] == 'w')
         side_to_move = WHITE;
     else
@@ -114,7 +114,7 @@ void Board::print()
         for (int file = 0; file < 8; ++file)
         {
             // convert file & rank into square index
-            int square = rank * 8 + file;
+            uint8_t square = rank * 8 + file;
 
             // prints ranks
             if (!file)

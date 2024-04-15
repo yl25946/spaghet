@@ -9,7 +9,7 @@ void print_bitboard(uint64_t bitboard)
         for (int file = 0; file < 8; ++file)
         {
             // convert file & rank into square index
-            int square = rank * 8 + file;
+            uint8_t square = rank * 8 + file;
 
             // prints ranks
             if (!file)

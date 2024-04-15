@@ -109,7 +109,7 @@ enum square
 extern const char *square_to_coordinate[];
 extern const char ascii_pieces[];
 // extern const char *unicode_pieces[];
-extern std::map<char, int> char_pieces;
+extern std::map<char, uint8_t> char_pieces;
 
 // encode pieces
 // NOTE: this enum and the enum Pieces enum are the same, it is okay to mix and match
