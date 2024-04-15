@@ -340,7 +340,7 @@ uint64_t get_rook_attacks(uint8_t square, uint64_t occupancy)
 // gets queen attacks with a certain square and blockers
 uint64_t get_queen_attacks(uint8_t square, uint64_t occupancy)
 {
-    get_bishop_attacks(square, occupancy) | get_rook_attacks(square, occupancy);
+    return get_bishop_attacks(square, occupancy) | get_rook_attacks(square, occupancy);
 }
 
 // initiates all the piece's attack tables
