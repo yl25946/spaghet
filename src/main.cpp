@@ -11,7 +11,9 @@ int main()
     b.print();
     print_bitboard(b.pieces[PAWN] & b.colors[BLACK]);
     print_bitboard(pawn_attacks[WHITE][e4]);
+    print_bitboard(b.pieces[PAWN] & b.colors[BLACK] & pawn_attacks[WHITE][e4]);
 
+    std::cout << "is ";
 
     return 0;
 }
