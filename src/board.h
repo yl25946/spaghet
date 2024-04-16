@@ -24,7 +24,10 @@ public:
     //   std::array<Accumulator, 2> acc;
 
     // creates a board object with a fen
-    Board(std::string &fen);
+    Board(const std::string_view &fen);
+
+    // checks whether a square is attacked 
+    // bool is_
 
     // converts position into a fen
     std::string fen();

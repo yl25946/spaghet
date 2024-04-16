@@ -6,6 +6,7 @@
 #include <optional>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <random>
 #include <map>
 
@@ -135,6 +136,16 @@ enum color
     WHITE,
     BLACK,
     BOTH
+};
+
+// used for accessing the bitboards
+enum bitboard_pieces{
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING,
 };
 
 // distinguish betwene rook and bishop in magic bitboard calculation

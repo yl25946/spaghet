@@ -1,6 +1,6 @@
 #include "board.h"
 
-Board::Board(std::string &fen)
+Board::Board(const std::string_view &fen)
 {
     // clears the entire board
     board.fill(NO_PIECE);
