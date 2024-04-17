@@ -1,6 +1,8 @@
 #pragma once
 
 #include "defs.h"
+#include "utils.h"
+#include "attacks.h"
 
 // stolen from nek.saikou on Discord
 class Board
@@ -19,18 +21,37 @@ public:
 
     uint64_t hash = 0;
 
-    uint8_t half_move_counter = 0;
+    // checks 50 move rule
+    uint8_t fifty_move_counter = 0;
+    // counts the total number of moves
+    uint16_t half_move_counter = 0;
 
     //   std::array<Accumulator, 2> acc;
 
     // creates a board object with a fen
-    Board(const std::string_view &fen);
+    Board(const std::string &fen);
 
-    // checks whether a square is attacked 
-    // bool is_
+    // converts half_move_counter to full_move_counter
+    uint16_t full_move_counter() const;
+
+    // gets all the pieces, or all the blockers, of the board
+    uint64_t blockers() const;
+
+    // gets WHITE_PAWN, BLACK_PAWN, etc.
+    uint64_t bitboard(uint8_t piece) const;
+
+    // help method to get all the possible attacks from a certain side
+    // uint64_t get_attack_mask(uint8_t side_attacking);
+
+    // checks whether a given square is attacked by the given side
+    bool is_square_attacked(uint8_t square, uint8_t side_attacking) const;
 
     // converts position into a fen
-    std::string fen();
+    std::string fen() const;
+
     // prints out the bitboard into a human-readable format
-    void print();
+    void print() const;
+
+    // prints out all the squares that are attacked by a given side
+    void print_attacked_squares(uint8_t side_attacking) const;
 };

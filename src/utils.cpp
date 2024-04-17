@@ -26,7 +26,7 @@ void print_bitboard(uint64_t bitboard)
 
     std::cout << "\n     a b c d e f g h\n\n";
 
-    std::cout << "Bitboard: " << bitboard;
+    std::cout << "Bitboard: " << bitboard << "\n";
 }
 
 // random number generator

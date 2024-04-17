@@ -7,13 +7,10 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    Board b("8/8/8/3p4/8/8/8/8 w - - 0 0");
+    Board b(tricky_position);
     b.print();
-    print_bitboard(b.pieces[PAWN] & b.colors[BLACK]);
-    print_bitboard(pawn_attacks[WHITE][e4]);
-    print_bitboard(b.pieces[PAWN] & b.colors[BLACK] & pawn_attacks[WHITE][e4]);
 
-    std::cout << "is ";
+    b.print_attacked_squares(WHITE);
 
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "board.h"
 
-Board::Board(const std::string_view &fen)
+Board::Board(const std::string &fen)
 {
     // clears the entire board
     board.fill(NO_PIECE);
@@ -99,13 +99,73 @@ Board::Board(const std::string_view &fen)
     uint8_t half_move_input = 0;
     while (fen[char_it] != ' ')
     {
-        half_move_input = half_move_counter * 10 + (fen[char_it] - '0');
+        half_move_input = half_move_input * 10 + (fen[char_it] - '0');
+        std::cout << half_move_input << "\n";
         ++char_it;
     }
-    half_move_counter = half_move_input;
+    fifty_move_counter = half_move_input;
+
+    ++char_it;
+
+    // parses the full move counter
+    uint16_t full_move_input = 0;
+    while (fen[char_it] != ' ' && char_it < fen.size())
+    {
+        full_move_input = full_move_input * 10 + (fen[char_it] - '0');
+        ++char_it;
+    }
+    half_move_counter = (2 * full_move_input) - 2 + side_to_move;
 }
 
-void Board::print()
+uint16_t Board::full_move_counter() const
+{
+    return (half_move_counter) / 2 + 1;
+}
+
+uint64_t Board::bitboard(uint8_t piece) const
+{
+    return pieces[piece / 2] & colors[piece & 1];
+}
+
+uint64_t Board::blockers() const
+{
+    return colors[WHITE] | colors[BLACK];
+}
+
+bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
+{
+    // attacked by pawns
+    if ((side_attacking == WHITE) && (pawn_attacks[BLACK][square] & bitboard(WHITE_PAWN)))
+        return true;
+    if ((side_attacking == BLACK) && (pawn_attacks[WHITE][square] & bitboard(BLACK_PAWN)))
+        return true;
+
+    // attacked by knights
+    if (knight_attacks[square] & (colors[side_attacking] & pieces[KNIGHT]))
+        return true;
+
+    // attacked by king
+    if (king_attacks[square] & (colors[side_attacking] & pieces[KING]))
+        return true;
+
+    // attacks by sliding pieces
+    uint64_t blocking_pieces = blockers();
+    // attacked by bishop
+    if (get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[BISHOP]))
+        return true;
+
+    // attacked by rooks
+    if (get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[ROOK]))
+        return true;
+
+    // attacked by queens
+    if (get_queen_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[QUEEN]))
+        return true;
+
+    return false;
+}
+
+void Board::print() const
 {
     std::cout << "\n";
 
@@ -130,8 +190,21 @@ void Board::print()
     }
 
     std::cout << "\n     a b c d e f g h\n\n";
-    std::cout << "     Side:      " << (side_to_move == WHITE ? "white" : "black");
-    std::cout << "\n     Enpassant:    " << ((en_passant_square == no_square) ? "no" : square_to_coordinate[en_passant_square]);
-    std::cout << "\n     Castling:   " << ((rights & WHITE_KING_CASTLE) ? 'K' : '-') << ((rights & WHITE_QUEEN_CASTLE) ? 'Q' : '-') << ((rights & BLACK_KING_CASTLE) ? 'k' : '-') << ((rights & BLACK_QUEEN_CASTLE) ? 'q' : '-');
-    std::cout << "\n     50-move:      " << (half_move_counter / 2);
+    std::cout << "     Side:       " << (side_to_move == WHITE ? "white" : "black");
+    std::cout << "\n     Enpassant:     " << ((en_passant_square == no_square) ? "no" : square_to_coordinate[en_passant_square]);
+    std::cout << "\n     Castling:    " << ((rights & WHITE_KING_CASTLE) ? 'K' : '-') << ((rights & WHITE_QUEEN_CASTLE) ? 'Q' : '-') << ((rights & BLACK_KING_CASTLE) ? 'k' : '-') << ((rights & BLACK_QUEEN_CASTLE) ? 'q' : '-');
+    std::cout << "\n     50-move:       " << (fifty_move_counter / 2);
+    std::cout << "\n     Total Moves:   " << (full_move_counter());
+    std::cout << "\n";
+}
+
+void Board::print_attacked_squares(uint8_t side_attacking) const
+{
+    uint64_t attack_mask = 0;
+    // loops through all the squares to see if they are being attacked
+    for (int square = 0; square < 64; ++square)
+        if (is_square_attacked(square, side_attacking))
+            set_bit(attack_mask, square);
+
+    print_bitboard(attack_mask);
 }

@@ -6,7 +6,7 @@
 #include <optional>
 #include <cstring>
 #include <string>
-#include <string_view>
+// #include <string_view>
 #include <random>
 #include <map>
 
@@ -35,6 +35,7 @@ extern std::string repetitions;
 #define count_bits(bitboard) (__builtin_popcountll(bitboard))
 // Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
 #define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
+#define pop_bit(bitboard) (bitboard & (bitboard - 1))
 
 // board squares
 enum square
@@ -103,7 +104,7 @@ enum square
     f1,
     g1,
     h1,
-    no_square
+    no_square,
 };
 
 // convert squares to coordinates
@@ -139,7 +140,8 @@ enum color
 };
 
 // used for accessing the bitboards
-enum bitboard_pieces{
+enum bitboard_pieces
+{
     PAWN,
     KNIGHT,
     BISHOP,
