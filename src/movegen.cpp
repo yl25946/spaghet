@@ -62,7 +62,16 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         // generates all capture moves
         // right captures
         attacks = (bitboard & NOT_H_FILE) >> 7;
-        captures = attacks & board.colors[BLACK];
+        // not promotions
+        captures = attacks & board.colors[BLACK] & ~white_promotion;
+        promotions = attacks & board.colors[BLACK] & white_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square + 7, target_square, false, move_list);
+            pop_bit(promotions);
+        }
         while (captures)
         {
             target_square = lsb(captures);
@@ -72,7 +81,16 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
 
         // left captures
         attacks = (bitboard & NOT_A_FILE) >> 9;
-        captures = attacks & board.colors[BLACK];
+        // not promotions
+        captures = attacks & board.colors[BLACK] & ~white_promotion;
+        promotions = attacks & board.colors[BLACK] & white_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square + 9, target_square, false, move_list);
+            pop_bit(promotions);
+        }
         while (captures)
         {
             target_square = lsb(captures);
@@ -130,7 +148,16 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         // generates pawn capture moves
         // right captures
         attacks = (bitboard & NOT_H_FILE) << 9;
-        captures = attacks & board.colors[WHITE];
+        // not promotions
+        captures = attacks & board.colors[WHITE] & ~black_promotion;
+        promotions = attacks & board.colors[WHITE] & black_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square - 9, target_square, false, move_list);
+            pop_bit(promotions);
+        }
         while (captures)
         {
             target_square = lsb(captures);
@@ -140,7 +167,15 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
 
         // left captures
         attacks = (bitboard & NOT_A_FILE) << 7;
-        captures = attacks & board.colors[WHITE];
+        captures = attacks & board.colors[WHITE] & ~black_promotion;
+        promotions = attacks & board.colors[WHITE] & black_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square - 7, target_square, false, move_list);
+            pop_bit(promotions);
+        }
         while (captures)
         {
             target_square = lsb(captures);

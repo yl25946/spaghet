@@ -15,6 +15,10 @@ int main()
 
     b.make_move(Move(a2, a3, QUIET_MOVE));
 
+    b.print();
+
+    // Board b("7k/P7/8/8/8/8/8/7K w KQkq - 0 1");
+
     std::cout
         << perft_debug(b, 1, 1);
 
