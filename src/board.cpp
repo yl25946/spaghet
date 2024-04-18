@@ -3,7 +3,7 @@
 Board::Board(const std::string &fen)
 {
     // clears the entire board
-    board.fill(NO_PIECE);
+    mailbox.fill(NO_PIECE);
     pieces.fill(0);
     colors.fill(0);
 
@@ -23,7 +23,7 @@ Board::Board(const std::string &fen)
             set_bit(colors[piece & 1], square);
 
             // initialize the mailbox
-            board[square] = piece;
+            mailbox[square] = piece;
 
             ++square;
             ++char_it;
@@ -119,7 +119,7 @@ Board::Board(const std::string &fen)
 
 uint16_t Board::full_move_counter() const
 {
-    return (half_move_counter) / 2 + 1;
+    return ((half_move_counter) / 2) + 1;
 }
 
 uint64_t Board::bitboard(uint8_t piece) const
@@ -165,6 +165,155 @@ bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
     return false;
 }
 
+bool Board::was_legal() const
+{
+    return !is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move);
+}
+
+void Board::make_move(Move move)
+{
+    // update the bitboard
+    uint8_t source_square = move.from_square();
+    uint8_t target_square = move.to_square();
+    uint8_t move_flag = move.move_flag();
+
+    // deals with castle;
+
+    uint8_t move_piece_type = mailbox[source_square];
+    uint8_t bitboard_piece_type = move_piece_type / 2;
+
+    // moves the piece
+    remove_bit(pieces[bitboard_piece_type], source_square);
+    set_bit(pieces[bitboard_piece_type], target_square);
+    remove_bit(colors[side_to_move], source_square);
+    set_bit(colors[side_to_move], target_square);
+    mailbox[source_square] = NO_PIECE;
+    mailbox[target_square] = move_piece_type;
+
+    if (move_flag & CAPTURES)
+    {
+        uint8_t captured_piece = mailbox[target_square];
+        remove_bit(pieces[captured_piece / 2], target_square);
+        remove_bit(colors[side_to_move ^ 1], target_square);
+
+        // do not need to update mailbox because it would've automatically overwritten it
+    }
+
+    if (move_flag & PROMOTION)
+    {
+        // change the piece to the respective piece
+        uint8_t promotion_piece = (move_flag & 0b11ULL) + 1;
+    }
+
+    // en passant capture
+    // do this before we clear out we update the en passant square
+    if (move_flag == EN_PASSANT_CAPTURE)
+    {
+        mailbox[en_passant_square] = NO_PIECE;
+        remove_bit(pieces[PAWN], en_passant_square);
+        remove_bit(colors[side_to_move ^ 1], en_passant_square);
+    }
+
+    // double pawn push, basically updating the en_passant square
+    if (move_flag == DOUBLE_PAWN_PUSH)
+    {
+        // updates en_passant
+        en_passant_square = target_square + (side_to_move == WHITE ? 8 : -8);
+    }
+    else
+    {
+        en_passant_square = no_square;
+    }
+
+    // castling
+    if (move_flag == KING_CASTLE)
+    {
+        // shifts the rook
+        source_square = source_square + 3;
+        target_square = target_square - 1;
+
+        move_piece_type = mailbox[source_square];
+
+        // moves the piece
+        remove_bit(pieces[bitboard_piece_type], source_square);
+        set_bit(pieces[bitboard_piece_type], target_square);
+        remove_bit(colors[side_to_move], source_square);
+        set_bit(colors[side_to_move], target_square);
+        mailbox[source_square] = NO_PIECE;
+        mailbox[target_square] = move_piece_type;
+    }
+    else if (move_flag == QUEEN_CASTLE)
+    {
+        // shifts the rook
+        source_square = source_square - 4;
+        target_square = target_square + 1;
+
+        move_piece_type = mailbox[source_square];
+
+        // moves the piece
+        remove_bit(pieces[ROOK], source_square);
+        set_bit(pieces[ROOK], target_square);
+        remove_bit(colors[side_to_move], source_square);
+        set_bit(colors[side_to_move], target_square);
+        mailbox[source_square] = NO_PIECE;
+        mailbox[target_square] = move_piece_type;
+    }
+
+    // updates castling rights
+    if (side_to_move == WHITE)
+    {
+        if (move_flag == KING_CASTLE || move_flag == QUEEN_CASTLE)
+        {
+            rights &= ~WHITE_KING_CASTLE;
+            rights &= ~WHITE_QUEEN_CASTLE;
+        }
+        else if (mailbox[e1] != WHITE_KING)
+        {
+            rights &= ~WHITE_KING_CASTLE;
+            rights &= ~WHITE_QUEEN_CASTLE;
+        }
+        else if (mailbox[a1] != WHITE_ROOK)
+        {
+            rights &= ~WHITE_QUEEN_CASTLE;
+        }
+        else if (mailbox[h1] != WHITE_ROOK)
+        {
+            rights &= ~WHITE_KING_CASTLE;
+        }
+    }
+    else
+    {
+        if (move_flag == KING_CASTLE || move_flag == QUEEN_CASTLE)
+        {
+            rights &= ~BLACK_KING_CASTLE;
+            rights &= ~BLACK_QUEEN_CASTLE;
+        }
+        else if (mailbox[e8] != BLACK_KING)
+        {
+            rights &= ~BLACK_KING_CASTLE;
+            rights &= ~BLACK_QUEEN_CASTLE;
+        }
+        else if (mailbox[a8] != BLACK_ROOK)
+        {
+            rights &= ~BLACK_QUEEN_CASTLE;
+        }
+        else if (mailbox[h8] != BLACK_ROOK)
+        {
+            rights &= ~BLACK_KING_CASTLE;
+        }
+    }
+
+    // updates the entire board
+    side_to_move ^= 1;
+
+    if (bitboard_piece_type != PAWN && !(move_flag & CAPTURES))
+        ++fifty_move_counter;
+    else
+        fifty_move_counter = 0;
+
+    ++half_move_counter;
+}
+
 void Board::print() const
 {
     std::cout << "\n";
@@ -182,7 +331,7 @@ void Board::print() const
 
             // prints out a 1 if there is a 1 at the bit location, 0 otherwise
             std::cout
-                << " " << (board[square] != NO_PIECE ? (ascii_pieces[board[square]]) : ('.'));
+                << " " << (mailbox[square] != NO_PIECE ? (ascii_pieces[mailbox[square]]) : ('.'));
         }
 
         // add a new line every rank

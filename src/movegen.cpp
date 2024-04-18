@@ -184,7 +184,7 @@ void generate_knight_moves(Board &board, MoveList &move_list)
         {
             target_square = lsb(attacks);
 
-            move_list.insert(Move(source_square, target_square, (board.board[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+            move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
 
             pop_bit(attacks);
         }
@@ -215,7 +215,7 @@ void generate_bishop_moves(Board &board, MoveList &move_list)
         {
             target_square = lsb(attacks);
 
-            move_list.insert(Move(source_square, target_square, (board.board[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+            move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
 
             pop_bit(attacks);
         }
@@ -246,7 +246,7 @@ void generate_rook_moves(Board &board, MoveList &move_list)
         {
             target_square = lsb(attacks);
 
-            move_list.insert(Move(source_square, target_square, (board.board[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+            move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
 
             pop_bit(attacks);
         }
@@ -277,7 +277,7 @@ void generate_queen_moves(Board &board, MoveList &move_list)
         {
             target_square = lsb(attacks);
 
-            move_list.insert(Move(source_square, target_square, (board.board[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+            move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
 
             pop_bit(attacks);
         }
@@ -308,7 +308,7 @@ void generate_sliding_king_moves(Board &board, MoveList &move_list)
         {
             target_square = lsb(attacks);
 
-            move_list.insert(Move(source_square, target_square, (board.board[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+            move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
 
             pop_bit(attacks);
         }
@@ -324,19 +324,18 @@ void generate_castling_moves(Board &board, MoveList &move_list)
     if (board.side_to_move == WHITE)
     {
         // checks if there's any pieces to prevent castling
-        if ((board.rights & WHITE_KING_CASTLE) && !(blocking_pieces & 0x6000000000000000ULL))
+        if ((board.rights & WHITE_KING_CASTLE) && !(blocking_pieces & 0x6000000000000000ULL) && !board.is_square_attacked(e1, board.side_to_move ^ 1) && !board.is_square_attacked(f1, board.side_to_move ^ 1) && !board.is_square_attacked(g1, board.side_to_move ^ 1))
             move_list.insert(Move(e1, g1, KING_CASTLE));
-
-        if ((board.rights & WHITE_QUEEN_CASTLE) && !(blocking_pieces & 0xe00000000000000ULL))
+        if ((board.rights & WHITE_QUEEN_CASTLE) && !(blocking_pieces & 0xe00000000000000ULL) && !board.is_square_attacked(e1, board.side_to_move ^ 1) && !board.is_square_attacked(d1, board.side_to_move ^ 1) && !board.is_square_attacked(c1, board.side_to_move ^ 1))
             move_list.insert(Move(e1, c1, QUEEN_CASTLE));
     }
     else
     {
         // checks if there's any pieces to prevent castling
-        if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0x60ULL))
+        if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0x60ULL) && !board.is_square_attacked(e8, board.side_to_move ^ 1) && !board.is_square_attacked(f8, board.side_to_move ^ 1) && !board.is_square_attacked(g8, board.side_to_move ^ 1))
             move_list.insert(Move(e8, g8, KING_CASTLE));
 
-        if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0xeLL))
+        if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0xeLL) && !board.is_square_attacked(e8, board.side_to_move ^ 1) && !board.is_square_attacked(d8, board.side_to_move ^ 1) && !board.is_square_attacked(c8, board.side_to_move ^ 1))
             move_list.insert(Move(e8, c8, QUEEN_CASTLE));
     }
 }

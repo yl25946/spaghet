@@ -3,6 +3,7 @@
 #include "defs.h"
 #include "utils.h"
 #include "attacks.h"
+#include "move.h"
 
 // stolen from nek.saikou on Discord
 class Board
@@ -12,7 +13,7 @@ public:
     std::array<uint64_t, 2> colors;
 
     // mailbox for speedup
-    std::array<uint8_t, 64> board;
+    std::array<uint8_t, 64> mailbox;
 
     uint8_t side_to_move = WHITE;
     uint8_t en_passant_square = no_square;
@@ -45,6 +46,12 @@ public:
 
     // checks whether a given square is attacked by the given side
     bool is_square_attacked(uint8_t square, uint8_t side_attacking) const;
+
+    // checks after a move if we have a valid board state
+    // if white is checking the king while it's white's turn to move, we lose
+    bool was_legal() const;
+
+    void make_move(Move move);
 
     // converts position into a fen
     std::string fen() const;
