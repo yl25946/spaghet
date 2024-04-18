@@ -12,6 +12,10 @@ extern uint64_t king_attacks[64];
 extern uint64_t bishop_attacks[64][512];
 extern uint64_t rook_attacks[64][4096];
 
+// constasts for pawn bitshifts
+extern const uint64_t NOT_A_FILE;
+extern const uint64_t NOT_H_FILE;
+
 // masks for generating precalculated attack tables
 extern uint64_t bishop_masks[64];
 extern uint64_t rook_masks[64];

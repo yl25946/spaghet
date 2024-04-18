@@ -7,10 +7,15 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    Board b(tricky_position);
-    b.print();
+    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 
-    b.print_attacked_squares(WHITE);
+    MoveList m;
+
+    generate_moves(b, m);
+
+    m.print();
+
+    std::cout << (int)m.count;
 
     return 0;
 }

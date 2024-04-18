@@ -19,16 +19,16 @@
 */
 
 // not A file constant
-const uint64_t not_a_file = 18374403900871474942ULL;
+const uint64_t NOT_A_FILE = 18374403900871474942ULL;
 
 // not H file constant
-const uint64_t not_h_file = 9187201950435737471ULL;
+const uint64_t NOT_H_FILE = 9187201950435737471ULL;
 
 // not HG file constant
-const uint64_t not_hg_file = 4557430888798830399ULL;
+const uint64_t NOT_HG_FILE = 4557430888798830399ULL;
 
 // not AB file constant
-const uint64_t not_ab_file = 18229723555195321596ULL;
+const uint64_t NOT_AB_FILE = 18229723555195321596ULL;
 
 // pawn attacks table [side][square]
 uint64_t pawn_attacks[2][64];
@@ -70,10 +70,10 @@ uint64_t mask_pawn_attacks(int side, uint8_t square)
         // Since we are doing right capture moves, if we end up in the a file,
         // that means we must've "captured" outside of the board's boundary,
         // so we do not include that in our attacks
-        if ((bitboard >> 7) & not_a_file)
+        if ((bitboard >> 7) & NOT_A_FILE)
             attacks |= (bitboard >> 7);
         // same idea for this but left capture moves an the ending up in the h file
-        if ((bitboard >> 9) & not_h_file)
+        if ((bitboard >> 9) & NOT_H_FILE)
             attacks |= (bitboard >> 9);
     }
 
@@ -83,10 +83,10 @@ uint64_t mask_pawn_attacks(int side, uint8_t square)
         // Since we are doing right capture moves, if we end up in the a file,
         // that means we must've "captured" outside of the board's boundary,
         // so we do not include that in our attacks
-        if ((bitboard << 7) & not_h_file)
+        if ((bitboard << 7) & NOT_H_FILE)
             attacks |= (bitboard << 7);
         // same idea for this but left capture moves an the ending up in the h file
-        if ((bitboard << 9) & not_a_file)
+        if ((bitboard << 9) & NOT_A_FILE)
             attacks |= (bitboard << 9);
     }
 
@@ -107,22 +107,22 @@ uint64_t mask_knight_attacks(uint8_t square)
     set_bit(bitboard, square);
 
     // 17, 15, 10, 6 in both directions for all possible knight moves
-    if ((bitboard >> 17) & not_h_file)
+    if ((bitboard >> 17) & NOT_H_FILE)
         attacks |= bitboard >> 17;
-    if ((bitboard >> 15) & not_a_file)
+    if ((bitboard >> 15) & NOT_A_FILE)
         attacks |= bitboard >> 15;
-    if ((bitboard >> 10) & not_hg_file)
+    if ((bitboard >> 10) & NOT_HG_FILE)
         attacks |= bitboard >> 10;
-    if ((bitboard >> 6) & not_ab_file)
+    if ((bitboard >> 6) & NOT_AB_FILE)
         attacks |= bitboard >> 6;
 
-    if ((bitboard << 17) & not_a_file)
+    if ((bitboard << 17) & NOT_A_FILE)
         attacks |= bitboard << 17;
-    if ((bitboard << 15) & not_h_file)
+    if ((bitboard << 15) & NOT_H_FILE)
         attacks |= bitboard << 15;
-    if ((bitboard << 10) & not_ab_file)
+    if ((bitboard << 10) & NOT_AB_FILE)
         attacks |= bitboard << 10;
-    if ((bitboard << 6) & not_hg_file)
+    if ((bitboard << 6) & NOT_HG_FILE)
         attacks |= bitboard << 6;
 
     return attacks;
@@ -141,22 +141,22 @@ uint64_t mask_king_attacks(uint8_t square)
     set_bit(bitboard, square);
 
     // 1, 7, 8, 9 bitshift in both directions for the king
-    if ((bitboard >> 1) & not_h_file)
+    if ((bitboard >> 1) & NOT_H_FILE)
         attacks |= bitboard >> 1;
-    if ((bitboard >> 7) & not_a_file)
+    if ((bitboard >> 7) & NOT_A_FILE)
         attacks |= bitboard >> 7;
     // this one always works because ifit is at the edge of the board it'll just bitshift off of the board
     attacks |= bitboard >> 8;
-    if ((bitboard >> 9) & not_h_file)
+    if ((bitboard >> 9) & NOT_H_FILE)
         attacks |= bitboard >> 9;
 
-    if ((bitboard << 1) & not_a_file)
+    if ((bitboard << 1) & NOT_A_FILE)
         attacks |= bitboard << 1;
-    if ((bitboard << 7) & not_h_file)
+    if ((bitboard << 7) & NOT_H_FILE)
         attacks |= bitboard << 7;
     // this one always works because if it is at the edge of the board it'll just bitshift off the board
     attacks |= bitboard << 8;
-    if ((bitboard << 9) & not_a_file)
+    if ((bitboard << 9) & NOT_A_FILE)
         attacks |= bitboard << 9;
 
     return attacks;
