@@ -6,3 +6,4 @@
 #include "magic_bitboards.h"
 #include "board.h"
 #include "movegen.h"
+#include "perft.h"

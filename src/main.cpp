@@ -7,13 +7,16 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    Board b("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
-    Move m(e2, e4, DOUBLE_PAWN_PUSH);
+    b.make_move(Move(d5, d6, QUIET_MOVE));
 
-    b.make_move(m);
+    b.make_move(Move(h3, g2, CAPTURES));
 
-    std::cout << b.was_legal();
+    b.make_move(Move(a2, a3, QUIET_MOVE));
+
+    std::cout
+        << perft_debug(b, 1, 1);
 
     return 0;
 }

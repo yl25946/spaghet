@@ -100,7 +100,7 @@ Board::Board(const std::string &fen)
     while (fen[char_it] != ' ')
     {
         half_move_input = half_move_input * 10 + (fen[char_it] - '0');
-        std::cout << half_move_input << "\n";
+        // std::cout << half_move_input << "\n";
         ++char_it;
     }
     fifty_move_counter = half_move_input;
@@ -167,7 +167,7 @@ bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
 
 bool Board::was_legal() const
 {
-    return !is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move);
+    return !(is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move));
 }
 
 void Board::make_move(Move move)
@@ -182,14 +182,6 @@ void Board::make_move(Move move)
     uint8_t move_piece_type = mailbox[source_square];
     uint8_t bitboard_piece_type = move_piece_type / 2;
 
-    // moves the piece
-    remove_bit(pieces[bitboard_piece_type], source_square);
-    set_bit(pieces[bitboard_piece_type], target_square);
-    remove_bit(colors[side_to_move], source_square);
-    set_bit(colors[side_to_move], target_square);
-    mailbox[source_square] = NO_PIECE;
-    mailbox[target_square] = move_piece_type;
-
     if (move_flag & CAPTURES)
     {
         uint8_t captured_piece = mailbox[target_square];
@@ -198,6 +190,14 @@ void Board::make_move(Move move)
 
         // do not need to update mailbox because it would've automatically overwritten it
     }
+
+    // moves the piece
+    remove_bit(pieces[bitboard_piece_type], source_square);
+    set_bit(pieces[bitboard_piece_type], target_square);
+    remove_bit(colors[side_to_move], source_square);
+    set_bit(colors[side_to_move], target_square);
+    mailbox[source_square] = NO_PIECE;
+    mailbox[target_square] = move_piece_type;
 
     if (move_flag & PROMOTION)
     {
