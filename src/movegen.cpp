@@ -69,7 +69,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            generate_promotions(target_square + 7, target_square, false, move_list);
+            generate_promotions(target_square + 7, target_square, true, move_list);
             pop_bit(promotions);
         }
         while (captures)
@@ -88,7 +88,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            generate_promotions(target_square + 9, target_square, false, move_list);
+            generate_promotions(target_square + 9, target_square, true, move_list);
             pop_bit(promotions);
         }
         while (captures)
@@ -130,7 +130,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (quiet_moves)
         {
             target_square = lsb(quiet_moves);
-            move_list.insert(Move(target_square - 8, target_square, 0));
+            move_list.insert(Move(target_square - 8, target_square, QUIET_MOVE));
             pop_bit(quiet_moves);
         }
 
@@ -141,7 +141,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (quiet_moves)
         {
             target_square = lsb(quiet_moves);
-            move_list.insert(Move(target_square - 16, target_square, 1));
+            move_list.insert(Move(target_square - 16, target_square, DOUBLE_PAWN_PUSH));
             pop_bit(quiet_moves);
         }
 
@@ -155,7 +155,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            generate_promotions(target_square - 9, target_square, false, move_list);
+            generate_promotions(target_square - 9, target_square, true, move_list);
             pop_bit(promotions);
         }
         while (captures)
@@ -173,7 +173,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            generate_promotions(target_square - 7, target_square, false, move_list);
+            generate_promotions(target_square - 7, target_square, true, move_list);
             pop_bit(promotions);
         }
         while (captures)
@@ -370,7 +370,7 @@ void generate_castling_moves(Board &board, MoveList &move_list)
         if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0x60ULL) && !board.is_square_attacked(e8, board.side_to_move ^ 1) && !board.is_square_attacked(f8, board.side_to_move ^ 1) && !board.is_square_attacked(g8, board.side_to_move ^ 1))
             move_list.insert(Move(e8, g8, KING_CASTLE));
 
-        if ((board.rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0xeLL) && !board.is_square_attacked(e8, board.side_to_move ^ 1) && !board.is_square_attacked(d8, board.side_to_move ^ 1) && !board.is_square_attacked(c8, board.side_to_move ^ 1))
+        if ((board.rights & BLACK_QUEEN_CASTLE) && !(blocking_pieces & 0xeULL) && !board.is_square_attacked(e8, board.side_to_move ^ 1) && !board.is_square_attacked(d8, board.side_to_move ^ 1) && !board.is_square_attacked(c8, board.side_to_move ^ 1))
             move_list.insert(Move(e8, c8, QUEEN_CASTLE));
     }
 }

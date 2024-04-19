@@ -1,5 +1,15 @@
 #include "board.h"
 
+const uint8_t castling_rights[64] = {
+    7, 15, 15, 15, 3, 15, 15, 11,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    13, 15, 15, 15, 12, 15, 15, 14};
+
 Board::Board(const std::string &fen)
 {
     // clears the entire board
@@ -202,16 +212,20 @@ void Board::make_move(Move move)
     if (move_flag & PROMOTION)
     {
         // change the piece to the respective piece
-        uint8_t promotion_piece = (move_flag & 0b11ULL) + 1;
+        uint8_t promotion_piece = (2 * ((move_flag & 0b11ULL) + 1)) + side_to_move;
+        remove_bit(pieces[PAWN], target_square);
+        set_bit(pieces[promotion_piece / 2], target_square);
+        mailbox[target_square] = promotion_piece;
     }
 
     // en passant capture
     // do this before we clear out we update the en passant square
     if (move_flag == EN_PASSANT_CAPTURE)
     {
-        mailbox[en_passant_square] = NO_PIECE;
-        remove_bit(pieces[PAWN], en_passant_square);
-        remove_bit(colors[side_to_move ^ 1], en_passant_square);
+        uint8_t remove_square = en_passant_square + ((side_to_move == WHITE) ? 8 : -8);
+        mailbox[remove_square] = NO_PIECE;
+        remove_bit(pieces[PAWN], remove_square);
+        remove_bit(colors[side_to_move ^ 1], remove_square);
     }
 
     // double pawn push, basically updating the en_passant square
@@ -225,83 +239,47 @@ void Board::make_move(Move move)
         en_passant_square = no_square;
     }
 
+    // used for castling to determine where to put the rooks
+    uint8_t rook_source_square;
+    uint8_t rook_target_square;
+
     // castling
     if (move_flag == KING_CASTLE)
     {
         // shifts the rook
-        source_square = source_square + 3;
-        target_square = target_square - 1;
+        rook_source_square = source_square + 3;
+        rook_target_square = target_square - 1;
 
-        move_piece_type = mailbox[source_square];
+        move_piece_type = mailbox[rook_source_square];
 
         // moves the piece
-        remove_bit(pieces[bitboard_piece_type], source_square);
-        set_bit(pieces[bitboard_piece_type], target_square);
-        remove_bit(colors[side_to_move], source_square);
-        set_bit(colors[side_to_move], target_square);
-        mailbox[source_square] = NO_PIECE;
-        mailbox[target_square] = move_piece_type;
+        remove_bit(pieces[ROOK], rook_source_square);
+        set_bit(pieces[ROOK], rook_target_square);
+        remove_bit(colors[side_to_move], rook_source_square);
+        set_bit(colors[side_to_move], rook_target_square);
+        mailbox[rook_source_square] = NO_PIECE;
+        mailbox[rook_target_square] = move_piece_type;
     }
     else if (move_flag == QUEEN_CASTLE)
     {
         // shifts the rook
-        source_square = source_square - 4;
-        target_square = target_square + 1;
+        rook_source_square = source_square - 4;
+        rook_target_square = target_square + 1;
 
-        move_piece_type = mailbox[source_square];
+        move_piece_type = mailbox[rook_source_square];
 
         // moves the piece
-        remove_bit(pieces[ROOK], source_square);
-        set_bit(pieces[ROOK], target_square);
-        remove_bit(colors[side_to_move], source_square);
-        set_bit(colors[side_to_move], target_square);
-        mailbox[source_square] = NO_PIECE;
-        mailbox[target_square] = move_piece_type;
+        remove_bit(pieces[ROOK], rook_source_square);
+        set_bit(pieces[ROOK], rook_target_square);
+        remove_bit(colors[side_to_move], rook_source_square);
+        set_bit(colors[side_to_move], rook_target_square);
+        mailbox[rook_source_square] = NO_PIECE;
+        mailbox[rook_target_square] = move_piece_type;
     }
 
     // updates castling rights
-    if (side_to_move == WHITE)
-    {
-        if (move_flag == KING_CASTLE || move_flag == QUEEN_CASTLE)
-        {
-            rights &= ~WHITE_KING_CASTLE;
-            rights &= ~WHITE_QUEEN_CASTLE;
-        }
-        else if (mailbox[e1] != WHITE_KING)
-        {
-            rights &= ~WHITE_KING_CASTLE;
-            rights &= ~WHITE_QUEEN_CASTLE;
-        }
-        else if (mailbox[a1] != WHITE_ROOK)
-        {
-            rights &= ~WHITE_QUEEN_CASTLE;
-        }
-        else if (mailbox[h1] != WHITE_ROOK)
-        {
-            rights &= ~WHITE_KING_CASTLE;
-        }
-    }
-    else
-    {
-        if (move_flag == KING_CASTLE || move_flag == QUEEN_CASTLE)
-        {
-            rights &= ~BLACK_KING_CASTLE;
-            rights &= ~BLACK_QUEEN_CASTLE;
-        }
-        else if (mailbox[e8] != BLACK_KING)
-        {
-            rights &= ~BLACK_KING_CASTLE;
-            rights &= ~BLACK_QUEEN_CASTLE;
-        }
-        else if (mailbox[a8] != BLACK_ROOK)
-        {
-            rights &= ~BLACK_QUEEN_CASTLE;
-        }
-        else if (mailbox[h8] != BLACK_ROOK)
-        {
-            rights &= ~BLACK_KING_CASTLE;
-        }
-    }
+    rights &= castling_rights[source_square];
+    rights &= castling_rights[target_square];
 
     // updates the entire board
     side_to_move ^= 1;
