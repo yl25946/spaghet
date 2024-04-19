@@ -200,8 +200,8 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
 
 void generate_knight_moves(Board &board, MoveList &move_list)
 {
-    int source_square;
-    int target_square;
+    uint8_t source_square;
+    uint8_t target_square;
 
     uint64_t bitboard;
     uint64_t attacks;
@@ -230,8 +230,8 @@ void generate_knight_moves(Board &board, MoveList &move_list)
 
 void generate_bishop_moves(Board &board, MoveList &move_list)
 {
-    int source_square;
-    int target_square;
+    uint8_t source_square;
+    uint8_t target_square;
 
     uint64_t bitboard;
     uint64_t attacks;
@@ -261,8 +261,8 @@ void generate_bishop_moves(Board &board, MoveList &move_list)
 
 void generate_rook_moves(Board &board, MoveList &move_list)
 {
-    int source_square;
-    int target_square;
+    uint8_t source_square;
+    uint8_t target_square;
 
     uint64_t bitboard;
     uint64_t attacks;
@@ -292,8 +292,8 @@ void generate_rook_moves(Board &board, MoveList &move_list)
 
 void generate_queen_moves(Board &board, MoveList &move_list)
 {
-    int source_square;
-    int target_square;
+    uint8_t source_square;
+    uint8_t target_square;
 
     uint64_t bitboard;
     uint64_t attacks;
@@ -324,8 +324,8 @@ void generate_queen_moves(Board &board, MoveList &move_list)
 // generate castling separately
 void generate_sliding_king_moves(Board &board, MoveList &move_list)
 {
-    int source_square;
-    int target_square;
+    uint8_t source_square;
+    uint8_t target_square;
 
     uint64_t bitboard;
     uint64_t attacks;
