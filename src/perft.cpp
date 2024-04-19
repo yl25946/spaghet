@@ -2,11 +2,12 @@
 
 uint64_t perft(Board &board, uint8_t depth)
 {
-    MoveList move_list;
-    uint64_t nodes = 0;
 
     if (depth == 0)
         return 1ULL;
+
+    MoveList move_list;
+    uint64_t nodes = 0;
 
     generate_moves(board, move_list);
 
@@ -38,7 +39,7 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
     {
         Move move = move_list.moves[i];
         Board copy = board;
-        copy.make_move(move);
+        copy.make_move(move_list.moves[i]);
         if (!copy.was_legal())
             continue;
 
@@ -53,4 +54,23 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
     }
 
     return total_nodes;
+}
+
+void perft_driver(const std::string &fen, uint8_t depth)
+{
+    Board board(fen);
+
+    board.print();
+
+    std::cout << "\nPERFT: ";
+
+    auto start = std::chrono::system_clock::now();
+
+    uint64_t nodes = perft(board, depth);
+
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
+    std::cout << "\nTotal Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second";
 }
