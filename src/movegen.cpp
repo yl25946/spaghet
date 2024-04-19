@@ -385,3 +385,7 @@ void generate_moves(Board &board, MoveList &move_list)
     generate_sliding_king_moves(board, move_list);
     generate_castling_moves(board, move_list);
 }
+
+void generate_capture_moves(Board &board, MoveList &move_list)
+{
+}
