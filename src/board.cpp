@@ -144,35 +144,26 @@ uint64_t Board::blockers() const
 
 bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
 {
-    // attacked by pawns
-    if ((side_attacking == WHITE) && (pawn_attacks[BLACK][square] & bitboard(WHITE_PAWN)))
-        return true;
-    if ((side_attacking == BLACK) && (pawn_attacks[WHITE][square] & bitboard(BLACK_PAWN)))
-        return true;
-
-    // attacked by knights
-    if (knight_attacks[square] & (colors[side_attacking] & pieces[KNIGHT]))
-        return true;
-
-    // attacked by king
-    if (king_attacks[square] & (colors[side_attacking] & pieces[KING]))
-        return true;
-
     // attacks by sliding pieces
     uint64_t blocking_pieces = blockers();
+    uint64_t attacks = side_attacking == WHITE ? (pawn_attacks[BLACK][square] & bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][square] & bitboard(BLACK_PAWN));
+
+    // attacked by knights
+    attacks |= knight_attacks[square] & (colors[side_attacking] & pieces[KNIGHT]);
+
+    // attacked by king
+    attacks |= king_attacks[square] & (colors[side_attacking] & pieces[KING]);
+
     // attacked by bishop
-    if (get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[BISHOP]))
-        return true;
+    attacks |= get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[BISHOP]);
 
     // attacked by rooks
-    if (get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[ROOK]))
-        return true;
+    attacks |= get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[ROOK]);
 
     // attacked by queens
-    if (get_queen_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[QUEEN]))
-        return true;
+    attacks |= get_queen_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[QUEEN]);
 
-    return false;
+    return attacks;
 }
 
 bool Board::was_legal() const
