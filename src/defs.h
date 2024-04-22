@@ -10,7 +10,9 @@
 #include <random>
 #include <map>
 #include <chrono>
+#include <cstdint>
 #include <ctime>
+#include <list>
 
 // #include "utils.h"
 // #include "attacks.h"
@@ -38,6 +40,8 @@ extern std::string repetitions;
 // Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
 #define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
+
+#define colored_to_uncolored(piece) (piece / 2)
 
 // board squares
 enum square

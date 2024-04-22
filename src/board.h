@@ -51,6 +51,9 @@ public:
     // if white is checking the king while it's white's turn to move, we lose
     bool was_legal() const;
 
+    // returns true if the current move's king is in check
+    bool is_in_check();
+
     void make_move(Move move);
 
     // converts position into a fen

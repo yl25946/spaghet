@@ -175,6 +175,11 @@ bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
     return false;
 }
 
+bool Board::is_in_check()
+{
+    return is_square_attacked(lsb(bitboard(WHITE_KING + side_to_move)), (side_to_move ^ 1));
+}
+
 bool Board::was_legal() const
 {
     return !(is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move));

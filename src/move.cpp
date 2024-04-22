@@ -20,8 +20,16 @@ uint8_t Move::move_flag()
     return info >> 12;
 }
 
-void Move::print()
+std::string &Move::to_string()
 {
     uint8_t flag = move_flag();
-    std::cout << square_to_coordinate[from_square()] << square_to_coordinate[to_square()] << ((flag & 0b1000) ? ascii_pieces[2 * (flag & 0b11) + 3] : '\0');
+    std::string move_string = square_to_coordinate[from_square()];
+    move_string += square_to_coordinate[to_square()];
+    move_string += ((flag & 0b1000) ? ascii_pieces[2 * (flag & 0b11) + 3] : '\0');
+    return move_string;
+}
+
+void Move::print()
+{
+    std::cout << to_string();
 }

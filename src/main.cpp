@@ -7,7 +7,7 @@ int main()
     init_leapers_attacks();
     init_sliders_attacks();
 
-    perft_driver(tricky_position, 6);
+    // parse_position("position startpos");
 
     return 0;
 }
