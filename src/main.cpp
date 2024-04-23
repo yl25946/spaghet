@@ -1,18 +1,32 @@
 #include "main.h"
 
-int main()
+int main(int argc, char *argv[])
 {
     std::cout << NAME << "\n\n\n\n";
 
     init_leapers_attacks();
     init_sliders_attacks();
 
-    // UCI_loop();
+    // runs the bench test if we have a bench command
+    if (argc >= 2)
+    {
+        // std::cout << "|" << argv[1] << "|";
+        if (!strcmp(argv[1], "bench"))
+        {
+            // creates a dummy searcher
+            Board board(start_position);
+            std::vector<Move> move_list;
+            Searcher searcher(board, move_list, UINT64_MAX);
 
-    std::vector<Move> move;
-    Board b(start_position);
-    Searcher searcher(b, move, get_time() + 10000);
-    searcher.bench();
+            searcher.bench();
+            return 0;
+        }
+    }
+
+    UCI_loop();
+
+    // Searcher searcher;
+    // searcher.bench();
 
     // perft_driver(tricky_position, 6);
 

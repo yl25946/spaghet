@@ -60,7 +60,9 @@ void UCI_loop()
 {
     std::string line;
     Board board(start_position);
-    // Searcher searcher;
+    std::vector<Move> move_list;
+    // dummy variable, should almost never be used other than in bench
+    // Searcher searcher(board, move_list, UINT64_MAX);
 
     std::cout << "id Spaghet\n"
               << "id author Li Ying\n"
@@ -71,13 +73,6 @@ void UCI_loop()
     while (true)
     {
         std::getline(std::cin, line);
-
-        if (!line.compare(0, 5, "bench"))
-        {
-            Searcher searcher;
-            searcher.bench();
-            break;
-        }
 
         if (line[0] == '\n')
             continue;

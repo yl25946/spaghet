@@ -1,8 +1,10 @@
 #include "search.h"
 
-Searcher::Searcher() : board(board)
-{
-}
+// Searcher::Searcher() : board(Board(start_position))
+// {
+//     this->board = Board(start_position);
+//     this->end_time = UINT64_MAX;
+// }
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 {
@@ -138,7 +140,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 3;
+    max_depth = 4;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
@@ -206,7 +208,7 @@ void Searcher::bench()
             negamax(copy, current_depth);
 
             // update the total node count
-            total_nodes += curr_depth;
+            total_nodes += current_depth_node_count;
 
             if (stopped)
                 break;
