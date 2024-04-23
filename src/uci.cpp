@@ -32,7 +32,6 @@ Move parse_move(const std::string &move_string, Board &board)
 
 Board parse_position(std::string &line)
 {
-    std::vector<Move> move_list;
     Board board(start_position);
     // this iterator tracks after the moves
     size_t move_it = line.find("moves");
@@ -45,15 +44,35 @@ Board parse_position(std::string &line)
     }
     else
     {
-        const uint8_t fen_start = 13;
+        const uint8_t fen_start = 9;
         uint8_t fen_length = move_it - fen_start;
         std::string fen = line.substr(fen_start, fen_length);
         board = Board(fen);
     }
 
-    board.print();
-
     return board;
+}
+void parse_moves(std::string &line, std::vector<Move> &moves, Board &board)
+{
+    size_t move_it = line.find("moves");
+    if (move_it == std::string::npos)
+        return;
+
+    // start at full move
+    move_it += 6;
+    std::string move;
+    size_t next_space;
+    while (move_it < line.size())
+    {
+        next_space = line.find(' ', move_it);
+        if (next_space == std::string::npos)
+            next_space = line.size();
+        move = line.substr(move_it, next_space - move_it);
+        moves.push_back(parse_move(move, board));
+        move_it = next_space + 1;
+    }
+
+    return;
 }
 
 void UCI_loop()
@@ -82,6 +101,9 @@ void UCI_loop()
         else if (!line.compare(0, 8, "position"))
         {
             board = parse_position(line);
+            parse_moves(line, move_list, board);
+            Searcher searcher(board, move_list);
+            searcher.board.print();
         }
         else if (!line.compare(0, 2, "go"))
         {

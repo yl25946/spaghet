@@ -58,19 +58,19 @@ int Searcher::negamax(Board &board, uint8_t depth)
     if (depth == 0)
         return evaluate(board);
 
-    MoveList moves;
+    MoveList move_list;
 
-    generate_moves(board, moves);
+    generate_moves(board, move_list);
 
     uint8_t legal_moves = 0;
 
     int best_eval = INT32_MIN;
     Move best_move;
 
-    for (int i = 0; i < moves.size(); ++i)
+    for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        Move curr_move = moves.moves[i];
+        Move curr_move = move_list.moves[i];
         copy.make_move(curr_move);
 
         if (!copy.was_legal())

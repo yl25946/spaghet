@@ -23,12 +23,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    // UCI_loop();
+    UCI_loop();
 
     // Searcher searcher;
     // searcher.bench();
 
-    perft_driver(tricky_position, 5);
+    // perft_driver(tricky_position, 5);
 
     return 0;
 }
