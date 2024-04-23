@@ -198,6 +198,131 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
     }
 }
 
+void generate_pawn_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard, attacks, blocking_pieces = board.blockers();
+
+    // generate pawn moves and castle moves
+    uint64_t promotions;
+    uint64_t quiet_moves;
+    uint64_t captures;
+
+    if (board.side_to_move == WHITE)
+    {
+        bitboard = board.bitboard(WHITE_PAWN);
+
+        // generates all capture moves
+        // right captures
+        attacks = (bitboard & NOT_H_FILE) >> 7;
+        // not promotions
+        captures = attacks & board.colors[BLACK] & ~white_promotion;
+        promotions = attacks & board.colors[BLACK] & white_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square + 7, target_square, true, move_list);
+            pop_bit(promotions);
+        }
+        while (captures)
+        {
+            target_square = lsb(captures);
+            move_list.insert(Move(target_square + 7, target_square, CAPTURES));
+            pop_bit(captures);
+        }
+
+        // left captures
+        attacks = (bitboard & NOT_A_FILE) >> 9;
+        // not promotions
+        captures = attacks & board.colors[BLACK] & ~white_promotion;
+        promotions = attacks & board.colors[BLACK] & white_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square + 9, target_square, true, move_list);
+            pop_bit(promotions);
+        }
+        while (captures)
+        {
+            target_square = lsb(captures);
+            move_list.insert(Move(target_square + 9, target_square, CAPTURES));
+            pop_bit(captures);
+        }
+
+        // generates en passant
+        if (board.en_passant_square != no_square)
+        {
+            attacks = pawn_attacks[BLACK][board.en_passant_square];
+            captures = attacks & bitboard;
+            while (captures)
+            {
+                source_square = lsb(captures);
+                move_list.insert(Move(source_square, board.en_passant_square, EN_PASSANT_CAPTURE));
+                pop_bit(captures);
+            }
+        }
+    }
+    else
+    {
+        bitboard = board.bitboard(BLACK_PAWN);
+
+        // generates pawn capture moves
+        // right captures
+        attacks = (bitboard & NOT_H_FILE) << 9;
+        // not promotions
+        captures = attacks & board.colors[WHITE] & ~black_promotion;
+        promotions = attacks & board.colors[WHITE] & black_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square - 9, target_square, true, move_list);
+            pop_bit(promotions);
+        }
+        while (captures)
+        {
+            target_square = lsb(captures);
+            move_list.insert(Move(target_square - 9, target_square, CAPTURES));
+            pop_bit(captures);
+        }
+
+        // left captures
+        attacks = (bitboard & NOT_A_FILE) << 7;
+        captures = attacks & board.colors[WHITE] & ~black_promotion;
+        promotions = attacks & board.colors[WHITE] & black_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square - 7, target_square, true, move_list);
+            pop_bit(promotions);
+        }
+        while (captures)
+        {
+            target_square = lsb(captures);
+            move_list.insert(Move(target_square - 7, target_square, CAPTURES));
+            pop_bit(captures);
+        }
+
+        // generates en passant
+        if (board.en_passant_square != no_square)
+        {
+            attacks = pawn_attacks[WHITE][board.en_passant_square];
+            captures = attacks & bitboard;
+            while (captures)
+            {
+                source_square = lsb(captures);
+                move_list.insert(Move(source_square, board.en_passant_square, EN_PASSANT_CAPTURE));
+                pop_bit(captures);
+            }
+        }
+    }
+}
+
 void generate_knight_moves(Board &board, MoveList &move_list)
 {
     uint8_t source_square;
@@ -220,6 +345,38 @@ void generate_knight_moves(Board &board, MoveList &move_list)
             target_square = lsb(attacks);
 
             move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+
+            pop_bit(attacks);
+        }
+
+        pop_bit(bitboard);
+    }
+}
+
+void generate_knight_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard;
+    uint64_t attacks;
+
+    bitboard = board.bitboard(WHITE_KNIGHT + board.side_to_move);
+
+    while (bitboard)
+    {
+        source_square = lsb(bitboard);
+
+        // filters out all attacks that attack their own pieces
+        attacks = knight_attacks[source_square] & ~board.colors[board.side_to_move];
+
+        attacks &= board.colors[board.side_to_move ^ 1];
+
+        while (attacks)
+        {
+            target_square = lsb(attacks);
+
+            move_list.insert(Move(source_square, target_square, CAPTURES));
 
             pop_bit(attacks);
         }
@@ -259,6 +416,39 @@ void generate_bishop_moves(Board &board, MoveList &move_list)
     }
 }
 
+void generate_bishop_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard;
+    uint64_t attacks;
+    uint64_t blocking_pieces = board.blockers();
+
+    bitboard = board.bitboard(WHITE_BISHOP + board.side_to_move);
+
+    while (bitboard)
+    {
+        source_square = lsb(bitboard);
+
+        // filters out all attacks that attack their own pieces
+        attacks = get_bishop_attacks(source_square, blocking_pieces) & ~board.colors[board.side_to_move];
+
+        attacks &= board.colors[board.side_to_move ^ 1];
+
+        while (attacks)
+        {
+            target_square = lsb(attacks);
+
+            move_list.insert(Move(source_square, target_square, CAPTURES));
+
+            pop_bit(attacks);
+        }
+
+        pop_bit(bitboard);
+    }
+}
+
 void generate_rook_moves(Board &board, MoveList &move_list)
 {
     uint8_t source_square;
@@ -282,6 +472,39 @@ void generate_rook_moves(Board &board, MoveList &move_list)
             target_square = lsb(attacks);
 
             move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+
+            pop_bit(attacks);
+        }
+
+        pop_bit(bitboard);
+    }
+}
+
+void generate_rook_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard;
+    uint64_t attacks;
+    uint64_t blocking_pieces = board.blockers();
+
+    bitboard = board.bitboard(WHITE_ROOK + board.side_to_move);
+
+    while (bitboard)
+    {
+        source_square = lsb(bitboard);
+
+        // filters out all attacks that attack their own pieces
+        attacks = get_rook_attacks(source_square, blocking_pieces) & ~board.colors[board.side_to_move];
+
+        attacks &= board.colors[board.side_to_move ^ 1];
+
+        while (attacks)
+        {
+            target_square = lsb(attacks);
+
+            move_list.insert(Move(source_square, target_square, CAPTURES));
 
             pop_bit(attacks);
         }
@@ -321,6 +544,39 @@ void generate_queen_moves(Board &board, MoveList &move_list)
     }
 }
 
+void generate_queen_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard;
+    uint64_t attacks;
+    uint64_t blocking_pieces = board.blockers();
+
+    bitboard = board.bitboard(WHITE_QUEEN + board.side_to_move);
+
+    while (bitboard)
+    {
+        source_square = lsb(bitboard);
+
+        // filters out all attacks that attack their own pieces
+        attacks = get_queen_attacks(source_square, blocking_pieces) & ~board.colors[board.side_to_move];
+
+        attacks &= board.colors[board.side_to_move ^ 1];
+
+        while (attacks)
+        {
+            target_square = lsb(attacks);
+
+            move_list.insert(Move(source_square, target_square, CAPTURES));
+
+            pop_bit(attacks);
+        }
+
+        pop_bit(bitboard);
+    }
+}
+
 // generate castling separately
 void generate_sliding_king_moves(Board &board, MoveList &move_list)
 {
@@ -344,6 +600,39 @@ void generate_sliding_king_moves(Board &board, MoveList &move_list)
             target_square = lsb(attacks);
 
             move_list.insert(Move(source_square, target_square, (board.mailbox[target_square] == NO_PIECE) ? QUIET_MOVE : CAPTURES));
+
+            pop_bit(attacks);
+        }
+
+        pop_bit(bitboard);
+    }
+}
+
+// generate castling separately
+void generate_sliding_king_capture_moves(Board &board, MoveList &move_list)
+{
+    uint8_t source_square;
+    uint8_t target_square;
+
+    uint64_t bitboard;
+    uint64_t attacks;
+
+    bitboard = board.bitboard(WHITE_KING + board.side_to_move);
+
+    while (bitboard)
+    {
+        source_square = lsb(bitboard);
+
+        // filters out all attacks that attack their own pieces
+        attacks = king_attacks[source_square] & ~board.colors[board.side_to_move];
+
+        attacks &= board.colors[board.side_to_move ^ 1];
+
+        while (attacks)
+        {
+            target_square = lsb(attacks);
+
+            move_list.insert(Move(source_square, target_square, CAPTURES));
 
             pop_bit(attacks);
         }
@@ -388,4 +677,10 @@ void generate_moves(Board &board, MoveList &move_list)
 
 void generate_capture_moves(Board &board, MoveList &move_list)
 {
+    generate_pawn_capture_moves(board, move_list);
+    generate_knight_capture_moves(board, move_list);
+    generate_bishop_capture_moves(board, move_list);
+    generate_rook_capture_moves(board, move_list);
+    generate_queen_capture_moves(board, move_list);
+    generate_sliding_king_capture_moves(board, move_list);
 }
