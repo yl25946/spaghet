@@ -93,6 +93,8 @@ void UCI_loop()
     {
         std::getline(std::cin, line);
 
+        move_list.clear();
+
         if (line[0] == '\n')
             continue;
 
