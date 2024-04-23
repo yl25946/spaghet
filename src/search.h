@@ -22,16 +22,20 @@ public:
     bool stopped = false;
 
     // start time of the current id so we can calculate nps
-    uint64_t start_time;
-    uint64_t end_time;
+    uint64_t start_time = 0;
+    uint64_t end_time = 0;
 
     uint8_t max_depth = 255;
-    uint8_t curr_depth;
+    uint8_t curr_depth = 0;
 
-    uint64_t node_count = 0;
+    // represents the number of nodes for a depths search
+    uint64_t current_depth_node_count = 0;
+    uint64_t total_nodes = 0;
 
-    Searcher(Board &board, std::vector<Move> move_list, uint64_t end_time);
-    Searcher(Board &board, std::vector<Move> move_list, uint64_t end_time, uint8_t max_depth);
+    Searcher();
+    Searcher(Board &board, std::vector<Move> &move_list);
+    Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time);
+    Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // uses iterative deepening
     void search();
@@ -39,4 +43,6 @@ public:
     int negamax(Board &board, uint8_t depth);
 
     bool threefold(uint64_t hash);
+
+    void bench();
 };

@@ -38,6 +38,6 @@ public:
     uint8_t move_flag();
 
     // uci compliant
-    std::string &to_string();
+    std::string to_string();
     void print();
 };

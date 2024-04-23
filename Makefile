@@ -1,10 +1,8 @@
-clang: 
-	@clang++ src/*.cpp -march=native
-	@./a
+EXE ?= Spaghet
+CXX ?= clang++
 
-gcc:
-	@g++ src/*.cpp -o main -march=native
-	@./main
+compile: 
+	@clang++ src/*.cpp -o $(EXE).exe -march=native
 
 clean: 
 	@del /S *.exe

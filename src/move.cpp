@@ -20,7 +20,7 @@ uint8_t Move::move_flag()
     return info >> 12;
 }
 
-std::string &Move::to_string()
+std::string Move::to_string()
 {
     uint8_t flag = move_flag();
     std::string move_string = square_to_coordinate[from_square()];

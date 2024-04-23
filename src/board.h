@@ -29,6 +29,9 @@ public:
 
     //   std::array<Accumulator, 2> acc;
 
+    // default Board so the compiler doesn't hate us
+    Board();
+
     // creates a board object with a fen
     Board(const std::string &fen);
 
