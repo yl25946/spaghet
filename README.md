@@ -8,7 +8,7 @@ Chess engine based on BBC
 - Pregenerated Magic Bitboards (self-generated)
 - Copy-Make
 - Legality check after making a move
-- Pseudolegal Bitboard Move Generation (8.9 million nodes per second on an i7-9700F)
+- Pseudolegal Bitboard Move Generation (42 million nodes per second on an i7-9700F)
 
 
 # ELO Gainers

@@ -11,8 +11,10 @@ int main()
 
     std::vector<Move> move;
     Board b(start_position);
-    Searcher searcher(b, move, get_time() + 1000);
-    searcher.search();
+    Searcher searcher(b, move, get_time() + 10000);
+    searcher.bench();
+
+    // perft_driver(tricky_position, 6);
 
     return 0;
 }

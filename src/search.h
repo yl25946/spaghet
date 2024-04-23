@@ -25,8 +25,8 @@ public:
     uint64_t start_time = 0;
     uint64_t end_time = 0;
 
-    uint8_t max_depth = 255;
-    uint8_t curr_depth = 0;
+    int max_depth = 255;
+    int curr_depth = 0;
 
     // represents the number of nodes for a depths search
     uint64_t current_depth_node_count = 0;

@@ -108,11 +108,11 @@ void Searcher::search()
 {
     int best_score;
     uint64_t time_elapsed;
-    for (uint16_t current_depth = 1; current_depth <= max_depth; ++current_depth)
+    for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
         current_depth_node_count = 0;
-        // this->start_time = get_time();
+        this->start_time = get_time();
 
         Board copy = board;
 
@@ -123,13 +123,12 @@ void Searcher::search()
 
         if (stopped)
         {
-            std::cout << stopped;
             break;
         }
 
-        time_elapsed = get_time() - start_time;
+        time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " time " << time_elapsed << " nps " << current_depth_node_count / time_elapsed << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " time " << time_elapsed << " nps " << (int)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
@@ -191,12 +190,11 @@ void Searcher::bench()
                                            "3br1k1/p1pn3p/1p3n2/5pNq/2P1p3/1PN3PP/P2Q1PB1/4R1K1 w - - 0 23",
                                            "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"};
 
-    for (const auto &fen : Fens)
+    for (const std::string &fen : Fens)
     {
-        board = Board(fen);
-        start_time = get_time();
-        end_time = start_time + 100;
-        for (uint16_t current_depth = 1; current_depth <= max_depth; ++current_depth)
+        this->board = Board(fen);
+        end_time = get_time() + 100;
+        for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
             current_depth_node_count = 0;
@@ -206,7 +204,7 @@ void Searcher::bench()
             negamax(copy, current_depth);
 
             // update the total node count
-            total_nodes += curr_depth;
+            // total_nodes += curr_depth;
 
             if (stopped)
                 break;
