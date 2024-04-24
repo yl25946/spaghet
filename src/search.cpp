@@ -104,11 +104,12 @@ int Searcher::negamax(Board &board, uint8_t depth)
         else
             return 0;
     }
+    // uncomment this if it doesn't work
     // write the best move down at the current depth
-    else if (depth == curr_depth)
-    {
-        this->current_depth_best_move = best_move;
-    }
+    // else if (depth == curr_depth)
+    // {
+    this->current_depth_best_move = best_move;
+    // }
 
     return best_eval;
 }
