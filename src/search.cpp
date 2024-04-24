@@ -15,6 +15,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
     for (Move m : move_list)
     {
         board.make_move(m);
+        // if (count_bits(board.bitboard(WHITE_KING)) == 2)
+        //     board.print();
     }
 
     this->board = board;
@@ -95,7 +97,10 @@ int Searcher::negamax(Board &board, uint8_t depth)
     if (legal_moves == 0)
     {
         if (board.is_in_check())
+        {
+            // board.print();
             return -50000;
+        }
         else
             return 0;
     }

@@ -17,7 +17,7 @@ Move parse_move(const std::string &move_string, Board &board)
         return Move(from_square, to_square, EN_PASSANT_CAPTURE);
 
     // checks for castling
-    if (colored_to_uncolored(piece_moving) == KING && abs((int)from_square - (int)to_square) != 1)
+    if (colored_to_uncolored(piece_moving) == KING && abs((int)from_square - (int)to_square) == 2)
     {
         // checks if the king moves to the g file. If it is, that means we are king side castling
         return Move(from_square, to_square, to_square % 8 == 6 ? KING_CASTLE : QUEEN_CASTLE);
@@ -44,15 +44,19 @@ Board parse_position(std::string &line)
     }
     else
     {
-        const uint8_t fen_start = 9;
+        // position fen
+        const uint8_t fen_start = 13;
         uint8_t fen_length = move_it - fen_start;
         std::string fen = line.substr(fen_start, fen_length);
+        // std::cout << fen;
         board = Board(fen);
     }
 
     return board;
 }
-void parse_moves(std::string &line, std::vector<Move> &moves, Board &board)
+
+// creates a copy of the board because we need to modify the board
+void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
 {
     size_t move_it = line.find("moves");
     if (move_it == std::string::npos)
@@ -68,7 +72,9 @@ void parse_moves(std::string &line, std::vector<Move> &moves, Board &board)
         if (next_space == std::string::npos)
             next_space = line.size();
         move = line.substr(move_it, next_space - move_it);
-        moves.push_back(parse_move(move, board));
+        Move m = parse_move(move, board);
+        moves.push_back(m);
+        board.make_move(m);
         move_it = next_space + 1;
     }
 
@@ -105,6 +111,14 @@ void UCI_loop()
 
             board = parse_position(line);
             parse_moves(line, move_list, board);
+
+            // Move m = move_list[move_list.size() - 1];
+
+            // m.print();
+            // std::cout << "flag: " << (int)m.move_flag();
+
+            // Searcher searcher(board, move_list);
+            // searcher.board.print();
         }
         else if (!line.compare(0, 2, "go"))
         {
@@ -113,6 +127,10 @@ void UCI_loop()
 
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
+
+            // searcher.board.print();
+
+            // perft_debug(searcher.board, 1, 1);
 
             // starts searching
             searcher.search();

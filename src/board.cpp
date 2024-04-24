@@ -138,7 +138,7 @@ uint16_t Board::full_move_counter() const
 
 uint64_t Board::bitboard(uint8_t piece) const
 {
-    return pieces[piece / 2] & colors[piece & 1];
+    return pieces[colored_to_uncolored(piece)] & colors[piece & 1];
 }
 
 uint64_t Board::blockers() const
@@ -204,7 +204,7 @@ void Board::make_move(Move move)
     if (move_flag & CAPTURES)
     {
         uint8_t captured_piece = mailbox[target_square];
-        remove_bit(pieces[captured_piece / 2], target_square);
+        remove_bit(pieces[colored_to_uncolored(captured_piece)], target_square);
         remove_bit(colors[side_to_move ^ 1], target_square);
 
         // do not need to update mailbox because it would've automatically overwritten it
@@ -303,6 +303,12 @@ void Board::make_move(Move move)
 
 void Board::print() const
 {
+
+    for (int i = WHITE_PAWN; i <= BLACK_KING; ++i)
+    {
+        print_bitboard(bitboard(i));
+    }
+
     std::cout << "\n";
 
     for (int rank = 0; rank < 8; ++rank)
