@@ -129,7 +129,7 @@ void Searcher::search()
         best_score = negamax(copy, current_depth);
 
         // update the total node count
-        total_nodes += curr_depth;
+        total_nodes += current_depth_node_count;
 
         if (stopped)
         {
@@ -140,7 +140,7 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << total_nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
