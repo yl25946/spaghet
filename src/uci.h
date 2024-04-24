@@ -5,6 +5,7 @@
 #include "move.h"
 #include "board.h"
 #include "search.h"
+#include "time.h"
 
 Move parse_move(const std::string &move_string, Board &board);
 

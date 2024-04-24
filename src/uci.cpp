@@ -93,8 +93,6 @@ void UCI_loop()
     {
         std::getline(std::cin, line);
 
-        move_list.clear();
-
         if (line[0] == '\n')
             continue;
 
@@ -102,13 +100,22 @@ void UCI_loop()
             std::cout << "readyok\n";
         else if (!line.compare(0, 8, "position"))
         {
+            // make sure we don't accidentially stack on previous position moves
+            move_list.clear();
+
             board = parse_position(line);
             parse_moves(line, move_list, board);
-            Searcher searcher(board, move_list);
-            searcher.board.print();
         }
         else if (!line.compare(0, 2, "go"))
         {
+            Time time(line);
+            Searcher searcher(board, move_list);
+
+            // gets the endtime
+            searcher.end_time = time.get_move_time(searcher.board.side_to_move);
+
+            // starts searching
+            searcher.search();
         }
         else if (!line.compare(0, 4, "Hash"))
         {

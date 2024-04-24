@@ -8,6 +8,9 @@
 
 const uint64_t check_count = 4096;
 
+// tracking the max depth across the engine
+extern int max_depth;
+
 class Searcher
 {
 public:
@@ -25,7 +28,6 @@ public:
     uint64_t start_time = 0;
     uint64_t end_time = 0;
 
-    int max_depth = 255;
     int curr_depth = 0;
 
     // represents the number of nodes for a depths search
@@ -35,7 +37,7 @@ public:
     // Searcher();
     Searcher(Board &board, std::vector<Move> &move_list);
     Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time);
-    Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
+    // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // uses iterative deepening
     void search();

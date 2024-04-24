@@ -1,5 +1,7 @@
 #include "search.h"
 
+int max_depth = 255;
+
 // Searcher::Searcher() : board(Board(start_position))
 // {
 //     this->board = Board(start_position);
@@ -30,19 +32,19 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
     this->board = board;
     this->end_time = end_time;
 }
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
-    : board(board)
-{
+// Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
+//     : board(board)
+// {
 
-    for (Move m : move_list)
-    {
-        board.make_move(m);
-    }
+//     for (Move m : move_list)
+//     {
+//         board.make_move(m);
+//     }
 
-    this->board = board;
-    this->end_time = end_time;
-    this->max_depth = max_depth;
-}
+//     this->board = board;
+//     this->end_time = end_time;
+//     this->max_depth = max_depth;
+// }
 
 int Searcher::negamax(Board &board, uint8_t depth)
 {
@@ -130,7 +132,7 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << total_nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());

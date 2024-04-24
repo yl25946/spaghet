@@ -1,3 +1,28 @@
 #pragma once
 
 #include "defs.h"
+#include "search.h"
+
+const uint64_t move_overhead = 16;
+
+class Time
+{
+public:
+    int64_t white_time = 0;
+    int64_t black_time = 0;
+    int64_t white_increment = 0;
+    int64_t black_increment = 0;
+
+    bool has_depth = false;
+
+    uint64_t move_time = 0;
+
+    // go depth 6 wtime 180000 btime 100000 binc 1000 winc 100 movetime 1000 movestogo 40
+    Time(const std::string &go_command);
+
+    // archaeic, no one uses this
+    int moves_to_go;
+
+    // will give you the time in milliseconds of hwen the search should end, and subtracts the buffer from the acutal time to account for computation time
+    uint64_t get_move_time(uint8_t side_to_move);
+};
