@@ -117,6 +117,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
 void Searcher::search()
 {
     int best_score;
+    Move best_move;
     uint64_t time_elapsed;
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
@@ -136,11 +137,11 @@ void Searcher::search()
             break;
         }
 
-        this->best_move = this->current_depth_best_move;
+        best_move = this->current_depth_best_move;
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
