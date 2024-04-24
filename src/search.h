@@ -20,6 +20,7 @@ public:
     // don't really change this lol
     Board &board;
 
+    Move current_depth_best_move;
     Move best_move;
 
     bool stopped = false;

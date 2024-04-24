@@ -107,7 +107,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
     // write the best move down at the current depth
     else if (depth == curr_depth)
     {
-        this->best_move = best_move;
+        this->current_depth_best_move = best_move;
     }
 
     return best_eval;
@@ -134,6 +134,8 @@ void Searcher::search()
         {
             break;
         }
+
+        this->best_move = this->current_depth_best_move;
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
