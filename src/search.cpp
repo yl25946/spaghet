@@ -62,8 +62,8 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
     if (depth == 0)
     {
-        return evaluate(board);
         --ply;
+        return evaluate(board);
     }
 
     MoveList move_list;
