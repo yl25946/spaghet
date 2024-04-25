@@ -55,6 +55,8 @@ bool Searcher::is_checkmate(Board &board)
 
 int Searcher::quiescence_search(Board &board, int alpha, int beta)
 {
+    // return evaluate(board);
+
     ++ply;
     ++current_depth_node_count;
     if (!(current_depth_node_count & 4095))
@@ -66,6 +68,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
 
     MoveList move_list;
     generate_capture_moves(board, move_list);
+    // move_list.print();
+    // std::cout << "\n";
+
+    int capture_moves = 0;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -83,10 +89,12 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
         //     return -50000 + ply + 1;
         // }
 
-        int current_eval = quiescence_search(board, -beta, -alpha);
+        int current_eval = -quiescence_search(copy, -beta, -alpha);
 
         if (stopped)
             return 0;
+
+        ++capture_moves;
 
         if (current_eval >= beta)
         {
@@ -98,6 +106,9 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
             alpha = current_eval;
         }
     }
+
+    if (!capture_moves)
+        return evaluate(board);
 
     // TODO: add check moves
 
@@ -118,7 +129,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 
     if (depth == 0)
     {
-        int q_eval = -quiescence_search(board, -beta, -alpha);
+        int q_eval = quiescence_search(board, alpha, beta);
         // return -quiescence_search(board, -beta, -alpha);
         return q_eval;
     }
