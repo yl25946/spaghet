@@ -45,6 +45,9 @@ public:
     // uses iterative deepening
     void search();
 
+    // returns true if board is in checkmate
+    bool is_checkmate(Board &board);
+    int quiescence_search(Board &board, int alpha, int beta);
     int negamax(Board &board, uint8_t depth, int alpha, int beta);
 
     bool threefold(uint64_t hash);

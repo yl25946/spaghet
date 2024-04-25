@@ -48,6 +48,62 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 //     this->max_depth = max_depth;
 // }
 
+bool Searcher::is_checkmate(Board &board)
+{
+    return false;
+}
+
+int Searcher::quiescence_search(Board &board, int alpha, int beta)
+{
+    ++ply;
+    ++current_depth_node_count;
+    if (!(current_depth_node_count & 4095))
+        if (get_time() >= end_time)
+        {
+            stopped = true;
+            return 0;
+        }
+
+    MoveList move_list;
+    generate_capture_moves(board, move_list);
+
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        Board copy = board;
+        Move curr_move = move_list.moves[i];
+        copy.make_move(curr_move);
+
+        if (!copy.was_legal())
+            continue;
+
+        // do we need to check for checkmate in qsearch?
+        // if (is_checkmate(copy))
+        // {
+        //     --ply;
+        //     return -50000 + ply + 1;
+        // }
+
+        int current_eval = quiescence_search(board, -beta, -alpha);
+
+        if (stopped)
+            return 0;
+
+        if (current_eval >= beta)
+        {
+            return current_eval; // fail soft
+        }
+
+        if (current_eval > alpha)
+        {
+            alpha = current_eval;
+        }
+    }
+
+    // TODO: add check moves
+
+    return alpha;
+}
+
 int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 {
     ++ply;
@@ -62,8 +118,9 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 
     if (depth == 0)
     {
-        --ply;
-        return evaluate(board);
+        int q_eval = -quiescence_search(board, -beta, -alpha);
+        // return -quiescence_search(board, -beta, -alpha);
+        return q_eval;
     }
 
     MoveList move_list;
@@ -109,7 +166,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
         {
             // board.print();
             --ply;
-            return -50000 + curr_depth - depth;
+            return -50000 + ply + 1;
         }
         else
         {
