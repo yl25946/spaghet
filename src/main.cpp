@@ -4,8 +4,12 @@ int main(int argc, char *argv[])
 {
     std::cout << NAME << "\n\n\n\n";
 
+    // initialize precalculated lookup tables
     init_leapers_attacks();
     init_sliders_attacks();
+
+    // initialize psqt
+    init_pesto_tables();
 
     // runs the bench test if we have a bench command
     if (argc >= 2)
