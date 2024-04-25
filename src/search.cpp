@@ -99,7 +99,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
         if (board.is_in_check())
         {
             // board.print();
-            return -50000;
+            return -50000 + (curr_depth - depth);
         }
         else
             return 0;
