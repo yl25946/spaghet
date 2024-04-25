@@ -3,6 +3,10 @@
 #include "defs.h"
 #include "board.h"
 
+// for debugging purposes
+extern int *eg_pesto_table[6];
+extern int *mg_pesto_table[6];
+
 /**
  * Creates the psqt for pesto
  */

@@ -832,9 +832,9 @@ int pesto_eval(Board &board)
         while (bitboard)
         {
             square = lsb(bitboard);
-            mg[PCOLOR(P)] += mg_table[piece][square];
-            eg[PCOLOR(P)] += eg_table[P][square];
-            gamePhase += gamephaseInc[P];
+            mg[PCOLOR(piece)] += mg_table[piece][square];
+            eg[PCOLOR(piece)] += eg_table[piece][square];
+            gamePhase += gamephaseInc[piece];
             pop_bit(bitboard);
         }
     }

@@ -50,6 +50,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 
 int Searcher::negamax(Board &board, uint8_t depth)
 {
+    ++ply;
     ++current_depth_node_count;
 
     if (!(current_depth_node_count & 4095))
@@ -60,7 +61,10 @@ int Searcher::negamax(Board &board, uint8_t depth)
         }
 
     if (depth == 0)
+    {
         return evaluate(board);
+        --ply;
+    }
 
     MoveList move_list;
 
@@ -99,10 +103,14 @@ int Searcher::negamax(Board &board, uint8_t depth)
         if (board.is_in_check())
         {
             // board.print();
-            return -50000;
+            --ply;
+            return -50000 + curr_depth - depth;
         }
         else
+        {
+            --ply;
             return 0;
+        }
     }
     // uncomment this if it doesn't work
     // write the best move down at the current depth
@@ -111,6 +119,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
     this->current_depth_best_move = best_move;
     // }
 
+    --ply;
     return best_eval;
 }
 

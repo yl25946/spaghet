@@ -27,12 +27,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    Board board("r1bqkbnr/pppp1ppp/8/4n3/4P3/2N5/PPPP1PPP/R1BQKB1R b KQkq - 1 4");
-    std::cout << (int)board.side_to_move;
-    std::cout
-        << evaluate(board);
-
-    // UCI_loop();
+    UCI_loop();
 
     // Board board("rnb1kbnr/2q5/1p3p1p/p3p1P1/P6p/BPP4P/3P1P2/RN1QKB1R b KQkq - 0 17");
     // Move move(h6, g5, CAPTURES);
