@@ -18,9 +18,6 @@ int piece_count_evaluation(Board &board)
 
 #define PCOLOR(p) ((p) & 1)
 
-int side2move;
-int board[64];
-
 #define FLIP(sq) ((sq) ^ 56)
 #define OTHER(side) ((side) ^ 1)
 
@@ -828,6 +825,7 @@ int pesto_eval(Board &board)
     /* evaluate each piece */
     uint64_t bitboard;
     uint8_t square;
+    uint8_t side_to_move = board.side_to_move;
     for (int piece = WHITE_PAWN; piece <= BLACK_KING; ++piece)
     {
         bitboard = board.bitboard(piece);
@@ -842,8 +840,8 @@ int pesto_eval(Board &board)
     }
 
     /* tapered eval */
-    int mgScore = mg[side2move] - mg[OTHER(side2move)];
-    int egScore = eg[side2move] - eg[OTHER(side2move)];
+    int mgScore = mg[side_to_move] - mg[OTHER(side_to_move)];
+    int egScore = eg[side_to_move] - eg[OTHER(side_to_move)];
     int mgPhase = gamePhase;
     if (mgPhase > 24)
         mgPhase = 24; /* in case of early promotion */
