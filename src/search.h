@@ -45,7 +45,7 @@ public:
     // uses iterative deepening
     void search();
 
-    int negamax(Board &board, uint8_t depth);
+    int negamax(Board &board, uint8_t depth, int alpha, int beta);
 
     bool threefold(uint64_t hash);
 

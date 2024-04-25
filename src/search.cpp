@@ -48,7 +48,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 //     this->max_depth = max_depth;
 // }
 
-int Searcher::negamax(Board &board, uint8_t depth)
+int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 {
     ++ply;
     ++current_depth_node_count;
@@ -72,7 +72,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
     uint8_t legal_moves = 0;
 
-    int best_eval = INT32_MIN;
+    // int best_eval = INT32_MIN;
     Move best_move;
 
     for (int i = 0; i < move_list.size(); ++i)
@@ -86,14 +86,19 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, depth - 1);
+        int current_eval = -negamax(copy, depth - 1, -beta, -alpha);
 
         if (stopped)
             return 0;
 
-        if (current_eval > best_eval)
+        if (current_eval >= beta)
         {
-            best_eval = current_eval;
+            return current_eval; // fail soft
+        }
+
+        if (current_eval > alpha)
+        {
+            alpha = current_eval;
             best_move = curr_move;
         }
     }
@@ -120,7 +125,8 @@ int Searcher::negamax(Board &board, uint8_t depth)
     // }
 
     --ply;
-    return best_eval;
+
+    return alpha;
 }
 
 void Searcher::search()
@@ -136,7 +142,7 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, current_depth);
+        best_score = negamax(copy, current_depth, -50000, 50000);
 
         // update the total node count
         total_nodes += current_depth_node_count;
@@ -225,7 +231,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, current_depth);
+            negamax(copy, current_depth, -50000, 50000);
 
             // update the total node count
             total_nodes += current_depth_node_count;
