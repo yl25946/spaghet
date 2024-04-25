@@ -109,7 +109,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
         {
             // board.print();
             --ply;
-            return -50000 + curr_depth - depth;
+            return -50000 + ply + 1;
         }
         else
         {
