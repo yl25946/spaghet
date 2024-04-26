@@ -221,7 +221,7 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, 0);
+        best_score = negamax(copy, 0, -10000, 10000);
 
         // update the total node count
         total_nodes += current_depth_node_count;
@@ -310,7 +310,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, 0);
+            negamax(copy, 0, -10000, 10000);
 
             // update the total node count
             total_nodes += current_depth_node_count;
