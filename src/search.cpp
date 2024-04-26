@@ -62,62 +62,61 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
     if (depth == curr_depth)
         return evaluate(board);
-}
 
-MoveList move_list;
+    MoveList move_list;
 
-generate_moves(board, move_list);
+    generate_moves(board, move_list);
 
-uint8_t legal_moves = 0;
+    uint8_t legal_moves = 0;
 
-int best_eval = INT32_MIN;
-Move best_move;
+    int best_eval = INT32_MIN;
+    Move best_move;
 
-for (int i = 0; i < move_list.size(); ++i)
-{
-    Board copy = board;
-    Move curr_move = move_list.moves[i];
-    copy.make_move(curr_move);
-
-    if (!copy.was_legal())
-        continue;
-
-    ++legal_moves;
-
-    int current_eval = -negamax(copy, depth + 1);
-
-    if (stopped)
-        return 0;
-
-    if (current_eval > best_eval)
+    for (int i = 0; i < move_list.size(); ++i)
     {
-        best_eval = current_eval;
-        best_move = curr_move;
-    }
-}
+        Board copy = board;
+        Move curr_move = move_list.moves[i];
+        copy.make_move(curr_move);
 
-if (legal_moves == 0)
-{
-    if (board.is_in_check())
-    {
-        // board.print();
-        return -50000 + depth;
-    }
-    else
-    {
-        --ply;
-        return 0;
-    }
-}
-// uncomment this if it doesn't work
-// write the best move down at the current depth
-// else if (depth == curr_depth)
-// {
-this->current_depth_best_move = best_move;
-// }
+        if (!copy.was_legal())
+            continue;
 
---ply;
-return best_eval;
+        ++legal_moves;
+
+        int current_eval = -negamax(copy, depth + 1);
+
+        if (stopped)
+            return 0;
+
+        if (current_eval > best_eval)
+        {
+            best_eval = current_eval;
+            best_move = curr_move;
+        }
+    }
+
+    if (legal_moves == 0)
+    {
+        if (board.is_in_check())
+        {
+            // board.print();
+            return -50000 + depth;
+        }
+        else
+        {
+            --ply;
+            return 0;
+        }
+    }
+    // uncomment this if it doesn't work
+    // write the best move down at the current depth
+    // else if (depth == curr_depth)
+    // {
+    this->current_depth_best_move = best_move;
+    // }
+
+    --ply;
+    return best_eval;
 }
 
 void Searcher::search()
