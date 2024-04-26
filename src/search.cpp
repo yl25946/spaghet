@@ -142,13 +142,8 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
             return 0;
         }
 
-    if (depth == 0)
-    {
-        int q_eval = quiescence_search(board, alpha, beta);
-        // return -quiescence_search(board, -beta, -alpha);
-        --ply;
-        return q_eval;
-    }
+    if (depth == curr_depth)
+        return evaluate(board);
 
     MoveList move_list;
 
@@ -170,7 +165,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, depth - 1, -beta, -alpha);
+        int current_eval = -negamax(copy, depth + 1, -beta, -alpha);
 
         if (stopped)
             return 0;
@@ -192,8 +187,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
         if (board.is_in_check())
         {
             // board.print();
-            --ply;
-            return -50000 + ply + 1;
+            return -50000 + depth;
         }
         else
         {
@@ -227,7 +221,7 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, current_depth, -50000, 50000);
+        best_score = negamax(copy, 0);
 
         // update the total node count
         total_nodes += current_depth_node_count;
@@ -316,7 +310,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, current_depth, -50000, 50000);
+            negamax(copy, 0);
 
             // update the total node count
             total_nodes += current_depth_node_count;
