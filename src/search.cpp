@@ -71,12 +71,22 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
     // move_list.print();
     // std::cout << "\n";
 
-    int capture_moves = 0;
+    // creates a baseline
+    int stand_pat = evaluate(board);
+
+    if (stand_pat >= beta)
+        return stand_pat; // fail soft
+
+    if (alpha < stand_pat)
+        alpha = stand_pat;
+
+    // int capture_moves = 0;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
         Move curr_move = move_list.moves[i];
+
         copy.make_move(curr_move);
 
         if (!copy.was_legal())
@@ -94,24 +104,29 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
         if (stopped)
             return 0;
 
-        ++capture_moves;
-
-        if (current_eval >= beta)
+        if (current_eval > stand_pat)
         {
-            return current_eval; // fail soft
-        }
+            stand_pat = current_eval;
 
-        if (current_eval > alpha)
-        {
-            alpha = current_eval;
+            // ++capture_moves;
+
+            if (current_eval > alpha)
+            {
+                alpha = current_eval;
+
+                if (current_eval >= beta)
+                {
+                    return current_eval; // fail soft
+                }
+            }
         }
     }
 
-    if (!capture_moves)
-        return evaluate(board);
+    // if (!capture_moves)
+    //     return evaluate(board);
 
     // TODO: add check moves
-
+    --ply;
     return alpha;
 }
 
@@ -131,6 +146,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
     {
         int q_eval = quiescence_search(board, alpha, beta);
         // return -quiescence_search(board, -beta, -alpha);
+        --ply;
         return q_eval;
     }
 
@@ -207,6 +223,7 @@ void Searcher::search()
         this->curr_depth = current_depth;
         current_depth_node_count = 0;
         this->start_time = get_time();
+        this->ply = 0;
 
         Board copy = board;
 
