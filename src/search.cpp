@@ -83,7 +83,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, depth + 1);
+        int current_eval = -negamax(copy, depth + 1, -beta, -alpha);
 
         if (stopped)
             return 0;
