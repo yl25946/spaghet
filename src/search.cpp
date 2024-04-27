@@ -65,12 +65,7 @@ int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
             return 0;
         }
 
-    MoveList move_list;
-    generate_capture_moves(board, move_list);
-    // move_list.print();
-    // std::cout << "\n";
-
-    // creates a baseline
+        // creates a baseline
     int stand_pat = evaluate(board);
 
     if (stand_pat >= beta)
@@ -80,6 +75,10 @@ int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
         alpha = stand_pat;
 
     // int capture_moves = 0;
+    MoveList move_list;
+    generate_capture_moves(board, move_list);
+    // move_list.print();
+    // std::cout << "\n";
 
     for (int i = 0; i < move_list.size(); ++i)
     {
