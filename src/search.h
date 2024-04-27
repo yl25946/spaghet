@@ -30,8 +30,6 @@ public:
     uint64_t end_time = 0;
 
     int curr_depth = 0;
-    // counts the current depth of the search
-    int ply = 0;
 
     // represents the number of nodes for a depths search
     uint64_t current_depth_node_count = 0;
@@ -47,7 +45,7 @@ public:
 
     // returns true if board is in checkmate
     bool is_checkmate(Board &board);
-    int quiescence_search(Board &board, int alpha, int beta);
+    int quiescence_search(Board &board, int depth, int alpha, int beta);
     int negamax(Board &board, uint8_t depth, int alpha, int beta);
 
     bool threefold(uint64_t hash);

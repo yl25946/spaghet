@@ -53,11 +53,10 @@ bool Searcher::is_checkmate(Board &board)
     return false;
 }
 
-int Searcher::quiescence_search(Board &board, int alpha, int beta)
+int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
 {
     // return evaluate(board);
 
-    ++ply;
     ++current_depth_node_count;
     if (!(current_depth_node_count & 4095))
         if (get_time() >= end_time)
@@ -95,11 +94,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
         // do we need to check for checkmate in qsearch?
         // if (is_checkmate(copy))
         // {
-        //     --ply;
-        //     return -50000 + ply + 1;
+        //     return -50000 + depth
         // }
 
-        int current_eval = -quiescence_search(copy, -beta, -alpha);
+        int current_eval = -quiescence_search(copy, depth + 1, -beta, -alpha);
 
         if (stopped)
             return 0;
@@ -126,13 +124,11 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta)
     //     return evaluate(board);
 
     // TODO: add check moves
-    --ply;
     return alpha;
 }
 
 int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 {
-    ++ply;
     ++current_depth_node_count;
 
     if (!(current_depth_node_count & 4095))
@@ -143,7 +139,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
         }
 
     if (depth == curr_depth)
-        return evaluate(board);
+        return quiescence_search(board, depth, alpha, beta);
 
     MoveList move_list;
 
@@ -191,7 +187,6 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
         }
         else
         {
-            --ply;
             return 0;
         }
     }
@@ -201,8 +196,6 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
     // {
     this->current_depth_best_move = best_move;
     // }
-
-    --ply;
 
     return alpha;
 }
@@ -217,7 +210,6 @@ void Searcher::search()
         this->curr_depth = current_depth;
         current_depth_node_count = 0;
         this->start_time = get_time();
-        this->ply = 0;
 
         Board copy = board;
 
