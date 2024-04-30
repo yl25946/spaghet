@@ -53,7 +53,7 @@ bool Searcher::is_checkmate(Board &board)
     return false;
 }
 
-int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
+int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 {
     // return evaluate(board);
 
@@ -65,7 +65,7 @@ int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
             return 0;
         }
 
-        // creates a baseline
+    // creates a baseline
     int stand_pat = evaluate(board);
 
     if (stand_pat >= beta)
@@ -96,7 +96,7 @@ int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
         //     return -50000 + depth
         // }
 
-        int current_eval = -quiescence_search(copy, depth + 1, -beta, -alpha);
+        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
 
         if (stopped)
             return 0;
@@ -126,7 +126,7 @@ int Searcher::quiescence_search(Board &board, int depth, int alpha, int beta)
     return alpha;
 }
 
-int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 {
     ++current_depth_node_count;
 
@@ -137,8 +137,8 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
             return 0;
         }
 
-    if (depth == curr_depth)
-        return quiescence_search(board, depth, alpha, beta);
+    if (depth == 0)
+        return quiescence_search(board, alpha, beta, ply);
 
     MoveList move_list;
 
@@ -160,7 +160,7 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, depth + 1, -beta, -alpha);
+        int current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
 
         if (stopped)
             return 0;
@@ -181,8 +181,8 @@ int Searcher::negamax(Board &board, uint8_t depth, int alpha, int beta)
     {
         if (board.is_in_check())
         {
-            // board.print();
-            return -50000 + depth;
+            // prioritize faster mates
+            return -50000 + ply;
         }
         else
         {
@@ -204,6 +204,23 @@ void Searcher::search()
     int best_score;
     Move best_move;
     uint64_t time_elapsed;
+
+    // generates a legal move in that position in case that we didn't finish depth one
+    MoveList move_list;
+    generate_moves(board, move_list);
+
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        Board copy = board;
+        copy.make_move(move_list.moves[i]);
+
+        if (copy.was_legal())
+        {
+            best_move = move_list.moves[i];
+            break;
+        }
+    }
+
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
@@ -212,10 +229,13 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, 0, -50000, 50000);
+        best_score = negamax(copy, -50000, 50000, curr_depth, 0);
 
         // update the total node count
         total_nodes += current_depth_node_count;
+
+        // std::cout << get_time() << "\n"
+        //           << end_time << "\n";
 
         if (stopped)
         {
@@ -301,7 +321,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, 0, -50000, 50000);
+            negamax(copy, -50000, 50000, current_depth, 0);
 
             // update the total node count
             total_nodes += current_depth_node_count;
