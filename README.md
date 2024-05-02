@@ -14,7 +14,8 @@ Chess engine based on BBC
 - alpha-beta pruning
 
 # ELO Gainers
-- 
+Started from piece counting and standard negamax
+- PeSTO's Evaluation Function (+176)
 
 # Testing
 (OB instance link)
