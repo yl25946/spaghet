@@ -137,6 +137,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
             return 0;
         }
 
+    // cut the search short if there's a draw
+    if (board.fifty_move_counter == 100)
+        return 0;
+
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
 

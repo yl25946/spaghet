@@ -22,7 +22,7 @@ public:
 
     uint64_t hash = 0;
 
-    // checks 50 move rule
+    // checks 50 move rule, counts in plys
     uint8_t fifty_move_counter = 0;
     // counts the total number of moves
     uint16_t half_move_counter = 0;
