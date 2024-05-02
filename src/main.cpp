@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     if (argc >= 2)
     {
         // std::cout << "|" << argv[1] << "|";
-        if (!strcmp(argv[1], "bench"))
+        if (!strcmp(argv[1], "Bench"))
         {
             // creates a dummy searcher
             Board board(start_position);
