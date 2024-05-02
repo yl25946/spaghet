@@ -74,3 +74,7 @@ void perft_driver(const std::string &fen, uint8_t depth)
 
     std::cout << "\nTotal Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second";
 }
+
+void captures_perft_driver(const std::string &fen, uint8_t depth)
+{
+}
