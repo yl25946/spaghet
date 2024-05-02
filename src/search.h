@@ -30,6 +30,8 @@ public:
     uint64_t end_time = 0;
 
     int curr_depth = 0;
+    // counts the current depth of the search
+    int ply = 0;
 
     // represents the number of nodes for a depths search
     uint64_t current_depth_node_count = 0;

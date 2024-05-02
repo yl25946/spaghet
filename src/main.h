@@ -8,3 +8,4 @@
 #include "movegen.h"
 #include "perft.h"
 #include "uci.h"
+#include "eval.h"

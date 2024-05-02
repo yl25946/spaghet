@@ -102,7 +102,9 @@ int Searcher::negamax(Board &board, uint8_t depth)
             return -50000 + depth;
         }
         else
+        {
             return 0;
+        }
     }
     // uncomment this if it doesn't work
     // write the best move down at the current depth
