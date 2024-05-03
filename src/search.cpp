@@ -138,8 +138,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         }
 
     // cut the search short if there's a draw
-    if (board.fifty_move_counter == 100)
-        return 0;
+    // if (board.fifty_move_counter == 100)
+    //     return 0;
 
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
@@ -164,7 +164,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+        int current_eval;
+
+        if (copy.fifty_move_counter == 100)
+            current_eval = 0;
+        else
+            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
 
         if (stopped)
             return 0;
