@@ -122,7 +122,9 @@ void UCI_loop()
         }
         else if (!line.compare(0, 2, "go"))
         {
+
             Time time(line);
+
             Searcher searcher(board, move_list);
 
             // gets the endtime

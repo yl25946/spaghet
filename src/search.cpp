@@ -48,7 +48,85 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 //     this->max_depth = max_depth;
 // }
 
-int Searcher::negamax(Board &board, uint8_t depth)
+bool Searcher::is_checkmate(Board &board)
+{
+    return false;
+}
+
+int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
+{
+    // return evaluate(board);
+
+    ++current_depth_node_count;
+    if (!(current_depth_node_count & 4095))
+        if (get_time() >= end_time)
+        {
+            stopped = true;
+            return 0;
+        }
+
+    // creates a baseline
+    int stand_pat = evaluate(board);
+
+    if (stand_pat >= beta)
+        return stand_pat; // fail soft
+
+    if (alpha < stand_pat)
+        alpha = stand_pat;
+
+    // int capture_moves = 0;
+    MoveList move_list;
+    generate_capture_moves(board, move_list);
+    // move_list.print();
+    // std::cout << "\n";
+
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        Board copy = board;
+        Move curr_move = move_list.moves[i];
+
+        copy.make_move(curr_move);
+
+        if (!copy.was_legal())
+            continue;
+
+        // do we need to check for checkmate in qsearch?
+        // if (is_checkmate(copy))
+        // {
+        //     return -50000 + depth
+        // }
+
+        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
+
+        if (stopped)
+            return 0;
+
+        if (current_eval > stand_pat)
+        {
+            stand_pat = current_eval;
+
+            // ++capture_moves;
+
+            if (current_eval > alpha)
+            {
+                alpha = current_eval;
+
+                if (current_eval >= beta)
+                {
+                    return current_eval; // fail soft
+                }
+            }
+        }
+    }
+
+    // if (!capture_moves)
+    //     return evaluate(board);
+
+    // TODO: add check moves
+    return alpha;
+}
+
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 {
     ++current_depth_node_count;
 
@@ -59,8 +137,12 @@ int Searcher::negamax(Board &board, uint8_t depth)
             return 0;
         }
 
-    if (depth == curr_depth)
-        return evaluate(board);
+    // cut the search short if there's a draw
+    // if (board.fifty_move_counter == 100)
+    //     return 0;
+
+    if (depth == 0)
+        return quiescence_search(board, alpha, beta, ply);
 
     MoveList move_list;
 
@@ -68,7 +150,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
     uint8_t legal_moves = 0;
 
-    int best_eval = INT32_MIN;
+    // int best_eval = INT32_MIN;
     Move best_move;
 
     for (int i = 0; i < move_list.size(); ++i)
@@ -82,14 +164,19 @@ int Searcher::negamax(Board &board, uint8_t depth)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, depth + 1);
+        int current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
 
         if (stopped)
             return 0;
 
-        if (current_eval > best_eval)
+        if (current_eval >= beta)
         {
-            best_eval = current_eval;
+            return current_eval; // fail soft
+        }
+
+        if (current_eval > alpha)
+        {
+            alpha = current_eval;
             best_move = curr_move;
         }
     }
@@ -98,8 +185,8 @@ int Searcher::negamax(Board &board, uint8_t depth)
     {
         if (board.is_in_check())
         {
-            // board.print();
-            return -50000 + depth;
+            // prioritize faster mates
+            return -50000 + ply;
         }
         else
         {
@@ -113,7 +200,7 @@ int Searcher::negamax(Board &board, uint8_t depth)
     this->current_depth_best_move = best_move;
     // }
 
-    return best_eval;
+    return alpha;
 }
 
 void Searcher::search()
@@ -121,6 +208,23 @@ void Searcher::search()
     int best_score;
     Move best_move;
     uint64_t time_elapsed;
+
+    // generates a legal move in that position in case that we didn't finish depth one
+    MoveList move_list;
+    generate_moves(board, move_list);
+
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        Board copy = board;
+        copy.make_move(move_list.moves[i]);
+
+        if (copy.was_legal())
+        {
+            best_move = move_list.moves[i];
+            break;
+        }
+    }
+
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
@@ -129,10 +233,13 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, 0);
+        best_score = negamax(copy, -50000, 50000, curr_depth, 0);
 
         // update the total node count
         total_nodes += current_depth_node_count;
+
+        // std::cout << get_time() << "\n"
+        //           << end_time << "\n";
 
         if (stopped)
         {
@@ -153,7 +260,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 4;
+    max_depth = 3;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
@@ -218,7 +325,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, 0);
+            negamax(copy, -50000, 50000, current_depth, 0);
 
             // update the total node count
             total_nodes += current_depth_node_count;

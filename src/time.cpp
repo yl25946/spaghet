@@ -73,13 +73,13 @@ uint64_t Time::get_move_time(uint8_t side_to_move)
         if (move_time)
             return get_time() + move_time - move_overhead;
 
-        return get_time() + std::max((int64_t)(white_time * 0.054 + white_increment * 0.85) - (int64_t)move_overhead, 20LL);
+        return get_time() + std::max((int64_t)(white_time * 0.054 + white_increment * 0.85) - (int64_t)move_overhead, min_move_time);
     }
     else
     {
         if (move_time)
             return get_time() + move_time - move_overhead;
 
-        return get_time() + std::max((int64_t)(black_time * 0.054 + black_increment * 0.85) - (int64_t)move_overhead, 20LL);
+        return get_time() + std::max((int64_t)(black_time * 0.054 + black_increment * 0.85) - (int64_t)move_overhead, min_move_time);
     }
 }
