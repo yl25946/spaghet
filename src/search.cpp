@@ -253,11 +253,11 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
-    std::cout << "bestmove " << best_move.to_string() << std::endl;
+    std::cout << "bestmove " << best_move.to_string() << "\n";
 }
 
 // yoinked from stormphrax for tradition
@@ -341,6 +341,6 @@ void Searcher::bench()
     // time in seconds
     const uint64_t time = get_time() - start_time;
 
-    std::cout << "info string " << time / 1000 << " seconds" << std::endl;
-    std::cout << total_nodes << " nodes " << (uint64_t)((double)total_nodes / time * 1000) << " nps" << std::endl;
+    std::cout << "info string " << time / 1000 << " seconds" << "\n";
+    std::cout << total_nodes << " nodes " << (uint64_t)((double)total_nodes / time * 1000) << " nps" << "\n";
 }
