@@ -145,6 +145,82 @@ Board::Board(const std::string &fen)
     half_move_counter = (2 * full_move_input) - 2 + side_to_move;
 }
 
+std::string Board::fen() const
+{
+    std::string fen = "";
+
+    int no_piece_counter;
+
+    for (int rank = 0; rank < 8; ++rank)
+    {
+        for (int file = 0; file < 8; ++file)
+        {
+            int square = rank * 8 + file;
+            int piece = mailbox[square];
+
+            if (piece == NO_PIECE)
+                ++no_piece_counter;
+            else
+            {
+                if (no_piece_counter != 0)
+                    fen += (char)(no_piece_counter + '0');
+
+                fen += ascii_pieces[piece];
+
+                no_piece_counter = 0;
+            }
+        }
+
+        if (no_piece_counter != 0)
+            fen += (char)(no_piece_counter + '0');
+
+        no_piece_counter = 0;
+
+        fen += "/";
+    }
+
+    // clips away the last "/"
+    fen = fen.substr(0, fen.size() - 1);
+
+    fen += " ";
+
+    fen += side_to_move ? "b" : "w";
+
+    fen += " ";
+
+    if (rights == 0)
+        fen += "-";
+
+    if (rights & WHITE_KING_CASTLE)
+        fen += "K";
+
+    if (rights & WHITE_QUEEN_CASTLE)
+        fen += "Q";
+
+    if (rights & BLACK_KING_CASTLE)
+        fen += "k";
+
+    if (rights & BLACK_QUEEN_CASTLE)
+        fen += "q";
+
+    fen += " ";
+
+    if (en_passant_square == no_square)
+        fen += "-";
+    else
+        fen += square_to_coordinate[en_passant_square];
+
+    fen += " ";
+
+    fen += std::to_string(fifty_move_counter / 2);
+
+    fen += " ";
+
+    fen += std::to_string(full_move_counter());
+
+    return fen;
+}
+
 uint16_t Board::full_move_counter() const
 {
     return ((half_move_counter) / 2) + 1;
@@ -271,6 +347,10 @@ void Board::make_move(Move move)
     // double pawn push, basically updating the en_passant square
     if (move_flag == DOUBLE_PAWN_PUSH)
     {
+        // if there previous was an en_passant square, we can just get rid of it
+        if (en_passant_square != no_square)
+            hash ^= zobrist_en_passant[file(en_passant_square)];
+
         // updates en_passant
         en_passant_square = target_square + (side_to_move == WHITE ? 8 : -8);
 

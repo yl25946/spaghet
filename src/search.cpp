@@ -10,7 +10,6 @@ int max_depth = 255;
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 {
-    // TODO: initialize zobrist hash keys here
     threefold_repetition.push_back(board.hash);
 
     for (Move m : move_list)
@@ -26,7 +25,15 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time) : board(board)
 {
-    // TODO: initialize zobrist hash keys here
+    threefold_repetition.push_back(board.hash);
+
+    for (Move m : move_list)
+    {
+        board.make_move(m);
+        // if (count_bits(board.bitboard(WHITE_KING)) == 2)
+        //     board.print();
+        threefold_repetition.push_back(board.hash);
+    }
 
     for (Move m : move_list)
     {
@@ -73,7 +80,7 @@ bool Searcher::threefold(Board &board)
     }
 
     // did not find a matching hash
-    return matching_positions >= 3;
+    return matching_positions >= 2;
 }
 
 int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)

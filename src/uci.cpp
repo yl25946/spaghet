@@ -20,7 +20,7 @@ Move parse_move(const std::string &move_string, Board &board)
     if (colored_to_uncolored(piece_moving) == KING && abs((int)from_square - (int)to_square) == 2)
     {
         // checks if the king moves to the g file. If it is, that means we are king side castling
-        return Move(from_square, to_square, to_square & 7 == 6 ? KING_CASTLE : QUEEN_CASTLE);
+        return Move(from_square, to_square, (to_square & 7) == 6 ? KING_CASTLE : QUEEN_CASTLE);
     }
 
     // checks for captures
@@ -73,6 +73,7 @@ void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
             next_space = line.size();
         move = line.substr(move_it, next_space - move_it);
         Move m = parse_move(move, board);
+        // std::cout << (int)m.move_flag();
         moves.push_back(m);
         board.make_move(m);
         move_it = next_space + 1;
@@ -131,6 +132,8 @@ void UCI_loop()
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
 
             // searcher.board.print();
+
+            // std::cout << searcher.board.hash << "\n";
 
             // perft_debug(searcher.board, 1, 1);
 

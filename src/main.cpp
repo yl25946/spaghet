@@ -30,6 +30,18 @@ int main(int argc, char *argv[])
 
     UCI_loop();
 
+    // testing zobrist
+    // Board board(tricky_position);
+
+    // std::cout << perft_debug(board, 4, 4);
+
+    //     board.make_move(Move(g1, f3, 0));
+    //     board.make_move(Move(g8, f6, 0));
+    //     board.make_move(Move(f3, g1, 0));
+    //     board.make_move(Move(f6, g8, 0
+    // ));
+    //     std::cout << board.hash << "\n";
+
     // Board board("rnb1kbnr/2q5/1p3p1p/p3p1P1/P6p/BPP4P/3P1P2/RN1QKB1R b KQkq - 0 17");
     // Move move(h6, g5, CAPTURES);
     // board.make_move(move);

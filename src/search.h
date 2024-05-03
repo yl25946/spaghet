@@ -49,6 +49,7 @@ public:
     int negamax(Board &board, int alpha, int beta, int depth, int ply);
 
     // checks if there's a threefold draw
+    // returns true if there is a draw
     bool threefold(Board &board);
 
     void bench();
