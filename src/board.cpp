@@ -39,6 +39,9 @@ Board::Board(const std::string &fen)
             // initialize the mailbox
             mailbox[square] = piece;
 
+            // initialize the zobrist hash
+            hash ^= zobrist_pieces[piece][square];
+
             ++square;
             ++char_it;
         }
@@ -61,7 +64,12 @@ Board::Board(const std::string &fen)
     if (fen[char_it] == 'w')
         side_to_move = WHITE;
     else
+    {
         side_to_move = BLACK;
+
+        // masks the side_to_move in zobrist hash
+        hash ^= zobrist_side_to_move;
+    }
 
     // increment the reader
     char_it += 2;
@@ -99,13 +107,19 @@ Board::Board(const std::string &fen)
 
     ++char_it;
 
+    // now that we've read in the castling rights we can mask it into the zobrist hash
+    hash ^= zobrist_castling_rights[rights];
+
     // parses enpassant square
     if (fen[char_it] != '-')
     {
         // reverse it because of board representation
-        int rank = fen[char_it] - 'a';
-        int file = 7 - (fen[char_it + 1] - '1');
-        en_passant_square = file * 8 + rank;
+        int file = fen[char_it] - 'a';
+        int rank = 7 - (fen[char_it + 1] - '1');
+        en_passant_square = rank * 8 + file;
+
+        // if there's an en passant square, we put it into the hash
+        hash ^= zobrist_en_passant[file];
     }
 
     char_it += 2;
@@ -198,7 +212,9 @@ void Board::make_move(Move move)
 
     // deals with castle;
 
+    // colored piece
     uint8_t move_piece_type = mailbox[source_square];
+    // uncolored piece
     uint8_t bitboard_piece_type = move_piece_type / 2;
 
     if (move_flag & CAPTURES)
@@ -208,6 +224,9 @@ void Board::make_move(Move move)
         remove_bit(colors[side_to_move ^ 1], target_square);
 
         // do not need to update mailbox because it would've automatically overwritten it
+
+        // update zobrist hash
+        hash ^= zobrist_pieces[captured_piece][target_square];
     }
 
     // moves the piece
@@ -218,6 +237,10 @@ void Board::make_move(Move move)
     mailbox[source_square] = NO_PIECE;
     mailbox[target_square] = move_piece_type;
 
+    // updates the hash
+    hash ^= zobrist_pieces[move_piece_type][source_square];
+    hash ^= zobrist_pieces[move_piece_type][target_square];
+
     if (move_flag & PROMOTION)
     {
         // change the piece to the respective piece
@@ -225,6 +248,10 @@ void Board::make_move(Move move)
         remove_bit(pieces[PAWN], target_square);
         set_bit(pieces[promotion_piece / 2], target_square);
         mailbox[target_square] = promotion_piece;
+
+        // removes the pawn from the bb and adds in the promotion piece
+        hash ^= zobrist_pieces[move_piece_type][target_square];
+        hash ^= zobrist_pieces[promotion_piece][target_square];
     }
 
     // en passant capture
@@ -235,6 +262,10 @@ void Board::make_move(Move move)
         mailbox[remove_square] = NO_PIECE;
         remove_bit(pieces[PAWN], remove_square);
         remove_bit(colors[side_to_move ^ 1], remove_square);
+
+        // removes pawn from zobrist hash
+        // side_to_move ^ 1 represent the opposite move's pawn
+        hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
     }
 
     // double pawn push, basically updating the en_passant square
@@ -242,9 +273,15 @@ void Board::make_move(Move move)
     {
         // updates en_passant
         en_passant_square = target_square + (side_to_move == WHITE ? 8 : -8);
+
+        hash ^= zobrist_en_passant[file(en_passant_square)];
     }
     else
     {
+        // if there previous was an en_passant square, we can just get rid of it
+        if (en_passant_square != no_square)
+            hash ^= zobrist_en_passant[file(en_passant_square)];
+
         en_passant_square = no_square;
     }
 
@@ -259,6 +296,7 @@ void Board::make_move(Move move)
         rook_source_square = source_square + 3;
         rook_target_square = target_square - 1;
 
+        // now updated to rook
         move_piece_type = mailbox[rook_source_square];
 
         // moves the piece
@@ -268,6 +306,10 @@ void Board::make_move(Move move)
         set_bit(colors[side_to_move], rook_target_square);
         mailbox[rook_source_square] = NO_PIECE;
         mailbox[rook_target_square] = move_piece_type;
+
+        // updates the rook hash in zobrist
+        hash ^= zobrist_pieces[move_piece_type][rook_source_square];
+        hash ^= zobrist_pieces[move_piece_type][rook_target_square];
     }
     else if (move_flag == QUEEN_CASTLE)
     {
@@ -275,6 +317,7 @@ void Board::make_move(Move move)
         rook_source_square = source_square - 4;
         rook_target_square = target_square + 1;
 
+        // now updated to rook
         move_piece_type = mailbox[rook_source_square];
 
         // moves the piece
@@ -284,14 +327,27 @@ void Board::make_move(Move move)
         set_bit(colors[side_to_move], rook_target_square);
         mailbox[rook_source_square] = NO_PIECE;
         mailbox[rook_target_square] = move_piece_type;
+
+        // updates the rook hash in zobrist
+        hash ^= zobrist_pieces[move_piece_type][rook_source_square];
+        hash ^= zobrist_pieces[move_piece_type][rook_target_square];
     }
+
+    // removes the castling rights from the hash
+    hash ^= zobrist_castling_rights[rights];
 
     // updates castling rights
     rights &= castling_rights[source_square];
     rights &= castling_rights[target_square];
 
+    // adds in the updated castling rights
+    hash ^= zobrist_castling_rights[rights];
+
     // updates the entire board
     side_to_move ^= 1;
+
+    // update zobrist side_to_move
+    hash ^= zobrist_side_to_move;
 
     if (bitboard_piece_type != PAWN && !(move_flag & CAPTURES))
         ++fifty_move_counter;

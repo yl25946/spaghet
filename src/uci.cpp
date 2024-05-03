@@ -20,7 +20,7 @@ Move parse_move(const std::string &move_string, Board &board)
     if (colored_to_uncolored(piece_moving) == KING && abs((int)from_square - (int)to_square) == 2)
     {
         // checks if the king moves to the g file. If it is, that means we are king side castling
-        return Move(from_square, to_square, to_square % 8 == 6 ? KING_CASTLE : QUEEN_CASTLE);
+        return Move(from_square, to_square, to_square & 7 == 6 ? KING_CASTLE : QUEEN_CASTLE);
     }
 
     // checks for captures

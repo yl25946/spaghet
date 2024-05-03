@@ -11,12 +11,14 @@ int max_depth = 255;
 Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 {
     // TODO: initialize zobrist hash keys here
+    threefold_repetition.push_back(board.hash);
 
     for (Move m : move_list)
     {
         board.make_move(m);
         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
         //     board.print();
+        threefold_repetition.push_back(board.hash);
     }
 
     this->board = board;
@@ -48,9 +50,30 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 //     this->max_depth = max_depth;
 // }
 
-bool Searcher::is_checkmate(Board &board)
+// bool Searcher::is_checkmate(Board &board)
+// {
+//     return false;
+// }
+
+bool Searcher::threefold(Board &board)
 {
-    return false;
+    // in here, the board's hash is already added into the threefold_repetition
+    uint64_t hash = board.hash;
+
+    // the number of hashes matching the board argument's hash
+    uint8_t matching_positions = 0;
+
+    // index of the last element of the array
+    int last_element_index = threefold_repetition.size() - 1;
+
+    for (int i = 2; i <= board.fifty_move_counter; i += 2)
+    {
+        if (hash == threefold_repetition[last_element_index - i])
+            ++matching_positions;
+    }
+
+    // did not find a matching hash
+    return matching_positions >= 3;
 }
 
 int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
@@ -142,6 +165,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     if (ply > 0 && board.fifty_move_counter >= 100)
         return 0;
 
+    // if there's a threefold draw
+    if (ply > 0 && threefold(board))
+        return 0;
+
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
 
@@ -167,7 +194,13 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
         int current_eval;
 
+        // we can check for threefold repetition later, updates the state though
+        threefold_repetition.push_back(copy.hash);
+
         current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+
+        // stopped searching that line, so we can get rid of the hash
+        threefold_repetition.pop_back();
 
         if (stopped)
             return 0;

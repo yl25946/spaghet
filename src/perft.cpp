@@ -60,7 +60,7 @@ void perft_driver(const std::string &fen, uint8_t depth)
 {
     Board board(fen);
 
-    board.print();
+    // board.print();
 
     std::cout << "\nPERFT: ";
 

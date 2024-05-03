@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     // initialize precalculated lookup tables
     init_leapers_attacks();
     init_sliders_attacks();
+    init_zobrist_tables();
 
     // initialize psqt
     init_pesto_tables();
@@ -34,8 +35,7 @@ int main(int argc, char *argv[])
     // board.make_move(move);
     // print_bitboard(board.bitboard(WHITE_PAWN));
 
-    // Board board("5b1r/3k4/1Q1P1ppp/5q2/3p4/8/5PPP/1N2K1NR w K - 0 27");
-    // perft_debug(board, 1, 1);
+    // perft_driver(tricky_position, 5);
 
     return 0;
 }

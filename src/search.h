@@ -44,11 +44,12 @@ public:
     void search();
 
     // returns true if board is in checkmate
-    bool is_checkmate(Board &board);
+    // bool is_checkmate(Board &board);
     int quiescence_search(Board &board, int alpha, int beta, int ply);
     int negamax(Board &board, int alpha, int beta, int depth, int ply);
 
-    bool threefold(uint64_t hash);
+    // checks if there's a threefold draw
+    bool threefold(Board &board);
 
     void bench();
 };
