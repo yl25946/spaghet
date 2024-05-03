@@ -16,9 +16,12 @@ Chess engine based on BBC
 # ELO Gainers
 Started from piece counting and standard negamax
 - PeSTO's Evaluation Function (+176)
+- Alpha-Beta Pruning (+340)
+- Quiescence Search with Alpha-Beta (+324)
+
 
 # Testing
-(OB instance link)
+https://spaghet.pythonanywhere.com/
 
 # TODO:
 - Write legality check before making a move (usually gains 0-10 elo)
