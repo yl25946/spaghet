@@ -18,6 +18,7 @@ Started from piece counting and standard negamax
 - PeSTO's Evaluation Function (+176)
 - Alpha-Beta Pruning (+340)
 - Quiescence Search with Alpha-Beta (+324)
+- 3 fold detection with Zobrist Hashing (+17.5)
 
 
 # Testing
