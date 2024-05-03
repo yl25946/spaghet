@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "attacks.h"
 #include "move.h"
+#include "zobrist.h"
 
 // stolen from nek.saikou on Discord
 class Board

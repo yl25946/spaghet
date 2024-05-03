@@ -24,6 +24,7 @@ Started from piece counting and standard negamax
 https://spaghet.pythonanywhere.com/
 
 # TODO:
+- Add check evasion to qSearch
 - Write legality check before making a move (usually gains 0-10 elo)
 
 # Special Thanks

@@ -9,3 +9,4 @@
 #include "perft.h"
 #include "uci.h"
 #include "eval.h"
+#include "zobrist.h"

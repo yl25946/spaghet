@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     // initialize precalculated lookup tables
     init_leapers_attacks();
     init_sliders_attacks();
+    init_zobrist_tables();
 
     // initialize psqt
     init_pesto_tables();
@@ -29,13 +30,24 @@ int main(int argc, char *argv[])
 
     UCI_loop();
 
+    // testing zobrist
+    // Board board(tricky_position);
+
+    // std::cout << perft_debug(board, 4, 4);
+
+    //     board.make_move(Move(g1, f3, 0));
+    //     board.make_move(Move(g8, f6, 0));
+    //     board.make_move(Move(f3, g1, 0));
+    //     board.make_move(Move(f6, g8, 0
+    // ));
+    //     std::cout << board.hash << "\n";
+
     // Board board("rnb1kbnr/2q5/1p3p1p/p3p1P1/P6p/BPP4P/3P1P2/RN1QKB1R b KQkq - 0 17");
     // Move move(h6, g5, CAPTURES);
     // board.make_move(move);
     // print_bitboard(board.bitboard(WHITE_PAWN));
 
-    // Board board("5b1r/3k4/1Q1P1ppp/5q2/3p4/8/5PPP/1N2K1NR w K - 0 27");
-    // perft_debug(board, 1, 1);
+    // perft_driver(tricky_position, 5);
 
     return 0;
 }

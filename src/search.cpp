@@ -10,13 +10,14 @@ int max_depth = 255;
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 {
-    // TODO: initialize zobrist hash keys here
+    threefold_repetition.push_back(board.hash);
 
     for (Move m : move_list)
     {
         board.make_move(m);
         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
         //     board.print();
+        threefold_repetition.push_back(board.hash);
     }
 
     this->board = board;
@@ -24,7 +25,15 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time) : board(board)
 {
-    // TODO: initialize zobrist hash keys here
+    threefold_repetition.push_back(board.hash);
+
+    for (Move m : move_list)
+    {
+        board.make_move(m);
+        // if (count_bits(board.bitboard(WHITE_KING)) == 2)
+        //     board.print();
+        threefold_repetition.push_back(board.hash);
+    }
 
     for (Move m : move_list)
     {
@@ -48,9 +57,30 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
 //     this->max_depth = max_depth;
 // }
 
-bool Searcher::is_checkmate(Board &board)
+// bool Searcher::is_checkmate(Board &board)
+// {
+//     return false;
+// }
+
+bool Searcher::threefold(Board &board)
 {
-    return false;
+    // in here, the board's hash is already added into the threefold_repetition
+    uint64_t hash = board.hash;
+
+    // the number of hashes matching the board argument's hash
+    uint8_t matching_positions = 0;
+
+    // index of the last element of the array
+    int last_element_index = threefold_repetition.size() - 1;
+
+    for (int i = 2; i <= board.fifty_move_counter; i += 2)
+    {
+        if (hash == threefold_repetition[last_element_index - i])
+            ++matching_positions;
+    }
+
+    // did not find a matching hash
+    return matching_positions >= 2;
 }
 
 int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
@@ -138,7 +168,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         }
 
     // cut the search short if there's a draw
-    if (board.fifty_move_counter == 100)
+    // if it's a draw at the root node, we'll play a null move
+    if (ply > 0 && board.fifty_move_counter >= 100)
+        return 0;
+
+    // if there's a threefold draw
+    if (ply > 0 && threefold(board))
         return 0;
 
     if (depth == 0)
@@ -164,7 +199,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
         ++legal_moves;
 
-        int current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+        int current_eval;
+
+        // we can check for threefold repetition later, updates the state though
+        threefold_repetition.push_back(copy.hash);
+
+        current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+
+        // stopped searching that line, so we can get rid of the hash
+        threefold_repetition.pop_back();
 
         if (stopped)
             return 0;
@@ -250,11 +293,11 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, 1ULL);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
-    std::cout << "bestmove " << best_move.to_string() << std::endl;
+    std::cout << "bestmove " << best_move.to_string() << "\n";
 }
 
 // yoinked from stormphrax for tradition
@@ -338,6 +381,6 @@ void Searcher::bench()
     // time in seconds
     const uint64_t time = get_time() - start_time;
 
-    std::cout << "info string " << time / 1000 << " seconds" << std::endl;
-    std::cout << total_nodes << " nodes " << (uint64_t)((double)total_nodes / time * 1000) << " nps" << std::endl;
+    std::cout << "info string " << time / 1000 << " seconds" << "\n";
+    std::cout << total_nodes << " nodes " << (uint64_t)((double)total_nodes / time * 1000) << " nps" << "\n";
 }

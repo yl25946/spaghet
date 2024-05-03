@@ -15,6 +15,9 @@ uint64_t generate_magic_number();
 // gets it in ms from the epoch
 uint64_t get_time();
 
+// gets the file of a piece, a-h is 0-7 respectively
+uint8_t file(uint8_t square);
+
 // checks if a Piece (enum) is white
 // NOTE: no_piece is white
 // bool isWhite(uint8_t piece);
