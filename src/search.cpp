@@ -73,7 +73,7 @@ bool Searcher::threefold(Board &board)
     // index of the last element of the array
     int last_element_index = threefold_repetition.size() - 1;
 
-    for (int i = 2; i <= board.fifty_move_counter; i += 2)
+    for (int i = 4; i <= board.fifty_move_counter; i += 2)
     {
         if (hash == threefold_repetition[last_element_index - i])
             ++matching_positions;
@@ -174,8 +174,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // if there's a threefold draw
     if (ply > 0 && threefold(board))
+    {
+        // std::cout << "threefold repetition" << "\n";
         return 0;
-
+    }
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
 
