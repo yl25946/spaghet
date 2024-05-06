@@ -5,6 +5,7 @@
 #include "eval.h"
 #include "movelist.h"
 #include "movegen.h"
+#include "transposition_table.h"
 
 const uint64_t check_count = 4096;
 
@@ -17,8 +18,13 @@ public:
     // zorbrist hashes
     std::vector<uint64_t> threefold_repetition;
 
-    // don't really change this lol
+    // don't really change this lol, just for reference
     Board &board;
+
+    TranspositionTable &transposition_table;
+
+    // tracks how many times we've called "go" command to check age in TT
+    uint32_t age = 0;
 
     Move current_depth_best_move;
     // Move best_move;
@@ -36,8 +42,8 @@ public:
     uint64_t total_nodes = 0;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list);
-    Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // uses iterative deepening

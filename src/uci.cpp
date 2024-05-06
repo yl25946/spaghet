@@ -87,6 +87,8 @@ void UCI_loop()
     std::string line;
     Board board(start_position);
     std::vector<Move> move_list;
+    int hash_size = 16;
+    uint32_t age = 0;
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
@@ -140,7 +142,7 @@ void UCI_loop()
             // starts searching
             searcher.search();
         }
-        else if (!line.compare(0, 4, "Hash"))
+        else if (!line.compare(0, 4, "Option Hash"))
         {
             // no op because no tt
         }

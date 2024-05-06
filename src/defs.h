@@ -191,3 +191,12 @@ enum
     BLACK_KING_CASTLE = 4,
     BLACK_QUEEN_CASTLE = 8,
 };
+
+// used for TT
+enum Bound
+{
+    NONE,
+    FAIL_LOW,
+    FAIL_HIGH,
+    EXACT,
+};

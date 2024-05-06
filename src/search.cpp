@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age) : board(board), transposition_table(transposition_table)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -21,9 +21,11 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list) : board(board)
     }
 
     this->board = board;
+    this->age = age;
+    this->transposition_table;
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time) : board(board)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -41,6 +43,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time
     }
 
     this->board = board;
+    this->age = age;
+    this->transposition_table = transposition_table;
     this->end_time = end_time;
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
@@ -278,7 +282,7 @@ void Searcher::search()
 
         Board copy = board;
 
-        best_score = negamax(copy, -50000, 50000, curr_depth, 0);
+        best_score = negamax(copy, -30000, 30000, curr_depth, 0);
 
         // update the total node count
         total_nodes += current_depth_node_count;
@@ -370,7 +374,7 @@ void Searcher::bench()
 
             Board copy = this->board;
 
-            negamax(copy, -50000, 50000, current_depth, 0);
+            negamax(copy, -30000, 30000, current_depth, 0);
 
             // update the total node count
             total_nodes += current_depth_node_count;
