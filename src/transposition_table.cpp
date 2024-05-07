@@ -37,9 +37,7 @@ bool TT_Entry::can_use_score(int alpha, int beta)
 
 TranspositionTable::TranspositionTable(uint64_t size)
 {
-    TT_Entry Dummy;
-
-    uint64_t entry_size = sizeof(Dummy);
+    uint64_t entry_size = sizeof(TT_Entry);
 
     uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
@@ -50,9 +48,7 @@ TranspositionTable::TranspositionTable(uint64_t size)
 
 void TranspositionTable::resize(uint64_t size)
 {
-    TT_Entry Dummy;
-
-    uint64_t entry_size = sizeof(Dummy);
+    uint64_t entry_size = sizeof(TT_Entry);
 
     uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
