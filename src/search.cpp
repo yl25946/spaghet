@@ -22,7 +22,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     this->board = board;
     this->age = age;
-    this->transposition_table;
+    this->transposition_table = transposition_table;
 }
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table)
@@ -72,7 +72,9 @@ bool Searcher::threefold(Board &board)
     // index of the last element of the array
     int last_element_index = threefold_repetition.size() - 1;
 
-    for (int i = 4; i <= board.fifty_move_counter; i += 2)
+    int threefold_max_it = std::min((size_t)board.fifty_move_counter, threefold_repetition.size() - 1);
+
+    for (int i = 4; i <= threefold_max_it; i += 2)
     {
         if (hash == threefold_repetition[last_element_index - i])
             ++matching_positions;
@@ -230,7 +232,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (current_eval >= beta)
         {
             // add in TT entry
-            transposition_table.insert(board, best_move, current_eval, depth, age, BOUND::FAIL_HIGH);
+            transposition_table.insert(board, curr_move, current_eval, depth, age, BOUND::FAIL_HIGH);
 
             return current_eval; // fail soft
         }

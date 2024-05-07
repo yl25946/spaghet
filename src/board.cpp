@@ -317,7 +317,20 @@ void Board::make_move(Move move)
     // uncolored piece
     uint8_t bitboard_piece_type = move_piece_type / 2;
 
-    if (move_flag & CAPTURES)
+    // en passant capture
+    // do this before we clear out we update the en passant square
+    if (move_flag == EN_PASSANT_CAPTURE)
+    {
+        uint8_t remove_square = en_passant_square + ((side_to_move == WHITE) ? 8 : -8);
+        mailbox[remove_square] = NO_PIECE;
+        remove_bit(pieces[PAWN], remove_square);
+        remove_bit(colors[side_to_move ^ 1], remove_square);
+
+        // removes pawn from zobrist hash
+        // side_to_move ^ 1 represent the opposite move's pawn
+        hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
+    }
+    else if (move_flag & CAPTURES)
     {
         uint8_t captured_piece = mailbox[target_square];
         remove_bit(pieces[colored_to_uncolored(captured_piece)], target_square);
@@ -326,6 +339,9 @@ void Board::make_move(Move move)
         // do not need to update mailbox because it would've automatically overwritten it
 
         // update zobrist hash
+        // this->print();
+
+        // std::cout << (int)captured_piece << " " << move.to_string() << " " << this->fen() << '\n';
         hash ^= zobrist_pieces[captured_piece][target_square];
     }
 
@@ -352,20 +368,6 @@ void Board::make_move(Move move)
         // removes the pawn from the bb and adds in the promotion piece
         hash ^= zobrist_pieces[move_piece_type][target_square];
         hash ^= zobrist_pieces[promotion_piece][target_square];
-    }
-
-    // en passant capture
-    // do this before we clear out we update the en passant square
-    if (move_flag == EN_PASSANT_CAPTURE)
-    {
-        uint8_t remove_square = en_passant_square + ((side_to_move == WHITE) ? 8 : -8);
-        mailbox[remove_square] = NO_PIECE;
-        remove_bit(pieces[PAWN], remove_square);
-        remove_bit(colors[side_to_move ^ 1], remove_square);
-
-        // removes pawn from zobrist hash
-        // side_to_move ^ 1 represent the opposite move's pawn
-        hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
     }
 
     // double pawn push, basically updating the en_passant square
