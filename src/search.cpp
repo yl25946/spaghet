@@ -37,11 +37,6 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
         threefold_repetition.push_back(board.hash);
     }
 
-    for (Move m : move_list)
-    {
-        board.make_move(m);
-    }
-
     this->board = board;
     this->age = age;
     this->transposition_table = transposition_table;
@@ -386,6 +381,7 @@ void Searcher::bench()
 
     for (std::string &fen : Fens)
     {
+        transposition_table.clear();
         this->board = Board(fen);
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {

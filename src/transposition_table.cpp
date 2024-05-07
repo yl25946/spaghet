@@ -80,3 +80,12 @@ TT_Entry &TranspositionTable::get(const Board &board)
 
     return hashtable[hash_location];
 }
+
+void TranspositionTable::clear()
+{
+    uint64_t original_size = hashtable.size();
+
+    hashtable.clear();
+
+    hashtable.resize(original_size);
+}

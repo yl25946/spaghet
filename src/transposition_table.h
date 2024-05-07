@@ -36,6 +36,7 @@ public:
     // clears the transposition table
     void resize(uint64_t size);
     void insert(const Board &board, Move best_move, uint16_t best_score, uint8_t depth, uint32_t age, uint8_t flag);
+    void clear();
     // bool contains(uint64_t hash);
     TT_Entry &get(const Board &board);
 };
