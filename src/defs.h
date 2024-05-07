@@ -138,7 +138,7 @@ enum
 };
 
 // sides to move (colors)
-enum color
+enum COLOR
 {
     WHITE,
     BLACK,
@@ -146,7 +146,7 @@ enum color
 };
 
 // used for accessing the bitboards
-enum bitboard_pieces
+enum BITBOARD_PIECES
 {
     PAWN,
     KNIGHT,
@@ -166,7 +166,7 @@ enum bitboard_pieces
 
 // pieces for a mailbox implementation
 // NOTE: this enum and the char pieces enum are the same, it is okay to mix and match
-enum Pieces
+enum PIECES
 {
     WHITE_PAWN,
     BLACK_PAWN,
@@ -184,7 +184,7 @@ enum Pieces
 };
 
 // which side can castle
-enum
+enum CASTLING_RIGHTS
 {
     WHITE_KING_CASTLE = 1,
     WHITE_QUEEN_CASTLE = 2,
@@ -193,7 +193,7 @@ enum
 };
 
 // used for TT
-enum Bound
+enum BOUND
 {
     NONE,
     FAIL_LOW,

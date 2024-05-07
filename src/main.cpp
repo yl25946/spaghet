@@ -21,7 +21,8 @@ int main(int argc, char *argv[])
             // creates a dummy searcher
             Board board(start_position);
             std::vector<Move> move_list;
-            Searcher searcher(board, move_list, UINT64_MAX);
+            TranspositionTable dummy(16);
+            Searcher searcher(board, move_list, dummy, 0, UINT64_MAX);
 
             searcher.bench();
             return 0;
@@ -29,28 +30,6 @@ int main(int argc, char *argv[])
     }
 
     UCI_loop();
-
-    // testing zobrist
-    Board board(start_position);
-
-    std::cout << perft_debug(board, 4, 4);
-
-    std::vector<Move> move_list;
-
-    move_list.push_back(Move(g1, f3, 0));
-    move_list.push_back(Move(g8, f6, 0));
-    move_list.push_back(Move(f3, g1, 0));
-    move_list.push_back(Move(f6, g8, 0));
-    move_list.push_back(Move(g1, f3, 0));
-    move_list.push_back(Move(g8, f6, 0));
-    move_list.push_back(Move(f3, g1, 0));
-    move_list.push_back(Move(f6, g8, 0));
-    move_list.push_back(Move(g1, f3, 0));
-    move_list.push_back(Move(g8, f6, 0));
-    move_list.push_back(Move(f3, g1, 0));
-    move_list.push_back(Move(f6, g8, 0));
-
-    std::cout << board.hash << "\n";
 
     // Board board("rnb1kbnr/2q5/1p3p1p/p3p1P1/P6p/BPP4P/3P1P2/RN1QKB1R b KQkq - 0 17");
     // Move move(h6, g5, CAPTURES);

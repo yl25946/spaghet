@@ -182,6 +182,18 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         // std::cout << "threefold repetition" << "\n";
         return 0;
     }
+
+    // we check if the TT has seen this before
+    TT_Entry entry = transposition_table.get(board);
+
+    uint8_t tt_flag = entry.flag();
+
+    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    {
+        return entry.score;
+    }
+
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
 
@@ -191,7 +203,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     uint8_t legal_moves = 0;
 
-    // int best_eval = INT32_MIN;
+    // used to detected whether we have a fail low (we did not exceed alpha cutoff)
+    const int original_alpha = alpha;
+
     Move best_move;
 
     for (int i = 0; i < move_list.size(); ++i)
@@ -220,6 +234,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
         if (current_eval >= beta)
         {
+            // add in TT entry
+            transposition_table.insert(board, best_move, current_eval, depth, age, BOUND::FAIL_HIGH);
+
             return current_eval; // fail soft
         }
 
@@ -248,6 +265,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // {
     this->current_depth_best_move = best_move;
     // }
+
+    // add to TT
+    transposition_table.insert(board, best_move, alpha, depth, age, alpha == original_alpha ? BOUND::FAIL_LOW : BOUND::EXACT);
 
     return alpha;
 }

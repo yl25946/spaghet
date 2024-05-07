@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-enum move_flags
+enum MOVE_FLAG
 {
     QUIET_MOVE,
     DOUBLE_PAWN_PUSH,
@@ -29,7 +29,7 @@ public:
     uint16_t info;
 
     // undefined behavior, do not use
-    Move(){};
+    Move() {};
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 
@@ -37,7 +37,24 @@ public:
     uint8_t to_square();
     uint8_t move_flag();
 
+    // bool is_null_move();
+
     // uci compliant
     std::string to_string();
     void print();
+};
+
+class OrderedMove : public Move
+{
+public:
+    // Move move;
+    // value of the move for sorting
+    uint16_t value = 0;
+
+    // default constructor, creates a null move with value 0
+    OrderedMove();
+    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
+    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
+
+    // std::string to_string();
 };

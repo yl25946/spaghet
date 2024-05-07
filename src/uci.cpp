@@ -89,6 +89,7 @@ void UCI_loop()
     std::vector<Move> move_list;
     int hash_size = 16;
     uint32_t age = 0;
+    TranspositionTable transposition_table(hash_size);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
@@ -128,7 +129,7 @@ void UCI_loop()
 
             Time time(line);
 
-            Searcher searcher(board, move_list);
+            Searcher searcher(board, move_list, transposition_table, age);
 
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
@@ -141,17 +142,24 @@ void UCI_loop()
 
             // starts searching
             searcher.search();
+
+            // now that we've called go once, we can increase the age
+            ++age;
         }
-        else if (!line.compare(0, 4, "Option Hash"))
+        else if (!line.compare(0, 11, "Option Hash"))
         {
-            // no op because no tt
+            hash_size = std::stoi(line.substr(12));
+            // std::cout << hash_size << "\n";
+            transposition_table.resize(hash_size);
         }
         else if (!line.compare(0, 7, "Threads"))
         {
             // no op because no multithreading
         }
         else if (!line.compare(0, 10, "ucinewgame"))
-        { // no op right now
+        {
+            age = 0;
+            transposition_table = TranspositionTable(hash_size);
         }
         else if (!line.compare(0, 3, "uci"))
         {

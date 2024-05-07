@@ -274,6 +274,30 @@ bool Board::is_in_check()
     return is_square_attacked(lsb(bitboard(WHITE_KING + side_to_move)), (side_to_move ^ 1));
 }
 
+// bitshift to the right (>>) the file number
+uint64_t can_double_pawn_push;
+
+bool Board::is_pseudolegal(Move move) const
+{
+    uint8_t source_square = move.from_square();
+    uint8_t target_square = move.to_square();
+
+    if (MOVE_FLAG::QUIET_MOVE)
+    {
+        return mailbox[source_square] == NO_PIECE;
+    }
+    else if (MOVE_FLAG::DOUBLE_PAWN_PUSH)
+    {
+        // since pawn value = 0, it is basically just side to move
+        if (mailbox[source_square] != side_to_move)
+            return false;
+
+        uint8_t pawn_file = file(source_square);
+    }
+
+    return false;
+}
+
 bool Board::was_legal() const
 {
     return !(is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move));

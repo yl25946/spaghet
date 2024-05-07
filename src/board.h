@@ -51,6 +51,9 @@ public:
     // checks whether a given square is attacked by the given side
     bool is_square_attacked(uint8_t square, uint8_t side_attacking) const;
 
+    // checks if a move is pseudolegal
+    bool is_pseudolegal(Move move) const;
+
     // checks after a move if we have a valid board state
     // if white is checking the king while it's white's turn to move, we lose
     bool was_legal() const;
