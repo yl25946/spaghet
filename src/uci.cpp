@@ -138,7 +138,7 @@ void UCI_loop()
 
             // std::cout << searcher.board.hash << "\n";
 
-            perft_debug(searcher.board, 1, 1);
+            // perft_debug(searcher.board, 1, 1);
 
             // starts searching
             searcher.search();
@@ -146,13 +146,13 @@ void UCI_loop()
             // now that we've called go once, we can increase the age
             ++age;
         }
-        else if (!line.compare(0, 11, "Option Hash"))
+        else if (!line.compare(0, 11, "option Hash"))
         {
             hash_size = std::stoi(line.substr(12));
             // std::cout << hash_size << "\n";
             transposition_table.resize(hash_size);
         }
-        else if (!line.compare(0, 7, "Threads"))
+        else if (!line.compare(0, 14, "option Threads"))
         {
             // no op because no multithreading
         }
