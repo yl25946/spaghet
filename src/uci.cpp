@@ -138,7 +138,7 @@ void UCI_loop()
 
             // std::cout << searcher.board.hash << "\n";
 
-            // perft_debug(searcher.board, 1, 1);
+            perft_debug(searcher.board, 1, 1);
 
             // starts searching
             searcher.search();

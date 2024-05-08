@@ -19,7 +19,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
 
     uint64_t bitboard, attacks, blocking_pieces = board.blockers();
 
-    // generate pawn moves and castle moves
+    // generate pawn moves and capture moves
     uint64_t promotions;
     uint64_t quiet_moves;
     uint64_t captures;

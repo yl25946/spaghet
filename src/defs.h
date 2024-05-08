@@ -41,7 +41,7 @@ extern std::string repetitions;
 #define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
-#define colored_to_uncolored(piece) (piece / 2)
+#define colored_to_uncolored(piece) (piece >> 1)
 
 // board squares
 enum square

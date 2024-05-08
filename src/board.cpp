@@ -274,27 +274,112 @@ bool Board::is_in_check()
     return is_square_attacked(lsb(bitboard(WHITE_KING + side_to_move)), (side_to_move ^ 1));
 }
 
-// bitshift to the right (>>) the file number
-uint64_t can_double_pawn_push;
+// bitshift to the left (<<) the file number
+const uint64_t can_white_double_pawn_push = 0x1010000000000;
+const uint64_t can_black_double_pawn_push = 0x10100;
 
 bool Board::is_pseudolegal(Move move) const
 {
     uint8_t source_square = move.from_square();
     uint8_t target_square = move.to_square();
+    uint8_t move_flag = move.move_flag();
+    uint8_t piece = mailbox[source_square];
+    uint64_t blocking_pieces = this->blockers();
 
-    if (MOVE_FLAG::QUIET_MOVE)
+    // if the piece doesn't exist ofc it won't work
+    if (piece == NO_PIECE)
+        return false;
+
+    // if the piece isn't the right color
+    if ((piece & 1) != side_to_move)
+        return false;
+
+    if ((colored_to_uncolored(mailbox[source_square] == PAWN) && move_flag == MOVE_FLAG::QUIET_MOVE))
     {
-        return mailbox[source_square] == NO_PIECE;
+        return mailbox[target_square] == NO_PIECE;
     }
-    else if (MOVE_FLAG::DOUBLE_PAWN_PUSH)
+
+    // it is a pawn, we have to generate attacks separately
+    if (piece <= 1)
     {
-        // since pawn value = 0, it is basically just side to move
-        if (mailbox[source_square] != side_to_move)
-            return false;
-
-        uint8_t pawn_file = file(source_square);
+        return pawn_attacks[piece][source_square] & blocking_pieces;
     }
 
+    // special cases for us to deal with separately
+    switch (move_flag)
+    {
+        // case MOVE_FLAG::QUIET_MOVE:
+        //     return mailbox[source_square] == NO_PIECE;
+
+    case MOVE_FLAG::DOUBLE_PAWN_PUSH:
+        if (side_to_move == WHITE)
+        {
+            // since pawn value = 0, it is basically just side to move
+            if (mailbox[source_square] != WHITE_PAWN)
+                return false;
+
+            uint8_t pawn_file = file(source_square);
+
+            return blocking_pieces & (can_white_double_pawn_push << pawn_file);
+        }
+        else
+        {
+            // since pawn value = 0, it is basically just side to move
+            if (mailbox[source_square] != WHITE_PAWN)
+                return false;
+
+            uint8_t pawn_file = file(source_square);
+
+            return blocking_pieces & (can_black_double_pawn_push << pawn_file);
+        }
+
+    case MOVE_FLAG::KING_CASTLE:
+        if ((side_to_move == WHITE) && (rights & WHITE_KING_CASTLE) && !(blocking_pieces & 0x6000000000000000ULL) && !is_square_attacked(e1, side_to_move ^ 1) && !is_square_attacked(f1, side_to_move ^ 1) && !is_square_attacked(g1, side_to_move ^ 1))
+            return true;
+        else if ((rights & BLACK_KING_CASTLE) && !(blocking_pieces & 0x60ULL) && !is_square_attacked(e8, side_to_move ^ 1) && !is_square_attacked(f8, side_to_move ^ 1) && !is_square_attacked(g8, side_to_move ^ 1))
+            return true;
+
+        // cannot king castle
+        return false;
+
+    case MOVE_FLAG::QUEEN_CASTLE:
+        if ((side_to_move == WHITE) && (rights & WHITE_QUEEN_CASTLE) && !(blocking_pieces & 0xe00000000000000ULL) && !is_square_attacked(e1, side_to_move ^ 1) && !is_square_attacked(d1, side_to_move ^ 1) && !is_square_attacked(c1, side_to_move ^ 1))
+            return true;
+        else if ((rights & BLACK_QUEEN_CASTLE) && !(blocking_pieces & 0xeULL) && !is_square_attacked(e8, side_to_move ^ 1) && !is_square_attacked(d8, side_to_move ^ 1) && !is_square_attacked(c8, side_to_move ^ 1))
+            return true;
+
+        return false;
+    // none of the special cases
+    default:
+        break;
+    }
+
+    // we can just generate bitboard attacks
+    // we actually don't care if it's a capture or not, we just need to guarentee that a piece is able to move there
+    piece = colored_to_uncolored(piece);
+
+    switch (piece)
+    {
+    case BITBOARD_PIECES::KNIGHT:
+        return knight_attacks[source_square] & (1 << target_square);
+
+    case BITBOARD_PIECES::KING:
+        return king_attacks[source_square] & (1 << target_square);
+
+    case BITBOARD_PIECES::BISHOP:
+        return get_bishop_attacks(source_square, blocking_pieces) & (1 << target_square);
+
+    case BITBOARD_PIECES::ROOK:
+        return get_rook_attacks(source_square, blocking_pieces) & (1 << target_square);
+
+    case BITBOARD_PIECES::QUEEN:
+        return get_queen_attacks(source_square, blocking_pieces) & (1 << target_square);
+
+    default:
+        break;
+    }
+
+    // if you ended up here, something went wrong
     return false;
 }
 

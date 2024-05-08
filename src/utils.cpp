@@ -56,3 +56,8 @@ uint8_t file(uint8_t square)
 {
     return square & 7;
 }
+
+uint8_t rank(uint8_t square)
+{
+    return square >> 3;
+}
