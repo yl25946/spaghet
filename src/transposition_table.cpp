@@ -6,7 +6,7 @@ TT_Entry::TT_Entry()
 {
 }
 
-TT_Entry::TT_Entry(const Board &board, Move best_move, uint16_t score, uint8_t depth, uint32_t age, uint8_t flag)
+TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint32_t age, uint8_t flag)
 {
     this->hash = board.hash;
     this->best_move = best_move;
@@ -57,7 +57,7 @@ void TranspositionTable::resize(uint64_t size)
     hashtable.resize(tt_entry_count);
 }
 
-void TranspositionTable::insert(const Board &board, Move best_move, uint16_t best_score, uint8_t depth, uint32_t age, uint8_t flag)
+void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, uint8_t depth, uint32_t age, uint8_t flag)
 {
     uint64_t hash_location = board.hash % hashtable.size();
 
@@ -74,7 +74,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, uint16_t bes
 //     return entry.hash == hash;
 // }
 
-TT_Entry &TranspositionTable::get(const Board &board)
+TT_Entry &TranspositionTable::probe(const Board &board)
 {
     uint64_t hash_location = board.hash % hashtable.size();
 

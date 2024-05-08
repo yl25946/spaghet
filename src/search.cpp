@@ -180,8 +180,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         return 0;
     }
 
+    // duct tape solution until we implement pv nodes
+    bool in_pv_node = beta - alpha > 1;
+
     // we check if the TT has seen this before
-    TT_Entry entry = transposition_table.get(board);
+    TT_Entry entry = transposition_table.probe(board);
 
     uint8_t tt_flag = entry.flag();
 
@@ -220,6 +223,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // used to detected whether we have a fail low (we did not exceed alpha cutoff)
     const int original_alpha = alpha;
 
+    int best_eval = INT32_MIN;
     Move best_move;
 
     for (int i = 0; i < move_list.size(); ++i)
@@ -246,18 +250,21 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (stopped)
             return 0;
 
-        if (current_eval >= beta)
+        if (current_eval > best_eval)
         {
-            // add in TT entry
-            transposition_table.insert(board, curr_move, current_eval, depth, age, BOUND::FAIL_HIGH);
+            best_eval = current_eval;
 
-            return current_eval; // fail soft
-        }
+            if (current_eval > alpha)
+            {
+                best_move = curr_move;
+                this->current_depth_best_move = best_move;
+            }
 
-        if (current_eval > alpha)
-        {
             alpha = current_eval;
-            best_move = curr_move;
+            if (alpha >= beta)
+            {
+                break;
+            }
         }
     }
 
@@ -281,9 +288,22 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // }
 
     // add to TT
-    transposition_table.insert(board, best_move, alpha, depth, age, alpha == original_alpha ? BOUND::FAIL_LOW : BOUND::EXACT);
+    uint8_t bound_flag = BOUND::EXACT;
 
-    return alpha;
+    if (alpha >= beta)
+    {
+        // beta cutoff, fail high
+        bound_flag = BOUND::FAIL_HIGH;
+    }
+    else if (alpha <= original_alpha)
+    {
+        // failed to raise alpha, fail low
+        bound_flag = BOUND::FAIL_LOW;
+    }
+
+    transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
+
+    return best_eval;
 }
 
 void Searcher::search()
