@@ -331,7 +331,7 @@ void Searcher::search()
 
         best_move = this->current_depth_best_move;
 
-        time_elapsed = std::max(get_time() - start_time, 1ULL);
+        time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
     }
