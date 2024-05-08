@@ -308,8 +308,8 @@ bool Board::is_pseudolegal(Move move) const
     // special cases for us to deal with separately
     switch (move_flag)
     {
-        // case MOVE_FLAG::QUIET_MOVE:
-        //     return mailbox[source_square] == NO_PIECE;
+    case MOVE_FLAG::EN_PASSANT_CAPTURE:
+        return target_square == en_passant_square;
 
     case MOVE_FLAG::DOUBLE_PAWN_PUSH:
         if (side_to_move == WHITE)
@@ -354,6 +354,10 @@ bool Board::is_pseudolegal(Move move) const
         break;
     }
 
+    // check that a capture is valid
+    if ((move_flag & CAPTURES) && (mailbox[target_square] == NO_PIECE))
+        return false;
+
     // we can just generate bitboard attacks
     // we actually don't care if it's a capture or not, we just need to guarentee that a piece is able to move there
     piece = colored_to_uncolored(piece);
@@ -361,19 +365,19 @@ bool Board::is_pseudolegal(Move move) const
     switch (piece)
     {
     case BITBOARD_PIECES::KNIGHT:
-        return knight_attacks[source_square] & (1 << target_square);
+        return knight_attacks[source_square] & (1ULL << target_square);
 
     case BITBOARD_PIECES::KING:
-        return king_attacks[source_square] & (1 << target_square);
+        return king_attacks[source_square] & (1ULL << target_square);
 
     case BITBOARD_PIECES::BISHOP:
-        return get_bishop_attacks(source_square, blocking_pieces) & (1 << target_square);
+        return get_bishop_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
     case BITBOARD_PIECES::ROOK:
-        return get_rook_attacks(source_square, blocking_pieces) & (1 << target_square);
+        return get_rook_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
     case BITBOARD_PIECES::QUEEN:
-        return get_queen_attacks(source_square, blocking_pieces) & (1 << target_square);
+        return get_queen_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
     default:
         break;
