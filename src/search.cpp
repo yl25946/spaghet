@@ -256,11 +256,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
             if (current_eval > alpha)
             {
+                alpha = current_eval;
                 best_move = curr_move;
                 this->current_depth_best_move = best_move;
             }
 
-            alpha = current_eval;
             if (alpha >= beta)
             {
                 break;
