@@ -283,8 +283,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         bound_flag = BOUND::FAIL_LOW;
     }
 
-    // if (best_eval != INT32_MIN)
-    transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
+    if (best_eval != (-INF - 1))
+        transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
 
     return best_eval;
 }
