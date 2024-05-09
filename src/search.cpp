@@ -106,6 +106,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     if (alpha < stand_pat)
         alpha = stand_pat;
 
+    int best_eval = stand_pat;
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
@@ -135,7 +136,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 
         if (current_eval > stand_pat)
         {
-            stand_pat = current_eval;
+            best_eval = current_eval;
 
             // ++capture_moves;
 
@@ -154,7 +155,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     //     return evaluate(board);
 
     // TODO: add check moves
-    return stand_pat;
+    return best_eval;
 }
 
 int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
