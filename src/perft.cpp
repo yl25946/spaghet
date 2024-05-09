@@ -29,7 +29,7 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
     {
         Board test(board.fen());
         if (test.hash != board.hash)
-            std::cout << "Zobrist hash does not match";
+            std::cout << board.fen() << " " << board.hash << " " << test.hash << "\n";
         return 1ULL;
     }
 

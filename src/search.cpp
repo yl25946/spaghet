@@ -73,7 +73,9 @@ bool Searcher::threefold(Board &board)
     // index of the last element of the array
     int last_element_index = threefold_repetition.size() - 1;
 
-    for (int i = 4; i <= board.fifty_move_counter; i += 2)
+    int threefold_max_it = std::min((size_t)board.fifty_move_counter, threefold_repetition.size() - 1);
+
+    for (int i = 4; i <= threefold_max_it; i += 2)
     {
         if (hash == threefold_repetition[last_element_index - i])
             ++matching_positions;

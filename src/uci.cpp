@@ -133,7 +133,7 @@ void UCI_loop()
 
             // searcher.board.print();
 
-            // std::cout << searcher.board.hash << "\n";
+            std::cout << searcher.board.hash << "\n";
 
             // perft_debug(searcher.board, 1, 1);
 
