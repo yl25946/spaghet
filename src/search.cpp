@@ -188,7 +188,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.score;
     }
