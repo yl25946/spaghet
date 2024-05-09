@@ -51,8 +51,8 @@ public:
     // value of the move for sorting
     uint16_t value = 0;
 
-    // default constructor, creates a null move with value 0
-    OrderedMove();
+    // undefined behavior, do not use
+    OrderedMove() {};
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
 

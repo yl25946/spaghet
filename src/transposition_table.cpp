@@ -4,7 +4,7 @@ uint64_t megabytes_to_bytes = 1 << 20;
 
 TT_Entry::TT_Entry()
 {
-    hash = 0;
+    // hash = 0;
     flag_and_age = BOUND::NONE;
 }
 

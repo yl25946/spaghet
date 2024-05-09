@@ -38,8 +38,8 @@ void Move::print()
     std::cout << to_string();
 }
 
-OrderedMove::OrderedMove() : Move() {
-                             };
+// OrderedMove::OrderedMove() : Move() {
+//                              };
 
 OrderedMove::OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag) : Move(from, to, move_flag)
 {
