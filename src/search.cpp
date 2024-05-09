@@ -253,7 +253,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     this->current_depth_best_move = best_move;
     // }
 
-    return alpha;
+    return best_eval;
 }
 
 void Searcher::search()
