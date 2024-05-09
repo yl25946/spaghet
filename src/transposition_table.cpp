@@ -31,8 +31,8 @@ uint8_t TT_Entry::age()
 bool TT_Entry::can_use_score(int alpha, int beta)
 {
     uint8_t bound_flag = this->flag();
-    return score != BOUND::NONE && (bound_flag == BOUND::FAIL_LOW && score <= alpha ||
-                                    bound_flag == BOUND::FAIL_HIGH && score >= beta || bound_flag == BOUND::EXACT);
+    return score != BOUND::NONE && ((bound_flag == BOUND::FAIL_LOW && score <= alpha) ||
+                                    (bound_flag == BOUND::FAIL_HIGH && score >= beta) || bound_flag == BOUND::EXACT);
 }
 
 TranspositionTable::TranspositionTable(uint64_t size)
