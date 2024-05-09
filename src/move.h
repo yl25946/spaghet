@@ -49,7 +49,7 @@ class OrderedMove : public Move
 public:
     // Move move;
     // value of the move for sorting
-    uint16_t value = 0;
+    uint16_t value;
 
     // undefined behavior, do not use
     OrderedMove() {};

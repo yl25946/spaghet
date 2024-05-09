@@ -188,27 +188,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    // if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth && !in_pv_node)
-    // {
-    //     // we see if the move is legal
-    //     // Move move = entry.best_move;
-
-    //     // // tests if it is pseudolegal
-    //     // if (board.is_pseudolegal(move))
-    //     // {
-    //     // checks if it is legal
-    //     // Board copy = board;
-    //     // copy.make_move(move);
-
-    //     // if (copy.was_legal())
-    //     // {
-    //     //     current_depth_best_move = move;
-    //     return entry.score;
-    //     // }
-    //     // }
-
-    //     // continue with the search if it isn't a legal move
-    // }
+    if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth && !in_pv_node)
+    {
+        return entry.score;
+    }
 
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
@@ -288,18 +271,18 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
 
-    // if (alpha >= beta)
-    // {
-    //     // beta cutoff, fail high
-    //     bound_flag = BOUND::FAIL_HIGH;
-    // }
-    // else if (alpha <= original_alpha)
-    // {
-    //     // failed to raise alpha, fail low
-    //     bound_flag = BOUND::FAIL_LOW;
-    // }
+    if (alpha >= beta)
+    {
+        // beta cutoff, fail high
+        bound_flag = BOUND::FAIL_HIGH;
+    }
+    else if (alpha <= original_alpha)
+    {
+        // failed to raise alpha, fail low
+        bound_flag = BOUND::FAIL_LOW;
+    }
 
-    // transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
+    transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
 
     return best_eval;
 }

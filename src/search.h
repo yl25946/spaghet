@@ -24,7 +24,7 @@ public:
     TranspositionTable &transposition_table;
 
     // tracks how many times we've called "go" command to check age in TT
-    uint32_t age = 0;
+    uint32_t age;
 
     Move current_depth_best_move;
     // Move best_move;
@@ -32,13 +32,13 @@ public:
     bool stopped = false;
 
     // start time of the current id so we can calculate nps
-    uint64_t start_time = 0;
-    uint64_t end_time = 0;
+    uint64_t start_time;
+    uint64_t end_time;
 
     int curr_depth = 0;
 
     // represents the number of nodes for a depths search
-    uint64_t current_depth_node_count = 0;
+    uint64_t current_depth_node_count;
     uint64_t total_nodes = 0;
 
     // Searcher();

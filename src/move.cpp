@@ -43,6 +43,7 @@ void Move::print()
 
 OrderedMove::OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag) : Move(from, to, move_flag)
 {
+    this->value = 0;
 }
 
 OrderedMove::OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value) : Move(from, to, move_flag)
