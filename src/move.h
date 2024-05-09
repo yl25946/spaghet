@@ -28,8 +28,8 @@ class Move
 public:
     uint16_t info;
 
-    // undefined behavior, do not use
-    Move(){};
+    // creates a null move
+    Move();
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 

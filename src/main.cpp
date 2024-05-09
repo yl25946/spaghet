@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
     // Searcher searcher(board, move_list);
 
-    std::cout << searcher.threefold(board);
+    // std::cout << searcher.threefold(board);
 
     // Board board("rnb1kbnr/2q5/1p3p1p/p3p1P1/P6p/BPP4P/3P1P2/RN1QKB1R b KQkq - 0 17");
     // Move move(h6, g5, CAPTURES);
