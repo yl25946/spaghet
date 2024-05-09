@@ -1,35 +1,5 @@
 #include "attacks.h"
 
-// taken from
-/*
-     not A file          not H file         not HG files      not AB files
-      bitboard            bitboard            bitboard          bitboard
-
- 8  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 7  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 6  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 5  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 4  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 3  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 2  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
- 1  0 1 1 1 1 1 1 1    1 1 1 1 1 1 1 0    1 1 1 1 1 1 0 0    0 0 1 1 1 1 1 1
-
-    a b c d e f g h    a b c d e f g h    a b c d e f g h    a b c d e f g h
-
-*/
-
-// not A file constant
-const uint64_t NOT_A_FILE = 18374403900871474942ULL;
-
-// not H file constant
-const uint64_t NOT_H_FILE = 9187201950435737471ULL;
-
-// not HG file constant
-const uint64_t NOT_HG_FILE = 4557430888798830399ULL;
-
-// not AB file constant
-const uint64_t NOT_AB_FILE = 18229723555195321596ULL;
-
 // pawn attacks table [side][square]
 uint64_t pawn_attacks[2][64];
 

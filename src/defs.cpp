@@ -68,12 +68,6 @@ const char *square_to_coordinate[] = {
     "h1",
 };
 
-const char ascii_pieces[] = "PpNnBbRrQqKk";
-
-const char *unicode_pieces[12] = {
-    "♙", "♟︎", "♘", "♞", "♗", "♝", "♖", "♜", "♕", "♛", "♔", "♚"};
-
-// convert ASCII character pieces to encoded constants
 std::map<char, uint8_t> char_pieces = {
     {'P', P}, {'N', N}, {'B', B}, {'R', R}, {'Q', Q}, {'K', K}, {'p', p}, {'n', n}, {'b', b}, {'r', r}, {'q', q}, {'k', k}};
 

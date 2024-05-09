@@ -1,6 +1,6 @@
 #include "board.h"
 
-const uint8_t castling_rights[64] = {
+constexpr uint8_t castling_rights[64] = {
     7, 15, 15, 15, 3, 15, 15, 11,
     15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15,
@@ -277,8 +277,8 @@ bool Board::is_in_check()
 }
 
 // bitshift to the left (<<) the file number
-const uint64_t can_white_double_pawn_push = 0x1010000000000;
-const uint64_t can_black_double_pawn_push = 0x10100;
+constexpr uint64_t can_white_double_pawn_push = 0x1010000000000;
+constexpr uint64_t can_black_double_pawn_push = 0x10100;
 
 bool Board::is_pseudolegal(Move move) const
 {

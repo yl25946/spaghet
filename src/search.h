@@ -7,7 +7,7 @@
 #include "movegen.h"
 #include "transposition_table.h"
 
-const uint64_t check_count = 4096;
+constexpr uint64_t check_count = 4096;
 
 // tracking the max depth across the engine
 extern int max_depth;

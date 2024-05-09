@@ -204,7 +204,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     const int original_alpha = alpha;
 
-    int best_eval = INT32_MIN;
+    int best_eval = -INF - 1;
     Move best_move;
 
     for (int i = 0; i < move_list.size(); ++i)
@@ -254,7 +254,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (board.is_in_check())
         {
             // prioritize faster mates
-            return -30000 + ply;
+            // mate scores start at -29999 due to how my engine functions
+            return -INF + ply;
         }
         else
         {
@@ -282,6 +283,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         bound_flag = BOUND::FAIL_LOW;
     }
 
+    // if (best_eval != INT32_MIN)
     transposition_table.insert(board, best_move, best_eval, depth, age, bound_flag);
 
     return best_eval;
@@ -316,8 +318,7 @@ void Searcher::search()
         this->start_time = get_time();
 
         Board copy = board;
-
-        best_score = negamax(copy, -30000, 30000, curr_depth, 0);
+        best_score = negamax(copy, -INF, INF, curr_depth, 0);
 
         // update the total node count
         total_nodes += current_depth_node_count;

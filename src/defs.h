@@ -43,6 +43,9 @@ extern std::string repetitions;
 
 #define colored_to_uncolored(piece) (piece >> 1)
 
+// highest possible score in engine
+constexpr int16_t INF = 30000;
+
 // board squares
 enum square
 {
@@ -113,15 +116,7 @@ enum square
     no_square,
 };
 
-// convert squares to coordinates
-extern const char *square_to_coordinate[];
-extern const char ascii_pieces[];
-// extern const char *unicode_pieces[];
-extern std::map<char, uint8_t> char_pieces;
-
-// encode pieces
-// NOTE: this enum and the enum Pieces enum are the same, it is okay to mix and match
-enum
+enum CHAR_PIECES
 {
     P,
     p,
@@ -136,6 +131,15 @@ enum
     K,
     k,
 };
+
+// convert squares to coordinates
+extern const char *square_to_coordinate[];
+constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
+// constexpr char *unicode_pieces[12] = {
+//     "♙", "♟︎", "♘", "♞", "♗", "♝", "♖", "♜", "♕", "♛", "♔", "♚"};
+
+// convert ASCII character pieces to encoded constants
+extern std::map<char, uint8_t> char_pieces;
 
 // sides to move (colors)
 enum COLOR

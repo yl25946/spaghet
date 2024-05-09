@@ -21,7 +21,7 @@ enum MOVE_FLAG
 };
 
 // use this to check if it is a promotion
-const uint8_t PROMOTION = 8;
+constexpr uint8_t PROMOTION = 8;
 
 class Move
 {
