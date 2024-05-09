@@ -188,7 +188,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth && !in_pv_node)
     {
         // we see if the move is legal
         // Move move = entry.best_move;

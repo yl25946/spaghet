@@ -5,6 +5,7 @@ uint64_t megabytes_to_bytes = 1 << 20;
 TT_Entry::TT_Entry()
 {
     hash = 0;
+    flag_and_age = BOUND::NONE;
 }
 
 TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint32_t age, uint8_t flag)
@@ -32,8 +33,8 @@ uint8_t TT_Entry::age()
 bool TT_Entry::can_use_score(int alpha, int beta)
 {
     uint8_t bound_flag = this->flag();
-    return score != BOUND::NONE && ((bound_flag == BOUND::FAIL_LOW && score <= alpha) ||
-                                    (bound_flag == BOUND::FAIL_HIGH && score >= beta) || bound_flag == BOUND::EXACT);
+    return ((bound_flag == BOUND::FAIL_LOW && score <= alpha) ||
+            (bound_flag == BOUND::FAIL_HIGH && score >= beta) || bound_flag == BOUND::EXACT);
 }
 
 TranspositionTable::TranspositionTable(uint64_t size)
