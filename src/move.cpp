@@ -1,5 +1,9 @@
 #include "move.h"
 
+// Move::Move()
+// {
+//     // info = 0;
+// }
 Move::Move(uint8_t from, uint8_t to, uint8_t move_flag)
 {
     info = (move_flag << 12) | (from << 6) | to;
