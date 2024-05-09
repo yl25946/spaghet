@@ -105,6 +105,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     if (alpha < stand_pat)
         alpha = stand_pat;
 
+    int best_eval = stand_pat;
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
@@ -132,20 +133,19 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (stopped)
             return 0;
 
-        if (current_eval > stand_pat)
+        if (current_eval > best_eval)
         {
-            stand_pat = current_eval;
+            best_eval = current_eval;
 
             // ++capture_moves;
 
             if (current_eval > alpha)
             {
                 alpha = current_eval;
-
-                if (current_eval >= beta)
-                {
-                    return current_eval; // fail soft
-                }
+            }
+            if (alpha >= beta)
+            {
+                break; // fail soft
             }
         }
     }
@@ -154,7 +154,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     //     return evaluate(board);
 
     // TODO: add check moves
-    return alpha;
+    return best_eval;
 }
 
 int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
@@ -185,8 +185,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // we check if the TT has seen this before
     TT_Entry entry = transposition_table.probe(board);
-
-    uint8_t tt_flag = entry.flag();
 
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
@@ -220,7 +218,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     uint8_t legal_moves = 0;
 
-    // used to detected whether we have a fail low (we did not exceed alpha cutoff)
     const int original_alpha = alpha;
 
     int best_eval = INT32_MIN;
@@ -250,6 +247,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (stopped)
             return 0;
 
+        // fail soft framework
         if (current_eval > best_eval)
         {
             best_eval = current_eval;

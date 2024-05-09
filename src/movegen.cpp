@@ -203,11 +203,10 @@ void generate_pawn_capture_moves(Board &board, MoveList &move_list)
     uint8_t source_square;
     uint8_t target_square;
 
-    uint64_t bitboard, attacks, blocking_pieces = board.blockers();
+    uint64_t bitboard, attacks;
 
     // generate pawn moves and castle moves
     uint64_t promotions;
-    uint64_t quiet_moves;
     uint64_t captures;
 
     if (board.side_to_move == WHITE)

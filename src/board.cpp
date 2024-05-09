@@ -21,7 +21,7 @@ Board::Board(const std::string &fen)
     pieces.fill(0);
     colors.fill(0);
 
-    int char_it = 0;
+    size_t char_it = 0;
     uint8_t square = 0;
     // we break this whenever we get a space
     while (fen[char_it] != ' ')
@@ -149,7 +149,7 @@ std::string Board::fen() const
 {
     std::string fen = "";
 
-    int no_piece_counter;
+    int no_piece_counter = 0;
 
     for (int rank = 0; rank < 8; ++rank)
     {
@@ -163,7 +163,9 @@ std::string Board::fen() const
             else
             {
                 if (no_piece_counter != 0)
+                {
                     fen += (char)(no_piece_counter + '0');
+                }
 
                 fen += ascii_pieces[piece];
 
@@ -443,6 +445,8 @@ void Board::make_move(Move move)
     mailbox[target_square] = move_piece_type;
 
     // updates the hash
+    // std::cout << ascii_pieces[move_piece_type] << " " << square_to_coordinate[source_square] << square_to_coordinate[target_square];
+
     hash ^= zobrist_pieces[move_piece_type][source_square];
     hash ^= zobrist_pieces[move_piece_type][target_square];
 
@@ -469,13 +473,17 @@ void Board::make_move(Move move)
         // updates en_passant
         en_passant_square = target_square + (side_to_move == WHITE ? 8 : -8);
 
+        // std::cout << "here";
+
         hash ^= zobrist_en_passant[file(en_passant_square)];
     }
     else
     {
         // if there previous was an en_passant square, we can just get rid of it
         if (en_passant_square != no_square)
+        {
             hash ^= zobrist_en_passant[file(en_passant_square)];
+        }
 
         en_passant_square = no_square;
     }
