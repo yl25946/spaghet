@@ -186,25 +186,26 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // we check if the TT has seen this before
     TT_Entry entry = transposition_table.probe(board);
 
+    // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         // we see if the move is legal
-        Move move = entry.best_move;
+        // Move move = entry.best_move;
 
-        // tests if it is pseudolegal
-        if (board.is_pseudolegal(move))
-        {
-            // checks if it is legal
-            Board copy = board;
-            copy.make_move(move);
+        // // tests if it is pseudolegal
+        // if (board.is_pseudolegal(move))
+        // {
+        // checks if it is legal
+        // Board copy = board;
+        // copy.make_move(move);
 
-            if (copy.was_legal())
-            {
-                current_depth_best_move = move;
-                return entry.score;
-            }
-        }
+        // if (copy.was_legal())
+        // {
+        //     current_depth_best_move = move;
+        return entry.score;
+        // }
+        // }
 
         // continue with the search if it isn't a legal move
     }
