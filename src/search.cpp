@@ -134,7 +134,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (stopped)
             return 0;
 
-        if (current_eval > stand_pat)
+        if (current_eval > best_eval)
         {
             best_eval = current_eval;
 
