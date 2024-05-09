@@ -4,6 +4,7 @@ uint64_t megabytes_to_bytes = 1 << 20;
 
 TT_Entry::TT_Entry()
 {
+    hash = 0;
 }
 
 TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint32_t age, uint8_t flag)
@@ -41,9 +42,10 @@ TranspositionTable::TranspositionTable(uint64_t size)
 
     uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
+    // size is now 0
     hashtable.clear();
 
-    this->hashtable.resize(tt_entry_count);
+    this->hashtable.resize(tt_entry_count, TT_Entry());
 }
 
 void TranspositionTable::resize(uint64_t size)
@@ -52,9 +54,10 @@ void TranspositionTable::resize(uint64_t size)
 
     uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
+    // size is now 0
     hashtable.clear();
 
-    hashtable.resize(tt_entry_count);
+    hashtable.resize(tt_entry_count, TT_Entry());
 }
 
 void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, uint8_t depth, uint32_t age, uint8_t flag)
