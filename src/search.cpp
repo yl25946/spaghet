@@ -190,7 +190,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
-        return entry.score;
+        return entry.usable_score(ply);
     }
 
     if (depth == 0)
@@ -254,7 +254,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (board.is_in_check())
         {
             // prioritize faster mates
-            // mate scores start at -29999 due to how my engine functions
             return -INF + ply;
         }
         else

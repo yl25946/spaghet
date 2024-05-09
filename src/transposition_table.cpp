@@ -2,6 +2,16 @@
 
 uint64_t megabytes_to_bytes = 1 << 20;
 
+// // ply is how deep we searched, max_ply is how deep we will actually go
+// int ttscore_to_score(int16_t tt_score, int ply)
+// {
+//     // max_mate is negative
+//     if (tt_score < MAX_MATE)
+//         return tt_score + ply;
+
+//     return tt_score;
+// }
+
 TT_Entry::TT_Entry()
 {
     // hash = 0;
@@ -20,21 +30,29 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t de
     this->flag_and_age = (modular_move_counter << 2) | flag;
 }
 
-uint8_t TT_Entry::flag()
+uint8_t TT_Entry::flag() const
 {
     return this->flag_and_age & 3;
 }
 
-uint8_t TT_Entry::age()
+uint8_t TT_Entry::age() const
 {
     return this->flag_and_age >> 2;
 }
 
-bool TT_Entry::can_use_score(int alpha, int beta)
+bool TT_Entry::can_use_score(int alpha, int beta) const
 {
     uint8_t bound_flag = this->flag();
     return ((bound_flag == BOUND::FAIL_LOW && score <= alpha) ||
             (bound_flag == BOUND::FAIL_HIGH && score >= beta) || bound_flag == BOUND::EXACT);
+}
+
+int16_t TT_Entry::usable_score(int ply) const
+{
+    if (score <= MAX_MATE_SCORE)
+        return score + ply;
+
+    return score;
 }
 
 TranspositionTable::TranspositionTable(uint64_t size)

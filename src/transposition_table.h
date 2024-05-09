@@ -4,6 +4,9 @@
 #include "board.h"
 #include "move.h"
 
+// allows us to convert mate scores into a usable format that we can use to detect checkmates
+int ttscore_to_score(uint16_t tt_score, int ply);
+
 class TT_Entry
 {
 public:
@@ -18,10 +21,12 @@ public:
     // dummy tt entry that allows us to find the size of the TT
     TT_Entry();
     TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint32_t age, uint8_t flag);
-    uint8_t flag();
+    uint8_t flag() const;
     // moded to 64
-    uint8_t age();
-    bool can_use_score(int alpha, int beta);
+    uint8_t age() const;
+    bool can_use_score(int alpha, int beta) const;
+    // converts the score into the TT into a score that can used to detect and play mates
+    int16_t usable_score(int ply) const;
 };
 
 class TranspositionTable

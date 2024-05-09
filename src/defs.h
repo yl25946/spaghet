@@ -45,6 +45,9 @@ extern std::string repetitions;
 
 // highest possible score in engine
 constexpr int16_t INF = 30000;
+constexpr uint16_t MAX_PLY = 255;
+// highest a mate can reach
+constexpr uint16_t MAX_MATE_SCORE = -INF + MAX_PLY;
 
 // board squares
 enum square
@@ -134,7 +137,7 @@ enum CHAR_PIECES
 
 // convert squares to coordinates
 // takes in an int (from enum) and converts it to a string
-constexpr std::string_view square_to_coordinate[] = {
+const std::string square_to_coordinate[] = {
     "a8",
     "b8",
     "c8",
