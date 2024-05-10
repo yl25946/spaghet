@@ -12,6 +12,9 @@ Chess engine based on BBC
 - PeSTO evaluation function
 - negamax search algorithm
 - alpha-beta pruning
+- quiescence search
+- Zobrist hashing
+- Transposition Tables
 
 # ELO Gainers
 Started from piece counting and standard negamax
