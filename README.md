@@ -23,6 +23,7 @@ Started from piece counting and standard negamax
 - Quiescence Search with Alpha-Beta (+324)
 - 3 fold detection with Zobrist Hashing (+14.7)
 - Transposition Table cutoffs (+17.3)
+- TT move ordering (+115)
 
 
 # Testing
