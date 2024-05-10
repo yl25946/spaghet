@@ -44,10 +44,12 @@ extern std::string repetitions;
 #define colored_to_uncolored(piece) (piece >> 1)
 
 // highest possible score in engine
-constexpr int16_t INF = 30000;
+constexpr uint16_t INF = 30000;
 constexpr uint16_t MAX_PLY = 255;
-// highest a mate can reach
-constexpr uint16_t MAX_MATE_SCORE = -INF + MAX_PLY;
+// the max the lowest a mate can reach
+constexpr int16_t MIN_MATE_SCORE = -INF + MAX_PLY;
+// the max the highest a mate can reach
+constexpr int16_t MAX_MATE_SCORE = INF - MAX_PLY;
 
 // board squares
 enum square
