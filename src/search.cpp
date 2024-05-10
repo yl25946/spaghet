@@ -109,13 +109,14 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
-    // move_list.print();
-    // std::cout << "\n";
+
+    // scores moves to order them
+    move_list.score(board, transposition_table);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        Move curr_move = move_list.moves[i];
+        Move curr_move = move_list.nextMove();
 
         copy.make_move(curr_move);
 
@@ -199,6 +200,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     generate_moves(board, move_list);
 
+    // scores moves to order them
+    move_list.score(board, transposition_table);
+
     uint8_t legal_moves = 0;
 
     const int original_alpha = alpha;
@@ -209,7 +213,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        Move curr_move = move_list.moves[i];
+        Move curr_move = move_list.nextMove();
         copy.make_move(curr_move);
 
         if (!copy.was_legal())
