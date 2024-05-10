@@ -180,10 +180,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         return 0;
     }
 
-    // duct tape solution until we implement pv nodes
     // bool in_pv_node = beta - alpha > 1;
 
-    // we check if the TT has seen this before
+    // // we check if the TT has seen this before
     TT_Entry entry = transposition_table.probe(board);
 
     // tt cutoff
