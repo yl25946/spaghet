@@ -181,7 +181,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     }
 
     // duct tape solution until we implement pv nodes
-    bool in_pv_node = beta - alpha > 1;
+    // bool in_pv_node = beta - alpha > 1;
 
     // we check if the TT has seen this before
     TT_Entry entry = transposition_table.probe(board);
@@ -190,7 +190,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
-        return entry.usable_score(ply);
+        return entry.score;
     }
 
     if (depth == 0)
