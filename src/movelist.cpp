@@ -52,41 +52,41 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
-        if (move_flag & PROMOTION)
-        {
-            switch (move_flag)
-            {
-            case MOVE_FLAG::QUEEN_PROMOTION_CAPTURE:
-                moves[i].value = INF - 1;
-                continue;
-            case MOVE_FLAG::QUEEN_PROMOTION:
-                moves[i].value = INF - 2;
-                continue;
-            case MOVE_FLAG::KNIGHT_PROMOTION_CAPTURE:
-                moves[i].value = INF - 3;
-                continue;
-            case MOVE_FLAG::KNIGHT_PROMOTION:
-                moves[i].value = INF - 4;
-                continue;
-            default:
-                break;
-            }
-        }
-        // if (move_flag & CAPTURES)
+        // if (move_flag & PROMOTION)
         // {
-        //     uint8_t source_square = current_move.from_square();
-        //     uint8_t target_square = current_move.to_square();
-
-        //     // use mvv-lva to find the move value
-
-        //     uint8_t attacking_piece = board.mailbox[source_square];
-        //     uint8_t captured_piece = board.mailbox[target_square];
-
-        //     moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece];
-
-        //     continue;
+        //     switch (move_flag)
+        //     {
+        //     case MOVE_FLAG::QUEEN_PROMOTION_CAPTURE:
+        //         moves[i].value = INF - 1;
+        //         continue;
+        //     case MOVE_FLAG::QUEEN_PROMOTION:
+        //         moves[i].value = INF - 2;
+        //         continue;
+        //     case MOVE_FLAG::KNIGHT_PROMOTION_CAPTURE:
+        //         moves[i].value = INF - 3;
+        //         continue;
+        //     case MOVE_FLAG::KNIGHT_PROMOTION:
+        //         moves[i].value = INF - 4;
+        //         continue;
+        //     default:
+        //         break;
+        //     }
         // }
-        // // TODO: add SEE
+        if (move_flag & CAPTURES)
+        {
+            uint8_t source_square = current_move.from_square();
+            uint8_t target_square = current_move.to_square();
+
+            // use mvv-lva to find the move value
+
+            uint8_t attacking_piece = board.mailbox[source_square];
+            uint8_t captured_piece = board.mailbox[target_square];
+
+            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece];
+
+            continue;
+        }
+        // TODO: add SEE
     }
 }
 
