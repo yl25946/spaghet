@@ -183,7 +183,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // bool in_pv_node = beta - alpha > 1;
 
     // // we check if the TT has seen this before
-    TT_Entry entry = transposition_table.probe(board);
+    TT_Entry &entry = transposition_table.probe(board);
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short

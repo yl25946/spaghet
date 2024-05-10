@@ -212,6 +212,10 @@ constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
 // convert ASCII character pieces to encoded constants
 extern std::map<char, uint8_t> char_pieces;
 
+// used for mvv vla, takes in a colored piece value
+constexpr uint16_t piece_value[12] = {
+    100, 100, 300, 300, 350, 350, 500, 500, 900, 900, 0, 0};
+
 // sides to move (colors)
 enum COLOR
 {
