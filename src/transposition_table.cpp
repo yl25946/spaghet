@@ -15,20 +15,20 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t de
     this->depth = depth;
 
     // treat mate scores so that they're relative to the position instead of the root
-    if (score >= MAX_MATE_SCORE)
-    {
-        // the mate is relative to the root, we have to add the ply to account for the additional depth searched
-        this->score = score + ply;
-    }
-    else if (score <= MIN_MATE_SCORE)
-    {
-        // same idea as above
-        this->score = score - ply;
-    }
-    else
-    {
-        this->score = score;
-    }
+    // if (score >= MAX_MATE_SCORE)
+    // {
+    //     // the mate is relative to the root, we have to add the ply to account for the additional depth searched
+    //     this->score = score + ply;
+    // }
+    // else if (score <= MIN_MATE_SCORE)
+    // {
+    //     // same idea as above
+    //     this->score = score - ply;
+    // }
+    // else
+    // {
+    this->score = score;
+    // }
 
     // basically mod 64
     uint8_t modular_move_counter = age & 63;
@@ -55,16 +55,16 @@ bool TT_Entry::can_use_score(int alpha, int beta) const
 int16_t TT_Entry::usable_score(int ply) const
 {
     // readjusts the mating score so that it's now relative to the root instead of the position
-    if (score <= MIN_MATE_SCORE)
-    {
-        // adds the depth to the root onto the mate
-        return score + ply;
-    }
-    else if (score >= MAX_MATE_SCORE)
-    {
-        // same idea as above
-        return score - ply;
-    }
+    // if (score <= MIN_MATE_SCORE)
+    // {
+    //     // adds the depth to the root onto the mate
+    //     return score + ply;
+    // }
+    // else if (score >= MAX_MATE_SCORE)
+    // {
+    //     // same idea as above
+    //     return score - ply;
+    // }
 
     return score;
 }
