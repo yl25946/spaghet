@@ -51,27 +51,27 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             moves[i].value = INF;
             continue;
         }
-        // // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
-        // if (move_flag & PROMOTION)
-        // {
-        //     switch (move_flag)
-        //     {
-        //     case MOVE_FLAG::QUEEN_PROMOTION_CAPTURE:
-        //         moves[i].value = INF - 1;
-        //         continue;
-        //     case MOVE_FLAG::QUEEN_PROMOTION:
-        //         moves[i].value = INF - 2;
-        //         continue;
-        //     case MOVE_FLAG::KNIGHT_PROMOTION_CAPTURE:
-        //         moves[i].value = INF - 3;
-        //         continue;
-        //     case MOVE_FLAG::KNIGHT_PROMOTION:
-        //         moves[i].value = INF - 4;
-        //         continue;
-        //     default:
-        //         break;
-        //     }
-        // }
+        // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
+        if (move_flag & PROMOTION)
+        {
+            switch (move_flag)
+            {
+            case MOVE_FLAG::QUEEN_PROMOTION_CAPTURE:
+                moves[i].value = INF - 1;
+                continue;
+            case MOVE_FLAG::QUEEN_PROMOTION:
+                moves[i].value = INF - 2;
+                continue;
+            case MOVE_FLAG::KNIGHT_PROMOTION_CAPTURE:
+                moves[i].value = INF - 3;
+                continue;
+            case MOVE_FLAG::KNIGHT_PROMOTION:
+                moves[i].value = INF - 4;
+                continue;
+            default:
+                break;
+            }
+        }
         // if (move_flag & CAPTURES)
         // {
         //     uint8_t source_square = current_move.from_square();
