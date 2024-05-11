@@ -257,7 +257,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (board.is_in_check())
         {
             // prioritize faster mates
-            return -INF + ply;
+            return -MATE + ply;
         }
         else
         {
