@@ -846,7 +846,13 @@ int pesto_eval(Board &board)
     if (mgPhase > 24)
         mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
-    return (mgScore * mgPhase + egScore * egPhase) / 24;
+    int pesto_score = (mgScore * mgPhase + egScore * egPhase) / 24;
+
+    // clamp for a sanity check
+    int actual_score = std::max(int(MIN_MATE_SCORE + 1), pesto_score);
+    actual_score = std::min(int(MAX_MATE_SCORE - 1), pesto_score);
+
+    return actual_score;
 }
 
 int evaluate(Board &board)
