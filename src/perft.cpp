@@ -38,9 +38,13 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
 
     generate_moves(board, move_list);
 
+    TranspositionTable tt(8);
+
+    move_list.score(board, tt);
+
     for (int i = 0; i < move_list.count; ++i)
     {
-        Move move = move_list.moves[i];
+        Move move = move_list.nextMove();
         Board copy = board;
         copy.make_move(move_list.moves[i]);
         if (!copy.was_legal())

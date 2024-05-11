@@ -4,7 +4,10 @@ uint64_t megabytes_to_bytes = 1 << 20;
 
 TT_Entry::TT_Entry()
 {
-    // hash = 0;
+    hash = 0;
+    score = 0;
+    depth = 0;
+    best_move = Move(0, 0, 0);
     flag_and_age = BOUND::NONE;
 }
 

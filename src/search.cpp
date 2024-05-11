@@ -266,10 +266,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     }
     // uncomment this if it doesn't work
     // write the best move down at the current depth
-    // else if (depth == curr_depth)
-    // {
-    this->current_depth_best_move = best_move;
-    // }
+    if (ply == 0)
+        this->current_depth_best_move = best_move;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
@@ -284,7 +282,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         // failed to raise alpha, fail low
         bound_flag = BOUND::FAIL_LOW;
     }
-
     if (best_eval != (-INF - 1))
         transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 

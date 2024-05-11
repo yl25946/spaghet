@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     // std::cout << searcher.threefold(board);
 
     // Board board(tricky_position);
-    // std::cout << perft_debug(board, 5, 5);
+    // std::cout << perft_debug(board, 4, 4);
 
     return 0;
 }
