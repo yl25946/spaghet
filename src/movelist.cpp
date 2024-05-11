@@ -108,9 +108,7 @@ Move MoveList::nextMove()
     }
 
     // swaps the two values so the greates is at the start
-    OrderedMove temp = moves[max_entry_index];
-    moves[max_entry_index] = moves[left_swap_index];
-    moves[left_swap_index] = temp;
+    std::swap(moves[left_swap_index], moves[max_entry_index]);
 
     // increments it
     return moves[left_swap_index++];
