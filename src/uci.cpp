@@ -95,6 +95,7 @@ void UCI_loop()
 
     std::cout << "id Spaghet\n"
               << "id author Li Ying\n"
+              << "option name Hash type spin default 16 min 1 max 1024\n"
               << "uciok\n";
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
