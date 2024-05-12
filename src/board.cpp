@@ -560,7 +560,7 @@ void Board::make_move(Move move)
     ++half_move_counter;
 }
 
-void Board::make_nulL_move()
+void Board::make_null_move()
 {
     side_to_move ^= 1;
 
