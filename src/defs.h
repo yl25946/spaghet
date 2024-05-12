@@ -53,6 +53,9 @@ constexpr int16_t MIN_MATE_SCORE = -MATE + MAX_PLY;
 // the max the highest a mate can reach
 constexpr int16_t MAX_MATE_SCORE = MATE - MAX_PLY;
 
+// value we reduce the search by in null move pruning
+constexpr int NULL_MOVE_DEPTH_REDUCTION = 3;
+
 // board squares
 enum square
 {

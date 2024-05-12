@@ -63,6 +63,9 @@ public:
 
     void make_move(Move move);
 
+    // creates a null move, do this for easy debugging
+    void make_nulL_move();
+
     // converts position into a fen
     std::string fen() const;
 

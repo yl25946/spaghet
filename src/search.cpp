@@ -193,6 +193,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         return entry.usable_score(ply);
     }
 
+    // applies null move pruning
+    Board copy = board;
+    copy.make_nulL_move();
+    int null_move_cutoff = -negamax(copy, -beta, -alpha, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1);
+
+    // fail soft
+    if (null_move_cutoff >= beta)
+        return null_move_cutoff;
+
     if (depth == 0)
         return quiescence_search(board, alpha, beta, ply);
 

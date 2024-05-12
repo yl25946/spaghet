@@ -560,6 +560,17 @@ void Board::make_move(Move move)
     ++half_move_counter;
 }
 
+void Board::make_nulL_move()
+{
+    side_to_move ^= 1;
+
+    // update the hash
+    hash ^= zobrist_side_to_move;
+
+    ++fifty_move_counter;
+    ++half_move_counter;
+}
+
 void Board::print() const
 {
 
