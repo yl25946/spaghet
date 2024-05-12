@@ -202,7 +202,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     if (null_move_cutoff >= beta)
         return null_move_cutoff;
 
-    if (depth == 0)
+    if (depth <= 0)
         return quiescence_search(board, alpha, beta, ply);
 
     MoveList move_list;
