@@ -33,6 +33,8 @@ https://spaghet.pythonanywhere.com/
 
 # TODO:
 - Add check evasion to qSearch
+- Add promotions in qSearch
+- Add TT-cutoffs in qSearch
 - Write legality check before making a move (usually gains 0-10 elo)
 
 # Special Thanks
