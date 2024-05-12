@@ -95,6 +95,7 @@ void UCI_loop()
 
     std::cout << "id Spaghet\n"
               << "id author Li Ying\n"
+              << "option name Hash type spin default 16 min 1 max 1024\n"
               << "uciok\n";
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
@@ -136,7 +137,7 @@ void UCI_loop()
 
             // searcher.board.print();
 
-            std::cout << searcher.board.hash << "\n";
+            // std::cout << searcher.board.hash << "\n";
 
             // perft_debug(searcher.board, 1, 1);
 
@@ -146,9 +147,9 @@ void UCI_loop()
             // now that we've called go once, we can increase the age
             ++age;
         }
-        else if (!line.compare(0, 11, "option Hash"))
+        else if (!line.compare(0, 14, "setoption Hash"))
         {
-            hash_size = std::stoi(line.substr(12));
+            hash_size = std::stoi(line.substr(15));
             // std::cout << hash_size << "\n";
             transposition_table.resize(hash_size);
         }
@@ -165,6 +166,7 @@ void UCI_loop()
         {
             std::cout << "id Spaghet\n"
                       << "id author Li Ying\n"
+                      << "option name Hash type spin default 16 min 1 max 1024\n"
                       << "uciok\n";
         }
         else if (!line.compare(0, 4, "quit"))

@@ -190,7 +190,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
-        return entry.score;
+        return entry.usable_score(ply);
     }
 
     if (depth == 0)
@@ -257,7 +257,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         if (board.is_in_check())
         {
             // prioritize faster mates
-            return -INF + ply;
+            return -MATE + ply;
         }
         else
         {
@@ -266,10 +266,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     }
     // uncomment this if it doesn't work
     // write the best move down at the current depth
-    // else if (depth == curr_depth)
-    // {
-    this->current_depth_best_move = best_move;
-    // }
+    if (ply == 0)
+        this->current_depth_best_move = best_move;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
@@ -284,7 +282,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         // failed to raise alpha, fail low
         bound_flag = BOUND::FAIL_LOW;
     }
-
     if (best_eval != (-INF - 1))
         transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 

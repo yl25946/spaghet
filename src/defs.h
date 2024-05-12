@@ -44,12 +44,14 @@ extern std::string repetitions;
 #define colored_to_uncolored(piece) (piece >> 1)
 
 // highest possible score in engine
-constexpr uint16_t INF = 30000;
-constexpr uint16_t MAX_PLY = 255;
+constexpr int16_t INF = 32000;
+// this constant is the baseline mate score where we use ply to ajdjust
+constexpr int16_t MATE = 30000;
+constexpr int16_t MAX_PLY = 255;
 // the max the lowest a mate can reach
-constexpr int16_t MIN_MATE_SCORE = -INF + MAX_PLY;
+constexpr int16_t MIN_MATE_SCORE = -MATE + MAX_PLY;
 // the max the highest a mate can reach
-constexpr int16_t MAX_MATE_SCORE = INF - MAX_PLY;
+constexpr int16_t MAX_MATE_SCORE = MATE - MAX_PLY;
 
 // board squares
 enum square

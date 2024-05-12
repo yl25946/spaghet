@@ -15,6 +15,7 @@ Chess engine based on BBC
 - quiescence search
 - Zobrist hashing
 - Transposition Tables
+- Move Ordering using MVV-LVA
 
 # ELO Gainers
 Started from piece counting and standard negamax

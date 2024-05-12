@@ -4,7 +4,10 @@ uint64_t megabytes_to_bytes = 1 << 20;
 
 TT_Entry::TT_Entry()
 {
-    // hash = 0;
+    hash = 0;
+    score = 0;
+    depth = 0;
+    best_move = Move(0, 0, 0);
     flag_and_age = BOUND::NONE;
 }
 
@@ -29,6 +32,8 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t de
     {
         this->score = score;
     }
+
+    // std::cout << this->score << "\n";
 
     // basically mod 64
     uint8_t modular_move_counter = age & 63;
@@ -58,10 +63,12 @@ int16_t TT_Entry::usable_score(int ply) const
     if (score <= MIN_MATE_SCORE)
     {
         // adds the depth to the root onto the mate
+        // std::cout << score + ply << "\n";
         return score + ply;
     }
     else if (score >= MAX_MATE_SCORE)
     {
+        // std::cout << score - ply << "\n";
         // same idea as above
         return score - ply;
     }

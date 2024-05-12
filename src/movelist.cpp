@@ -74,6 +74,14 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         // }
         if (move_flag & CAPTURES)
         {
+            // we just deal with this specific case and die
+            if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
+            {
+                // just hardcoded
+                moves[i].value = 14;
+                continue;
+            }
+
             uint8_t source_square = current_move.from_square();
             uint8_t target_square = current_move.to_square();
 
@@ -108,9 +116,7 @@ Move MoveList::nextMove()
     }
 
     // swaps the two values so the greates is at the start
-    OrderedMove temp = moves[max_entry_index];
-    moves[max_entry_index] = moves[left_swap_index];
-    moves[left_swap_index] = temp;
+    std::swap(moves[left_swap_index], moves[max_entry_index]);
 
     // increments it
     return moves[left_swap_index++];
