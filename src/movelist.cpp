@@ -24,17 +24,9 @@ void MoveList::print()
     }
 };
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table)
+void MoveList::score(const Board &board, const TT_Entry &tt_entry, bool can_use_tt_entry)
 {
-    TT_Entry &tt_entry = transposition_table.probe(board);
-    Move tt_move;
-    bool has_tt_move = false;
-
-    if (tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE)
-    {
-        tt_move = tt_entry.best_move;
-        has_tt_move = true;
-    }
+    Move tt_move = tt_entry.best_move;
 
     // just compare the info because they are different objects
     for (int i = 0; i < size(); ++i)
@@ -45,7 +37,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         // make sure we don't get any weird values floating around in value of the orderedmove
         moves[i].value = 0;
 
-        if (has_tt_move && tt_move.info == current_move.info)
+        if (can_use_tt_entry && tt_move.info == current_move.info)
         {
             // this ensures that the move comes first
             moves[i].value = INF;

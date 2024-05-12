@@ -20,7 +20,7 @@ public:
     void insert(uint8_t from, uint8_t to, uint8_t move_flag);
     void insert(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
     // scores all the moves
-    void score(const Board &board, TranspositionTable &transposition_table);
+    void score(const Board &board, const TT_Entry &tt_entry, bool can_use_tt_entry);
     // gets the next move with the highest value
     Move nextMove();
 

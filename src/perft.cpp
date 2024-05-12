@@ -38,9 +38,9 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
 
     generate_moves(board, move_list);
 
-    TranspositionTable tt(8);
+    // TranspositionTable tt(8);
 
-    move_list.score(board, tt);
+    move_list.score(board, TT_Entry(), false);
 
     for (int i = 0; i < move_list.count; ++i)
     {

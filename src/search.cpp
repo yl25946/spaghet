@@ -96,6 +96,19 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
             return 0;
         }
 
+    // we check if the TT has seen this before
+    TT_Entry &entry = transposition_table.probe(board);
+    bool can_use_tt_entry = false;
+
+    if (entry.hash == board.hash && entry.flag() != BOUND::NONE)
+        can_use_tt_entry = true;
+    // tt cutoff
+    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    // if (can_use_tt_entry && entry.can_use_score(alpha, beta))
+    // {
+    //     return entry.usable_score(ply);
+    // }
+
     // creates a baseline
     int stand_pat = evaluate(board);
 
@@ -111,7 +124,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table);
+    move_list.score(board, entry, can_use_tt_entry);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -183,12 +196,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
 
     // bool in_pv_node = beta - alpha > 1;
 
-    // // we check if the TT has seen this before
+    // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
+    bool can_use_tt_entry = false;
 
+    if (entry.hash == board.hash && entry.flag() != BOUND::NONE)
+        can_use_tt_entry = true;
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (ply > 0 && can_use_tt_entry && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ply);
     }
@@ -201,7 +217,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table);
+    move_list.score(board, entry, can_use_tt_entry);
 
     uint8_t legal_moves = 0;
 
