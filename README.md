@@ -22,7 +22,7 @@ Started from piece counting and standard negamax
 - PeSTO's Evaluation Function (+176)
 - Alpha-Beta Pruning (+340)
 - Quiescence Search with Alpha-Beta (+324)
-- 3 fold detection with Zobrist Hashing (+14.7)
+- 3 fold detection with Zobrist Hashing (+26)
 - Transposition Table cutoffs (+17.3)
 - TT move ordering (+115)
 - MVV-LVA move ordering (+317)
