@@ -25,6 +25,7 @@ Started from piece counting and standard negamax
 - 3 fold detection with Zobrist Hashing (+14.7)
 - Transposition Table cutoffs (+17.3)
 - TT move ordering (+115)
+- MVV-LVA move ordering (+317)
 
 
 # Testing
