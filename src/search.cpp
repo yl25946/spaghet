@@ -199,7 +199,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     int static_eval = evaluate(board);
 
     // apply reverse futility pruning
-    if (depth <= DEPTH_MARGIN && (static_eval - depth * MARGIN) >= beta)
+    if (!in_pv_node && !board.is_in_check() && (depth <= DEPTH_MARGIN && (static_eval - depth * MARGIN) >= beta))
         return static_eval;
 
     // applies null move pruning
