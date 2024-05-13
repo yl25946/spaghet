@@ -228,7 +228,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         threefold_repetition.push_back(copy.hash);
 
         // don't do pvs on the first node
-        if (i == 0 || ply == 0)
+        if (i == 0)
         {
             current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
         }
