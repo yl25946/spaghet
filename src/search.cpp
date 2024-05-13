@@ -201,7 +201,13 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     {
         Board copy = board;
         copy.make_null_move();
+
+        // to help detect threefold in nmp
+        threefold_repetition.push_back(copy.hash);
+
         int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
+
+        threefold_repetition.pop_back();
 
         // fail soft
         if (null_move_cutoff >= beta)
