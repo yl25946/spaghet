@@ -230,7 +230,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // don't do pvs on the first node
         if (i == 0)
         {
-            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true);
+            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node);
         }
         else
         {
