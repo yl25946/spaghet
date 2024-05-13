@@ -98,7 +98,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
     }
 }
 
-Move MoveList::nextMove()
+Move MoveList::next_move()
 {
     // tracks the index and the value of the greatest index value in this entire list
     int max_entry_index = -1;

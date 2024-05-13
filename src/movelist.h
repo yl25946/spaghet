@@ -22,7 +22,7 @@ public:
     // scores all the moves
     void score(const Board &board, TranspositionTable &transposition_table);
     // gets the next move with the highest value
-    Move nextMove();
+    Move next_move();
 
     void print();
 };
