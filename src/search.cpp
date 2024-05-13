@@ -197,11 +197,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return quiescence_search(board, alpha, beta, ply);
 
     // applies null move pruning
-    if (!board.is_in_check())
+    if ((!board.is_in_check()) && (!board.only_pawns(board.side_to_move)))
     {
         Board copy = board;
         copy.make_null_move();
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1);
+        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
 
         // fail soft
         if (null_move_cutoff >= beta)
@@ -373,7 +373,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 6;
+    max_depth = 7;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",

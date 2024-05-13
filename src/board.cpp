@@ -394,6 +394,18 @@ bool Board::was_legal() const
     return !(is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move));
 }
 
+bool Board::only_pawns(uint8_t side_to_move) const
+{
+    uint64_t bitboard = 0;
+
+    for (int i = BITBOARD_PIECES::KNIGHT; i <= BITBOARD_PIECES::QUEEN; ++i)
+    {
+        bitboard |= pieces[i];
+    }
+
+    return !(bitboard & colors[side_to_move]);
+}
+
 void Board::make_move(Move move)
 {
     // update the bitboard

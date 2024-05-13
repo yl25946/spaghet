@@ -26,6 +26,7 @@ Started from piece counting and standard negamax
 - Transposition Table cutoffs (+17.3)
 - TT move ordering (+115)
 - MVV-LVA move ordering (+317)
+- PVS (+20)
 
 
 # Testing
