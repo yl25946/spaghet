@@ -208,13 +208,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
     const int original_alpha = alpha;
 
     // get pvs here
-    Board copy = board;
-    Move best_move = move_list.next_move();
-    copy.make_move(best_move);
+    int best_eval = -INF - 1;
+    Move best_move;
 
-    int best_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
-
-    for (int i = 1; i < move_list.size(); ++i)
+    for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
         Move curr_move = move_list.next_move();
@@ -230,19 +227,27 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply)
         // we can check for threefold repetition later, updates the state though
         threefold_repetition.push_back(copy.hash);
 
-        // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-        current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1);
+        // don't do pvs on the first node
+        if (i == 0 || ply == 0)
+        {
+            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+        }
+        else
+        {
+            // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
+            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1);
+
+            // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
+            // so we'll assume that this node is the pv move, and then do a full window search
+            if (alpha < current_eval)
+                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
+        }
 
         // stopped searching that line, so we can get rid of the hash
         threefold_repetition.pop_back();
 
         if (stopped)
             return 0;
-
-        // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
-        // so we'll assume that this node is the pv move, and then do a full window search
-        if (alpha < current_eval)
-            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1);
 
         // if alpha
 
