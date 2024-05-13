@@ -196,6 +196,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (depth <= 0)
         return quiescence_search(board, alpha, beta, ply);
 
+    int static_eval = evaluate(board);
+
+    // apply reverse futility pruning
+    if (depth <= DEPTH_MARGIN && (static_eval - depth * MARGIN) >= beta)
+        return static_eval;
+
     // applies null move pruning
     if ((!board.is_in_check()) && (!board.only_pawns(board.side_to_move)))
     {
