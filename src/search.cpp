@@ -70,9 +70,9 @@ bool Searcher::threefold(Board &board)
     uint8_t matching_positions = 0;
 
     // index of the last element of the array
-    int last_element_index = threefold_repetition.size() - 1;
+    size_t last_element_index = threefold_repetition.size() - 1;
 
-    int threefold_max_it = std::min((size_t)board.fifty_move_counter, threefold_repetition.size() - 1);
+    int threefold_max_it = std::min((size_t)board.fifty_move_counter, last_element_index);
 
     for (int i = 4; i <= threefold_max_it; i += 2)
     {
@@ -248,27 +248,39 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         int current_eval;
 
-        // we can check for threefold repetition later, updates the state though
-        threefold_repetition.push_back(copy.hash);
-
         // don't do pvs on the first node
         if (i == 0)
         {
+            // we can check for threefold repetition later, updates the state though
+            threefold_repetition.push_back(copy.hash);
+
             current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node);
+
+            // stopped searching that line, so we can get rid of the hash
+            threefold_repetition.pop_back();
         }
         else
         {
+            // we can check for threefold repetition later, updates the state though
+            threefold_repetition.push_back(copy.hash);
+
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
             current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false);
+            // stopped searching that line, so we can get rid of the hash
+            threefold_repetition.pop_back();
 
             // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
             // so we'll assume that this node is the pv move, and then do a full window search
             if (alpha < current_eval && in_pv_node)
-                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true);
-        }
+            {
+                threefold_repetition.push_back(board.hash);
 
-        // stopped searching that line, so we can get rid of the hash
-        threefold_repetition.pop_back();
+                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true);
+
+                // stopped searching that line, so we can get rid of the hash
+                threefold_repetition.pop_back();
+            }
+        }
 
         if (stopped)
             return 0;
