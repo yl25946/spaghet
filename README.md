@@ -28,6 +28,8 @@ Started from piece counting and standard negamax
 - MVV-LVA move ordering (+317)
 - Principle Variation Search (+20)
 - Null Move Pruning (+136)
+- Reverse Futility Pruning (+17)
+- Fail High in Null Move Pruning (+6.5)
 
 
 # Testing
