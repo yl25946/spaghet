@@ -579,6 +579,14 @@ void Board::make_null_move()
     // update the hash
     hash ^= zobrist_side_to_move;
 
+    if (en_passant_square != no_square)
+    {
+        // undo the hash
+        hash ^= zobrist_en_passant[file(en_passant_square)];
+
+        en_passant_square = no_square;
+    }
+
     ++fifty_move_counter;
     ++half_move_counter;
 }
