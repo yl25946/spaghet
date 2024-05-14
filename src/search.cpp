@@ -88,8 +88,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 {
     // return evaluate(board);
 
-    ++current_depth_node_count;
-    if (!(current_depth_node_count & 4095))
+    ++node_count;
+    if (!(node_count & 4095))
         if (get_time() >= end_time)
         {
             stopped = true;
@@ -160,9 +160,9 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 
 int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node)
 {
-    ++current_depth_node_count;
+    ++node_count;
 
-    if (!(current_depth_node_count & 4095))
+    if (!(node_count & 4095))
         if (get_time() >= end_time)
         {
             stopped = true;
@@ -188,7 +188,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ply);
     }
@@ -347,6 +347,9 @@ void Searcher::search()
     Move best_move;
     uint64_t time_elapsed;
 
+    this->start_time = get_time();
+    this->node_count = 0;
+
     // generates a legal move in that position in case that we didn't finish depth one
     MoveList move_list;
     generate_moves(board, move_list);
@@ -366,14 +369,9 @@ void Searcher::search()
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
-        current_depth_node_count = 0;
-        this->start_time = get_time();
 
         Board copy = board;
         best_score = negamax(copy, -INF, INF, curr_depth, 0, true);
-
-        // update the total node count
-        total_nodes += current_depth_node_count;
 
         // std::cout << get_time() << "\n"
         //           << end_time << "\n";
@@ -387,7 +385,7 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
@@ -459,14 +457,14 @@ void Searcher::bench()
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
-            current_depth_node_count = 0;
+            node_count = 0;
 
             Board copy = this->board;
 
             negamax(copy, -30000, 30000, current_depth, 0, true);
 
             // update the total node count
-            total_nodes += current_depth_node_count;
+            total_nodes += node_count;
 
             if (stopped)
                 break;

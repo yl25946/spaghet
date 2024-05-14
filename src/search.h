@@ -38,7 +38,7 @@ public:
     int curr_depth = 0;
 
     // represents the number of nodes for a depths search
-    uint64_t current_depth_node_count;
+    uint64_t node_count;
     uint64_t total_nodes = 0;
 
     // Searcher();

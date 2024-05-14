@@ -135,7 +135,7 @@ void UCI_loop()
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
 
-            // searcher.board.print();
+            // std::cout << searcher.board.only_pawns(WHITE) << "\n";
 
             // std::cout << searcher.board.hash << "\n";
 
