@@ -211,7 +211,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // to help detect threefold in nmp
         threefold_repetition.push_back(copy.hash);
 
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
+        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + NULL_MOVE_DEPTH_REDUCTION, false);
 
         threefold_repetition.pop_back();
 
