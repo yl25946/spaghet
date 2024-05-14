@@ -203,7 +203,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // applies null move pruning
-    if ((!board.is_in_check()) && (!board.only_pawns(board.side_to_move)))
+    if (ply > 0 && (!board.is_in_check()) && (!board.only_pawns(board.side_to_move)))
     {
         Board copy = board;
         copy.make_null_move();
