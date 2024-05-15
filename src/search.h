@@ -6,6 +6,7 @@
 #include "movelist.h"
 #include "movegen.h"
 #include "transposition_table.h"
+#include "history.h"
 
 constexpr uint64_t check_count = 4096;
 
@@ -22,6 +23,9 @@ public:
     Board &board;
 
     TranspositionTable &transposition_table;
+
+    QuietHistory history;
+    Killer killers;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
