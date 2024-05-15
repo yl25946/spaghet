@@ -64,10 +64,10 @@ uint8_t rank(uint8_t square)
 
 int lmr_reduction_quiet(int depth, int move_number)
 {
-    return (0.20 + (std::log(depth) * std::log(move_number))) / 3.35;
+    return 1.35 + ((std::log(depth) * std::log(move_number)) / 2.75);
 }
 
 int lmr_reduction_captures_promotions(int depth, int move_number)
 {
-    return (1.35 + (std::log(depth) * std::log(move_number))) / 2.75;
+    return +((std::log(depth) * std::log(move_number)) / 3.35);
 }
