@@ -270,10 +270,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             {
                 // if it is a capture or a promotion
                 if (curr_move.move_flag() & 12)
-                    reduction += lmr_reduction_captures_promotions(depth, i);
+                    // legal moves - 1 counts the number of legal moves from 0
+                    reduction += lmr_reduction_captures_promotions(depth, legal_moves - 1);
                 // quiet move
                 else
-                    reduction += lmr_reduction_quiet(depth, i);
+                    reduction += lmr_reduction_quiet(depth, legal_moves - 1);
             }
 
             // we can check for threefold repetition later, updates the state though
