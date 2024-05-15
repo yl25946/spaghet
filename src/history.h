@@ -3,10 +3,12 @@
 #include "defs.h";
 #include "move.h"
 
-class History
+class QuietHistory
 {
 public:
-    uint16_t butterfly_tables[64][64];
+    uint16_t butterfly_table[64][64];
+
+    QuietHistory();
 
     void clear();
     // inserts a move into the butterfly tables
