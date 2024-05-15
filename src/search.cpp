@@ -203,22 +203,22 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // applies null move pruning
-    if (!in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
-    {
-        Board copy = board;
-        copy.make_null_move();
+    // if (!in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    // {
+    //     Board copy = board;
+    //     copy.make_null_move();
 
-        // to help detect threefold in nmp
-        threefold_repetition.push_back(copy.hash);
+    //     // to help detect threefold in nmp
+    //     threefold_repetition.push_back(copy.hash);
 
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
+    //     int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
 
-        threefold_repetition.pop_back();
+    //     threefold_repetition.pop_back();
 
-        // fail soft
-        if (null_move_cutoff >= beta)
-            return null_move_cutoff;
-    }
+    //     // fail soft
+    //     if (null_move_cutoff >= beta)
+    //         return null_move_cutoff;
+    // }
 
     MoveList move_list;
 
@@ -273,7 +273,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // so we'll assume that this node is the pv move, and then do a full window search
             if (alpha < current_eval && in_pv_node)
             {
-                threefold_repetition.push_back(board.hash);
+                threefold_repetition.push_back(copy.hash);
 
                 current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true);
 
