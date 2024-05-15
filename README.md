@@ -28,6 +28,8 @@ Started from piece counting and standard negamax
 - MVV-LVA move ordering (+317)
 - Principle Variation Search (+20)
 - Null Move Pruning (+136)
+- Reverse Futility Pruning (+17)
+- Fail High in Null Move Pruning (+6.5)
 
 
 # Testing
@@ -37,7 +39,7 @@ https://spaghet.pythonanywhere.com/
 - Add check evasion to qSearch
 - Add promotions in qSearch
 - Add TT-cutoffs in qSearch
-- Bug in NMP where a draw will still evaluate as a nonzero score
+- Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
 
 # Special Thanks
