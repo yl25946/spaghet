@@ -22,7 +22,25 @@ void QuietHistory::insert(Move move, int depth)
     butterfly_table[from_square][to_square] = std::min(butterfly_table[from_square][to_square] + depth * depth, MAX_HISTORY);
 }
 
-uint16_t QuietHistory::move_value(Move move)
+uint16_t QuietHistory::move_value(Move move) const
 {
     return butterfly_table[move.from_square()][move.to_square()];
+}
+
+Killer::Killer()
+{
+    for (int i = 0; i < MAX_PLY; ++i)
+    {
+        count[i] = 0;
+    }
+}
+
+void Killer::insert(Move move, int ply)
+{
+    killers[ply][count[ply]++] = move;
+}
+
+size_t Killer::size(int ply) const
+{
+    return count[ply];
 }

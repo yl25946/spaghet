@@ -25,6 +25,7 @@ public:
     TranspositionTable &transposition_table;
 
     QuietHistory history;
+    Killer killer;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;

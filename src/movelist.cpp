@@ -24,7 +24,7 @@ void MoveList::print()
     }
 };
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history)
+void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killer &killers, int ply)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -100,7 +100,19 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         else
         {
             // std::cout << history.move_value(moves[i]) << "\n";
+
+            // base value for history
             moves[i].value = history.move_value(moves[i]);
+
+            // check killer moves
+            const int killers_size = killers.size(ply);
+            for (int j = 0; j < killers_size; ++j)
+            {
+                if (moves[i].info == killers.killers[ply][j].info)
+                {
+                    moves[i].value = MAX_HISTORY - j;
+                }
+            }
         }
     }
 }
