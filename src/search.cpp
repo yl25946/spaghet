@@ -261,17 +261,33 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         }
         else
         {
+            // implements late move reduction
+            // no reduction
+            int reduction = 1;
+
+            // applies the late move reduction
+            if (i > 3)
+            {
+                // if it is a capture or a promotion
+                if (curr_move.move_flag() & 12)
+                    reduction += lmr_reduction_captures_promotions(depth, i);
+                // quiet move
+                else
+                    reduction += lmr_reduction_quiet(depth, i);
+            }
+
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
+            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - reduction, ply + 1, false, false);
             // stopped searching that line, so we can get rid of the hash
             threefold_repetition.pop_back();
 
             // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
-            // so we'll assume that this node is the pv move, and then do a full window search
-            if (alpha < current_eval && in_pv_node)
+            // so we'll assume that this node is the pv move, and then do a full window search. Additionally, with lmr, this means that
+            // our hypothesis that there isn't a best move near the end of the move_list is false, and we have to do a complete research to be sure
+            if (current_eval > alpha && in_pv_node)
             {
                 threefold_repetition.push_back(copy.hash);
 
@@ -395,7 +411,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 7;
+    max_depth = 8;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
