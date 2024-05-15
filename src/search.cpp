@@ -70,9 +70,9 @@ bool Searcher::threefold(Board &board)
     uint8_t matching_positions = 0;
 
     // index of the last element of the array
-    int last_element_index = threefold_repetition.size() - 1;
+    size_t last_element_index = threefold_repetition.size() - 1;
 
-    int threefold_max_it = std::min((size_t)board.fifty_move_counter, threefold_repetition.size() - 1);
+    int threefold_max_it = std::min((size_t)board.fifty_move_counter, last_element_index);
 
     for (int i = 4; i <= threefold_max_it; i += 2)
     {
@@ -88,8 +88,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 {
     // return evaluate(board);
 
-    ++current_depth_node_count;
-    if (!(current_depth_node_count & 4095))
+    ++node_count;
+    if (!(node_count & 4095))
         if (get_time() >= end_time)
         {
             stopped = true;
@@ -158,11 +158,11 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     return best_eval;
 }
 
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node)
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node, bool null_moved)
 {
-    ++current_depth_node_count;
+    ++node_count;
 
-    if (!(current_depth_node_count & 4095))
+    if (!(node_count & 4095))
         if (get_time() >= end_time)
         {
             stopped = true;
@@ -188,7 +188,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (ply > 0 && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ply);
     }
@@ -203,7 +203,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // applies null move pruning
-    if (!in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
         Board copy = board;
         copy.make_null_move();
@@ -211,7 +211,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // to help detect threefold in nmp
         threefold_repetition.push_back(copy.hash);
 
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false);
+        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
 
         threefold_repetition.pop_back();
 
@@ -248,27 +248,39 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         int current_eval;
 
-        // we can check for threefold repetition later, updates the state though
-        threefold_repetition.push_back(copy.hash);
-
         // don't do pvs on the first node
         if (i == 0)
         {
-            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node);
+            // we can check for threefold repetition later, updates the state though
+            threefold_repetition.push_back(copy.hash);
+
+            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node, false);
+
+            // stopped searching that line, so we can get rid of the hash
+            threefold_repetition.pop_back();
         }
         else
         {
+            // we can check for threefold repetition later, updates the state though
+            threefold_repetition.push_back(copy.hash);
+
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false);
+            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
+            // stopped searching that line, so we can get rid of the hash
+            threefold_repetition.pop_back();
 
             // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
             // so we'll assume that this node is the pv move, and then do a full window search
             if (alpha < current_eval && in_pv_node)
-                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true);
-        }
+            {
+                threefold_repetition.push_back(copy.hash);
 
-        // stopped searching that line, so we can get rid of the hash
-        threefold_repetition.pop_back();
+                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+
+                // stopped searching that line, so we can get rid of the hash
+                threefold_repetition.pop_back();
+            }
+        }
 
         if (stopped)
             return 0;
@@ -335,6 +347,9 @@ void Searcher::search()
     Move best_move;
     uint64_t time_elapsed;
 
+    this->start_time = get_time();
+    this->node_count = 0;
+
     // generates a legal move in that position in case that we didn't finish depth one
     MoveList move_list;
     generate_moves(board, move_list);
@@ -354,14 +369,9 @@ void Searcher::search()
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
-        current_depth_node_count = 0;
-        this->start_time = get_time();
 
         Board copy = board;
-        best_score = negamax(copy, -INF, INF, curr_depth, 0, true);
-
-        // update the total node count
-        total_nodes += current_depth_node_count;
+        best_score = negamax(copy, -INF, INF, curr_depth, 0, true, false);
 
         // std::cout << get_time() << "\n"
         //           << end_time << "\n";
@@ -375,7 +385,7 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << current_depth_node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)current_depth_node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
+        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << "\n";
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
@@ -447,14 +457,14 @@ void Searcher::bench()
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
-            current_depth_node_count = 0;
+            node_count = 0;
 
             Board copy = this->board;
 
-            negamax(copy, -30000, 30000, current_depth, 0, true);
+            negamax(copy, -30000, 30000, current_depth, 0, true, false);
 
             // update the total node count
-            total_nodes += current_depth_node_count;
+            total_nodes += node_count;
 
             if (stopped)
                 break;

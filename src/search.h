@@ -38,7 +38,7 @@ public:
     int curr_depth = 0;
 
     // represents the number of nodes for a depths search
-    uint64_t current_depth_node_count;
+    uint64_t node_count;
     uint64_t total_nodes = 0;
 
     // Searcher();
@@ -52,7 +52,7 @@ public:
     // returns true if board is in checkmate
     // bool is_checkmate(Board &board);
     int quiescence_search(Board &board, int alpha, int beta, int ply);
-    int negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node);
+    int negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node, bool null_moved);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
