@@ -111,7 +111,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killer, ply);
+    move_list.score(board, transposition_table, history, killers, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -225,7 +225,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killer, ply);
+    move_list.score(board, transposition_table, history, killers, ply);
 
     uint8_t legal_moves = 0;
 
@@ -299,11 +299,14 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 best_move = curr_move;
                 if (alpha >= beta)
                 {
-                    // killer.insert(curr_move, ply);
-                    // we update killers and history if ther isn't a capture
-                    if (curr_move.move_flag() & CAPTURES == 0)
+
+                    // std::cout << (int)curr_move.move_flag() << "\n";
+                    // we update the history table if it's not a capture
+                    if ((curr_move.move_flag() & MOVE_FLAG::CAPTURES) == 0)
                     {
+                        // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.insert(curr_move, depth);
+                        killers.insert(curr_move, ply);
                     }
                     break;
                 }
