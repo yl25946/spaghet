@@ -37,10 +37,17 @@ Killer::Killer()
 
 void Killer::insert(Move move, int ply)
 {
+    if (count[ply] >= 2)
+    {
+        killers[ply][count[ply]++] = move;
+        count[ply] = 0;
+    }
+
     killers[ply][count[ply]++] = move;
 }
 
-size_t Killer::size(int ply) const
+size_t
+Killer::size(int ply) const
 {
     return count[ply];
 }

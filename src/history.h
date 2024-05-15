@@ -19,7 +19,7 @@ public:
 class Killer
 {
 public:
-    Move killers[MAX_PLY][3];
+    Move killers[MAX_PLY][2];
 
     uint8_t count[MAX_PLY];
 
