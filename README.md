@@ -31,6 +31,7 @@ Started from piece counting and standard negamax
 - Reverse Futility Pruning (+17)
 - Fail High in Null Move Pruning (+6.5)
 - History Heuristic (+99)
+- History Heuristic Bug Fix (only adding non-captures) (+47)
 
 
 # Testing
