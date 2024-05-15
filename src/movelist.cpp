@@ -110,7 +110,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             {
                 if (moves[i].info == killers.killers[ply][j].info)
                 {
-                    moves[i].value = MAX_HISTORY - j;
+                    moves[i].value = MAX_KILLERS - j;
                 }
             }
         }
