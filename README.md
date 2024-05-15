@@ -39,7 +39,7 @@ https://spaghet.pythonanywhere.com/
 - Add check evasion to qSearch
 - Add promotions in qSearch
 - Add TT-cutoffs in qSearch
-- Bug in NMP where a draw will still evaluate as a nonzero score
+- Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
 
 # Special Thanks
