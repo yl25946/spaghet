@@ -299,9 +299,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 best_move = curr_move;
                 if (alpha >= beta)
                 {
-                    // we update the history table
-                    history.insert(curr_move, depth);
-                    killer.insert(curr_move, ply);
+                    // we update killers and history if ther isn't a capture
+                    if (curr_move.move_flag() & CAPTURES == 0)
+                    {
+                        history.insert(curr_move, depth);
+                        killer.insert(curr_move, ply);
+                    }
                     break;
                 }
             }
