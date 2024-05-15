@@ -69,5 +69,5 @@ int lmr_reduction_quiet(int depth, int move_number)
 
 int lmr_reduction_captures_promotions(int depth, int move_number)
 {
-    return +((std::log(depth) * std::log(move_number)) / 3.35);
+    return 0.2 + ((std::log(depth) * std::log(move_number)) / 3.35);
 }
