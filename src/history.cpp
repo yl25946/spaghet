@@ -39,8 +39,10 @@ void Killer::insert(Move move, int ply)
 {
     if (count[ply] >= 2)
     {
-        killers[ply][count[ply]++] = move;
-        count[ply] = 0;
+        std::swap(killers[ply][0], killers[ply][1]);
+        killers[ply][1] = move;
+
+        return;
     }
 
     killers[ply][count[ply]++] = move;
