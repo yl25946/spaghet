@@ -111,7 +111,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table);
+    move_list.score(board, transposition_table, history);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -225,7 +225,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table);
+    move_list.score(board, transposition_table, history);
 
     uint8_t legal_moves = 0;
 
@@ -299,6 +299,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 best_move = curr_move;
                 if (alpha >= beta)
                 {
+                    // we update the history table
+                    history.insert(curr_move, depth);
                     break;
                 }
             }

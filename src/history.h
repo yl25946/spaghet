@@ -12,6 +12,6 @@ public:
 
     void clear();
     // inserts a move into the butterfly tables
-    void insert(Move move);
-    uint16_t move_value();
+    void insert(Move move, int depth);
+    uint16_t move_value(Move move);
 };

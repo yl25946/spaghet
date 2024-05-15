@@ -24,7 +24,7 @@ void MoveList::print()
     }
 };
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table)
+void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -95,6 +95,13 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             continue;
         }
         // TODO: add SEE
+
+        // not a capture, use history table
+        else
+        {
+            // std::cout << history.move_value(moves[i]) << "\n";
+            moves[i].value = history.move_value(moves[i]);
+        }
     }
 }
 

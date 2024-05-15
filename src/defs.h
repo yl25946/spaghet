@@ -60,6 +60,9 @@ constexpr int NULL_MOVE_DEPTH_REDUCTION = 3;
 constexpr int DEPTH_MARGIN = 6;
 constexpr int MARGIN = 80;
 
+// this is a clamp value used for history
+constexpr int MAX_HISTORY = 599;
+
 // board squares
 enum square
 {
