@@ -249,7 +249,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         int current_eval;
 
         // don't do pvs on the first node
-        if (legal_moves == 1)
+        if (i == 0)
         {
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
