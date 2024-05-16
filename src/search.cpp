@@ -188,9 +188,19 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta))
     {
-        return entry.usable_score(ply);
+        int tt_score = entry.usable_score(ply);
+        if (entry.depth >= depth)
+            return tt_score;
+        // if the depth is not deep enough, conduct a zero-window search to see if the rating is accurate. If it doesn't raise the tt_score that means there isn't a better score
+        else
+        {
+            Board copy = board;
+            int tt_search_result = -negamax(copy, -tt_score, -tt_score + 1, depth - 1, ply + 1, false, false);
+            if (tt_search_result <= tt_score)
+                return tt_score;
+        }
     }
 
     if (depth <= 0)
