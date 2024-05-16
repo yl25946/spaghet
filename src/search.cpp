@@ -188,14 +188,19 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!in_pv_node && entry.hash == board.hash && entry.depth >= depth)
+    if (!in_pv_node && entry.hash == board.hash)
     {
-        if (entry.can_use_score(alpha, beta))
-            return entry.usable_score(ply);
-        else
+        if (entry.depth >= depth)
         {
-            depth -= 4;
+            if (entry.can_use_score(alpha, beta))
+                return entry.usable_score(ply);
+            else
+            {
+                // apply a reduction if we can't use the score
+                depth -= 4;
+            }
         }
+        // don't do anything if the tt entry's depth isn't as big as our current depth
     }
 
     if (depth <= 0)
