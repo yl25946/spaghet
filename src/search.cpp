@@ -203,21 +203,38 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // applies null move pruning
-    if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+
+    if (!null_moved && !in_pv_node && !board.is_in_check() && static_eval >= beta)
     {
+
         Board copy = board;
         copy.make_null_move();
 
         // to help detect threefold in nmp
         threefold_repetition.push_back(copy.hash);
 
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
+        int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
 
         threefold_repetition.pop_back();
 
-        // fail soft
-        if (null_move_cutoff >= beta)
-            return null_move_cutoff;
+        // if there are only pawns attempt to apply null move reduction instead of pruning
+        if (board.only_pawns(board.side_to_move))
+        {
+            if (null_move_score >= beta)
+            {
+                depth -= 4;
+                if (depth <= 0)
+                    return quiescence_search(board, alpha, beta, ply + 1);
+            }
+        }
+        // null move pruning
+        else
+        {
+
+            // fail soft
+            if (null_move_score >= beta)
+                return null_move_score;
+        }
     }
 
     MoveList move_list;
