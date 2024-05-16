@@ -43,7 +43,7 @@ public:
 
     // represents the number of nodes for a depths search
     uint64_t node_count;
-    uint64_t total_nodes = 0;
+    // uint64_t total_nodes = 0;
 
     // Searcher();
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age);
