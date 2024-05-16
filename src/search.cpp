@@ -249,7 +249,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         int current_eval;
 
         // don't do pvs on the first node
-        if (i == 0)
+        if (legal_moves == 1)
         {
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
@@ -266,7 +266,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             int reduction = 1;
 
             // applies the late move reduction
-            if (i > 3)
+            if (legal_moves > 2)
             {
                 // if it is a capture or a promotion
                 if (curr_move.move_flag() & 12)
