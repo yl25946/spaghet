@@ -196,8 +196,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 return entry.usable_score(ply);
             else
             {
-                // apply a reduction if we can't use the score
-                depth -= 4;
+                // apply a extension if we can't use the score
+                depth += 1;
             }
         }
         // don't do anything if the tt entry's depth isn't as big as our current depth
@@ -214,7 +214,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // applies null move pruning
 
-    if (!null_moved && !in_pv_node && !board.is_in_check() && static_eval >= beta)
+    if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
         Board copy = board;
@@ -227,24 +227,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         threefold_repetition.pop_back();
 
-        // if there are only pawns attempt to apply null move reduction instead of pruning
-        if (board.only_pawns(board.side_to_move))
-        {
-            if (null_move_score >= beta)
-            {
-                depth -= 4;
-                if (depth <= 0)
-                    return quiescence_search(board, alpha, beta, ply + 1);
-            }
-        }
-        // null move pruning
-        else
-        {
-
-            // fail soft
-            if (null_move_score >= beta)
-                return null_move_score;
-        }
+        // fail soft
+        if (null_move_score >= beta)
+            return null_move_score;
     }
 
     MoveList move_list;
