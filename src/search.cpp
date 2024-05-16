@@ -285,17 +285,25 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // stopped searching that line, so we can get rid of the hash
             threefold_repetition.pop_back();
 
-            // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
-            // so we'll assume that this node is the pv move, and then do a full window search. Additionally, with lmr, this means that
-            // our hypothesis that there isn't a best move near the end of the move_list is false, and we have to do a complete research to be sure
-            if (current_eval > alpha && in_pv_node)
+            // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
+            // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
+            if (current_eval > alpha)
             {
                 threefold_repetition.push_back(copy.hash);
 
-                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+                current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
 
-                // stopped searching that line, so we can get rid of the hash
-                threefold_repetition.pop_back();
+                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn' t our best move,
+                // so we'll assume that this node is the pv move, and then do a full window search.
+                if (current_eval > alpha && in_pv_node)
+                {
+                    threefold_repetition.push_back(copy.hash);
+
+                    current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+
+                    // stopped searching that line, so we can get rid of the hash
+                    threefold_repetition.pop_back();
+                }
             }
         }
 
@@ -319,6 +327,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
+
                     if ((curr_move.move_flag() & MOVE_FLAG::CAPTURES) == 0)
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
@@ -421,7 +430,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 10;
+    max_depth = 12;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
