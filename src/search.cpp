@@ -217,23 +217,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         threefold_repetition.pop_back();
 
-        // if there are only pawns attempt to apply null move reduction instead of pruning
-        // if (board.only_pawns(board.side_to_move))
-        // {
-        //     if (null_move_score >= beta)
-        //     {
-        //         depth -= 4;
-        //         if (depth <= 0)
-        //             return quiescence_search(board, alpha, beta, ply + 1);
-        //     }
-        // }
-        // // null move pruning
-        // else
-        // {
-        // fail soft
         if (null_move_score >= beta)
             return null_move_score;
-        // }
     }
 
     MoveList move_list;
