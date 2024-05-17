@@ -131,7 +131,7 @@ void UCI_loop()
 
             Time time(line);
 
-            Searcher searcher(board, move_list, transposition_table, age);
+            Searcher searcher(board, move_list, transposition_table, history, age);
 
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
