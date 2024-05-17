@@ -197,9 +197,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         else
         {
             Board copy = board;
-            int tt_search_result = -negamax(copy, -tt_score, -tt_score + 1, depth - 1, ply + 1, false, false);
-            if (tt_search_result <= tt_score)
-                return tt_score;
+            int alpha = tt_score - 25;
+            int beta = tt_score + 25;
+            int tt_search_result = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, false, false);
+            if (alpha < tt_search_result && tt_search_result < beta)
+                return tt_search_result;
         }
     }
 
