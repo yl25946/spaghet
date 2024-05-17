@@ -100,7 +100,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         else
         {
             // std::cout << history.move_value(moves[i]) << "\n";
-            moves[i].value = history.move_value(moves[i]);
+            moves[i].value = history.move_value(moves[i], board.side_to_move);
         }
     }
 }
