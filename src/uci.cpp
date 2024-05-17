@@ -92,6 +92,7 @@ void UCI_loop()
     TranspositionTable transposition_table(hash_size);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
+    QuietHistory history;
 
     std::cout << "id Spaghet\n"
               << "id author Li Ying\n"
@@ -161,6 +162,7 @@ void UCI_loop()
         {
             age = 0;
             transposition_table = TranspositionTable(hash_size);
+            history.clear();
         }
         else if (!line.compare(0, 3, "uci"))
         {

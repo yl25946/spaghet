@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
             Board board(start_position);
             std::vector<Move> move_list;
             TranspositionTable dummy(16);
-            Searcher searcher(board, move_list, dummy, 0, UINT64_MAX);
-
+            QuietHistory history;
+            Searcher searcher(board, move_list, dummy, history, 0, UINT64_MAX);
             searcher.bench();
             return 0;
         }
