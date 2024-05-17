@@ -61,7 +61,10 @@ constexpr int DEPTH_MARGIN = 6;
 constexpr int MARGIN = 80;
 
 // this is a clamp value used for history
-constexpr int MAX_HISTORY = 599;
+constexpr int MAX_HISTORY = 597;
+
+// this is the move ordering value for killers
+constexpr int MAX_KILLERS = 599;
 
 // board squares
 enum square

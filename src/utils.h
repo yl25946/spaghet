@@ -20,6 +20,13 @@ uint8_t file(uint8_t square);
 
 uint8_t rank(uint8_t square);
 
+// TAKEN FROM WEISS:
+
+// obtains how much we should reduce the depth by for late move reduction
+// move_number is how far we've iterated in the movelist
+int lmr_reduction_quiet(int depth, int move_number);
+int lmr_reduction_captures_promotions(int depth, int move_number);
+
 // checks if a Piece (enum) is white
 // NOTE: no_piece is white
 // bool isWhite(uint8_t piece);

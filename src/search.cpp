@@ -111,7 +111,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history);
+    move_list.score(board, transposition_table, history, killers, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -225,7 +225,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history);
+    move_list.score(board, transposition_table, history, killers, ply);
 
     uint8_t legal_moves = 0;
 
@@ -249,7 +249,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         int current_eval;
 
         // don't do pvs on the first node
-        if (i == 0)
+        if (legal_moves == 1)
         {
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
@@ -261,24 +261,49 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         }
         else
         {
+            // implements late move reduction
+            // no reduction
+            int reduction = 1;
+
+            // applies the late move reduction
+            if (legal_moves > 2)
+            {
+                // if it is a capture or a promotion
+                if (curr_move.move_flag() & 12)
+                    // legal moves - 1 counts the number of legal moves from 0
+                    reduction += lmr_reduction_captures_promotions(depth, legal_moves - 1);
+                // quiet move
+                else
+                    reduction += lmr_reduction_quiet(depth, legal_moves - 1);
+            }
+
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
+            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - reduction, ply + 1, false, false);
             // stopped searching that line, so we can get rid of the hash
             threefold_repetition.pop_back();
 
-            // pvs implementation, if we don't have a fail low from that search, that means that our previous move wasn't our best move,
-            // so we'll assume that this node is the pv move, and then do a full window search
-            if (alpha < current_eval && in_pv_node)
+            // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
+            // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
+            if (current_eval > alpha)
             {
                 threefold_repetition.push_back(copy.hash);
 
-                current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+                current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
 
-                // stopped searching that line, so we can get rid of the hash
-                threefold_repetition.pop_back();
+                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn' t our best move,
+                // so we'll assume that this node is the pv move, and then do a full window search.
+                if (current_eval > alpha && in_pv_node)
+                {
+                    threefold_repetition.push_back(copy.hash);
+
+                    current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+
+                    // stopped searching that line, so we can get rid of the hash
+                    threefold_repetition.pop_back();
+                }
             }
         }
 
@@ -299,12 +324,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 best_move = curr_move;
                 if (alpha >= beta)
                 {
+
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
+
                     if ((curr_move.move_flag() & MOVE_FLAG::CAPTURES) == 0)
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.insert(curr_move, depth, board.side_to_move);
+                        killers.insert(curr_move, ply);
                     }
                     break;
                 }
@@ -402,7 +430,7 @@ void Searcher::search()
 // yoinked from stormphrax for tradition
 void Searcher::bench()
 {
-    max_depth = 7;
+    max_depth = 12;
     end_time = UINT64_MAX;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",

@@ -61,3 +61,13 @@ uint8_t rank(uint8_t square)
 {
     return square >> 3;
 }
+
+int lmr_reduction_quiet(int depth, int move_number)
+{
+    return 1.35 + ((std::log(depth) * std::log(move_number)) / 2.75);
+}
+
+int lmr_reduction_captures_promotions(int depth, int move_number)
+{
+    return 0.2 + ((std::log(depth) * std::log(move_number)) / 3.35);
+}

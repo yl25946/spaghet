@@ -28,3 +28,29 @@ uint16_t QuietHistory::move_value(Move move, uint8_t side_to_move)
 {
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];
 }
+
+Killer::Killer()
+{
+    for (int i = 0; i < MAX_PLY; ++i)
+    {
+        count[i] = 0;
+    }
+}
+
+void Killer::insert(Move move, int ply)
+{
+    if (count[ply] >= 2)
+    {
+        std::swap(killers[ply][0], killers[ply][1]);
+        killers[ply][1] = move;
+
+        return;
+    }
+
+    killers[ply][count[ply]++] = move;
+}
+
+size_t Killer::size(int ply) const
+{
+    return count[ply];
+}
