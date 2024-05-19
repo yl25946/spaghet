@@ -29,7 +29,7 @@ public:
     uint16_t info;
 
     // undefined behavior, do not use
-    Move() {};
+    Move(){};
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 
@@ -49,10 +49,10 @@ class OrderedMove : public Move
 public:
     // Move move;
     // value of the move for sorting
-    uint16_t value;
+    int16_t value;
 
     // undefined behavior, do not use
-    OrderedMove() {};
+    OrderedMove(){};
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
 

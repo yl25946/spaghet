@@ -90,7 +90,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             uint8_t attacking_piece = board.mailbox[source_square];
             uint8_t captured_piece = board.mailbox[target_square];
 
-            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece];
+            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece] + CAPTURE_BONUS;
 
             continue;
         }
