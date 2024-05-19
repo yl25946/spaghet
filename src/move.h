@@ -49,12 +49,12 @@ class OrderedMove : public Move
 public:
     // Move move;
     // value of the move for sorting
-    int16_t value;
+    int64_t value;
 
     // undefined behavior, do not use
     OrderedMove(){};
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
-    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
+    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, int64_t value);
 
     // std::string to_string();
 };

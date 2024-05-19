@@ -48,7 +48,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         if (has_tt_move && tt_move.info == current_move.info)
         {
             // this ensures that the move comes first
-            moves[i].value = INF;
+            moves[i].value = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
@@ -78,7 +78,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].value = 14;
+                moves[i].value = 14 + CAPTURE_BONUS;
                 continue;
             }
 
@@ -119,9 +119,9 @@ Move MoveList::next_move()
 {
     // tracks the index and the value of the greatest index value in this entire list
     int max_entry_index = -1;
-    int max_entry_value = -1;
+    int64_t max_entry_value = INT64_MIN;
 
-    uint8_t search_index = left_swap_index;
+    int search_index = left_swap_index;
 
     for (; search_index < size(); ++search_index)
     {

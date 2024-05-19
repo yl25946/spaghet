@@ -6,7 +6,7 @@
 class QuietHistory
 {
 public:
-    uint16_t butterfly_table[2][64][64];
+    int64_t butterfly_table[2][64][64];
 
     QuietHistory();
 
