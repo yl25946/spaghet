@@ -330,7 +330,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
 
-                    if ((curr_move.move_flag() & MOVE_FLAG::CAPTURES) == 0)
+                    if (curr_move.is_quiet())
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.insert(curr_move, depth, board.side_to_move);

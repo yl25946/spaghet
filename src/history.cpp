@@ -24,7 +24,7 @@ void QuietHistory::insert(Move move, int depth, uint8_t side_to_move)
     butterfly_table[side_to_move][from_square][to_square] = std::min(butterfly_table[side_to_move][from_square][to_square] + depth * depth, MAX_HISTORY);
 }
 
-uint16_t QuietHistory::move_value(Move move, uint8_t side_to_move)
+int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
 {
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];
 }

@@ -37,6 +37,8 @@ public:
     uint8_t to_square();
     uint8_t move_flag();
 
+    bool is_quiet();
+
     // bool is_null_move();
 
     // uci compliant

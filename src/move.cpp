@@ -38,6 +38,11 @@ void Move::print()
     std::cout << to_string();
 }
 
+bool Move::is_quiet()
+{
+    return move_flag() & 12 == 0;
+}
+
 // OrderedMove::OrderedMove() : Move() {
 //                              };
 

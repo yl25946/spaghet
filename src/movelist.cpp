@@ -78,7 +78,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].value = 14 + CAPTURE_BONUS;
+                moves[i].value = 1499 + CAPTURE_BONUS;
                 continue;
             }
 

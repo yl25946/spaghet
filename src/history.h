@@ -16,7 +16,7 @@ public:
 
     // inserts a move into the butterfly tables
     void insert(Move move, int depth, uint8_t side_to_move);
-    uint16_t move_value(Move move, uint8_t side_to_move);
+    int64_t move_value(Move move, uint8_t side_to_move);
 };
 
 class Killer
