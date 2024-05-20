@@ -29,10 +29,15 @@ void QuietHistory::insert(Move move, int depth, uint8_t side_to_move, bool good)
     uint8_t from_square = move.from_square();
     uint8_t to_square = move.to_square();
 
-    const int delta = good ? depth * depth : -depth * depth;
+    const int64_t updated_value = butterfly_table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
+    // formula taken from ethereal
+
+    butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
+
+    // const int delta = good ? depth * depth : -depth * depth;
 
     // formula taken from ethereal
-    butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
+    // butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
 }
 
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)

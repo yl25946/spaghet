@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <ctime>
 #include <list>
+#include <algorithm>
 
 // #include "utils.h"
 // #include "attacks.h"
