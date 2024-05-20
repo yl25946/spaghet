@@ -338,10 +338,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.insert(curr_move, depth, board.side_to_move, true);
                         killers.insert(curr_move, ply);
-
-                        // add maluses
-                        history.insert(malus_moves, depth, board.side_to_move, false);
                     }
+                    // add maluses regardless if fail high was quiet
+                    history.insert(malus_moves, depth, board.side_to_move, false);
                     break;
                 }
             }
