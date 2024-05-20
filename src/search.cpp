@@ -380,6 +380,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 void Searcher::search()
 {
     int best_score;
+    // used to track aspiration windows
+    int guess;
     Move best_move;
     uint64_t time_elapsed;
     int alpha = -INF;
@@ -420,6 +422,8 @@ void Searcher::search()
             break;
         }
 
+        guess = best_score;
+
         // tracks how many times we've had to adjust the aspiration window
         int aspiration_adjustments = 0;
 
@@ -428,16 +432,16 @@ void Searcher::search()
             if (best_score <= alpha)
             {
                 // debugging purposes
-                int new_alpha = (best_score - (25 * std::pow(2, aspiration_adjustments)));
+                int new_alpha = (guess - (25 * std::pow(2, aspiration_adjustments)));
 
                 alpha = std::clamp(new_alpha, static_cast<int>(-INF), alpha);
             }
             else if (best_score >= beta)
             {
                 // debugging purposes
-                int new_beta = (best_score + (25 * std::pow(2, aspiration_adjustments)));
+                int new_beta = (guess + (25 * std::pow(2, aspiration_adjustments)));
 
-                alpha = std::clamp(new_beta, beta, static_cast<int>(INF));
+                beta = std::clamp(new_beta, beta, static_cast<int>(INF));
             }
 
             Board copy = board;
@@ -448,7 +452,10 @@ void Searcher::search()
                 break;
 
             ++aspiration_adjustments;
+            // std::cout << aspiration_adjustments << " " << alpha << " " << beta << "\n";
         }
+
+        // std::cout << static_cast<int>(aspiration_adjustments) << " " << alpha << " " << beta << "\n";
 
         if (stopped)
             break;
@@ -553,6 +560,7 @@ void Searcher::bench()
 
             // tracks how many times we've had to adjust the aspiration window
             int aspiration_adjustments = 0;
+            int guess = best_score;
 
             while (best_score <= alpha || best_score >= beta)
             {
@@ -568,7 +576,7 @@ void Searcher::bench()
                     // debugging purposes
                     int new_beta = (alpha + (25 * std::pow(2, aspiration_adjustments)));
 
-                    alpha = std::clamp(new_beta, new_beta, static_cast<int>(INF));
+                    beta = std::clamp(new_beta, new_beta, static_cast<int>(INF));
                 }
 
                 Board copy = board;
