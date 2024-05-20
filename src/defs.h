@@ -66,6 +66,7 @@ constexpr int64_t CAPTURE_BONUS = 16384;
 
 // this is a clamp value used for history
 constexpr int64_t MAX_HISTORY = CAPTURE_BONUS;
+constexpr int64_t MIN_HISTORY = -CAPTURE_BONUS;
 
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = CAPTURE_BONUS + 2;

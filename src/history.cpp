@@ -16,12 +16,15 @@ void QuietHistory::clear()
                 butterfly_table[i][j][k] = 0;
 }
 
-void QuietHistory::insert(Move move, int depth, uint8_t side_to_move)
+void QuietHistory::insert(Move move, int depth, uint8_t side_to_move, bool good)
 {
     uint8_t from_square = move.from_square();
     uint8_t to_square = move.to_square();
 
-    butterfly_table[side_to_move][from_square][to_square] = std::min(butterfly_table[side_to_move][from_square][to_square] + depth * depth, MAX_HISTORY);
+    const int delta = good ? depth * depth : -depth * depth;
+
+    // formula taken from ethereal
+    butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
 }
 
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)

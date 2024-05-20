@@ -324,6 +324,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             {
                 alpha = current_eval;
                 best_move = curr_move;
+
+                // fail high
                 if (alpha >= beta)
                 {
 
@@ -332,14 +334,27 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     if (curr_move.is_quiet())
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-                        history.insert(curr_move, depth, board.side_to_move);
+                        history.insert(curr_move, depth, board.side_to_move, true);
                         killers.insert(curr_move, ply);
                     }
                     break;
                 }
             }
         }
+        else
+        {
+            // give a malus if it didn't fail high
+            if (curr_move.is_quiet())
+            {
+                history.insert(curr_move, depth, board.side_to_move, false);
+            }
+        }
     }
+
+    // uncomment this if it doesn't work
+    // write the best move down at the current depth
+    if (ply == 0)
+        this->current_depth_best_move = best_move;
 
     if (legal_moves == 0)
     {
@@ -353,10 +368,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
     }
-    // uncomment this if it doesn't work
-    // write the best move down at the current depth
-    if (ply == 0)
-        this->current_depth_best_move = best_move;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
