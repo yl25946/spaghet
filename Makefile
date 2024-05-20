@@ -7,6 +7,5 @@ compile:
 
 debug: 
 	clang++ -fsanitize=undefined,address -fno-omit-frame-pointer -g -std=c++17 src/*.cpp $(EXE).exe
-
 clean: 
 	del /S *.exe

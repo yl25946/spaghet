@@ -22,6 +22,7 @@ Chess engine based on BBC
 - History Heuristic
 - Killer Heuristic
 - Late Move Reduction
+- Null move reduction when null move pruning is not possible
 
 # ELO Gainers
 Started from piece counting and standard negamax
@@ -39,6 +40,7 @@ Started from piece counting and standard negamax
 - History Heuristic (+99)
 - History Heuristic Bug Fix (only adding non-captures) (+47)
 - Killers (+25.7)
+- Aspiration Windows (+34)
 
 
 # Testing

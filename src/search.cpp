@@ -205,21 +205,22 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // applies null move pruning
+
     if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
+
         Board copy = board;
         copy.make_null_move();
 
         // to help detect threefold in nmp
         threefold_repetition.push_back(copy.hash);
 
-        int null_move_cutoff = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
+        int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
 
         threefold_repetition.pop_back();
 
-        // fail soft
-        if (null_move_cutoff >= beta)
-            return null_move_cutoff;
+        if (null_move_score >= beta)
+            return null_move_score;
     }
 
     MoveList move_list;
@@ -391,8 +392,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 void Searcher::search()
 {
     int best_score;
+    // used to track aspiration windows
+    int guess;
     Move best_move;
     uint64_t time_elapsed;
+    int alpha = -INF;
+    int beta = INF;
 
     this->start_time = get_time();
     this->node_count = 0;
@@ -418,7 +423,8 @@ void Searcher::search()
         this->curr_depth = current_depth;
 
         Board copy = board;
-        best_score = negamax(copy, -INF, INF, curr_depth, 0, true, false);
+
+        best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
 
         // std::cout << get_time() << "\n"
         //           << end_time << "\n";
@@ -427,6 +433,48 @@ void Searcher::search()
         {
             break;
         }
+
+        guess = best_score;
+
+        // tracks how many times we've had to adjust the aspiration window
+        int aspiration_adjustments = 0;
+
+        while (best_score <= alpha || best_score >= beta)
+        {
+            if (best_score <= alpha)
+            {
+                // debugging purposes
+                int new_alpha = (guess - (25 * (1 << aspiration_adjustments)));
+
+                alpha = std::clamp(new_alpha, static_cast<int>(-INF), alpha);
+            }
+            else if (best_score >= beta)
+            {
+                // debugging purposes
+                int new_beta = (guess + (25 * (1 << aspiration_adjustments)));
+
+                beta = std::clamp(new_beta, beta, static_cast<int>(INF));
+            }
+
+            Board copy = board;
+
+            best_score = negamax(copy, alpha, beta, current_depth, 0, true, false);
+
+            if (stopped)
+                break;
+
+            ++aspiration_adjustments;
+            // std::cout << aspiration_adjustments << " " << alpha << " " << beta << "\n";
+        }
+
+        // std::cout << static_cast<int>(aspiration_adjustments) << " " << alpha << " " << beta << "\n";
+
+        if (stopped)
+            break;
+
+        // updates alpha and beta
+        alpha = best_score - 25;
+        beta = best_score + 25;
 
         best_move = this->current_depth_best_move;
 
@@ -444,6 +492,7 @@ void Searcher::bench()
 {
     max_depth = 12;
     end_time = UINT64_MAX;
+    node_count = 0;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
                                      "4rrk1/2p1b1p1/p1p3q1/4p3/2P2n1p/1P1NR2P/PB3PP1/3R1QK1 b - - 2 24",
@@ -502,20 +551,62 @@ void Searcher::bench()
         transposition_table.clear();
         this->board = Board(fen);
         history.clear();
+        int alpha = -INF;
+        int beta = INF;
+        int best_score;
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
-            node_count = 0;
 
-            Board copy = this->board;
+            Board copy = board;
 
-            negamax(copy, -30000, 30000, current_depth, 0, true, false);
+            best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
 
-            // update the total node count
-            total_nodes += node_count;
+            // std::cout << get_time() << "\n"
+            //           << end_time << "\n";
+
+            if (stopped)
+            {
+                break;
+            }
+
+            // tracks how many times we've had to adjust the aspiration window
+            int aspiration_adjustments = 0;
+            int guess = best_score;
+
+            while (best_score <= alpha || best_score >= beta)
+            {
+                if (best_score <= alpha)
+                {
+                    // debugging purposes
+                    int new_alpha = (alpha - (25 * std::pow(2, aspiration_adjustments)));
+
+                    alpha = std::clamp(new_alpha, static_cast<int>(-INF), alpha);
+                }
+                else if (best_score >= beta)
+                {
+                    // debugging purposes
+                    int new_beta = (alpha + (25 * std::pow(2, aspiration_adjustments)));
+
+                    beta = std::clamp(new_beta, new_beta, static_cast<int>(INF));
+                }
+
+                Board copy = board;
+
+                best_score = negamax(copy, alpha, beta, current_depth, 0, true, false);
+
+                if (stopped)
+                    break;
+
+                ++aspiration_adjustments;
+            }
 
             if (stopped)
                 break;
+
+            // updates alpha and beta
+            alpha = best_score - 25;
+            beta = best_score + 25;
         }
     }
 
@@ -523,5 +614,5 @@ void Searcher::bench()
     const uint64_t time = get_time() - start_time;
 
     std::cout << "info string " << time / 1000 << " seconds" << "\n";
-    std::cout << total_nodes << " nodes " << (uint64_t)((double)total_nodes / time * 1000) << " nps" << "\n";
+    std::cout << node_count << " nodes " << (uint64_t)((double)node_count / time * 1000) << " nps" << "\n";
 }
