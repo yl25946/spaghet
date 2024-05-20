@@ -501,7 +501,7 @@ void Searcher::bench()
     {
         transposition_table.clear();
         this->board = Board(fen);
-        history.update();
+        history.clear();
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
