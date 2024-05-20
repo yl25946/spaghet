@@ -432,14 +432,14 @@ void Searcher::search()
             if (best_score <= alpha)
             {
                 // debugging purposes
-                int new_alpha = (guess - (25 * std::pow(2, aspiration_adjustments)));
+                int new_alpha = (guess - (25 * (1 << aspiration_adjustments)));
 
                 alpha = std::clamp(new_alpha, static_cast<int>(-INF), alpha);
             }
             else if (best_score >= beta)
             {
                 // debugging purposes
-                int new_beta = (guess + (25 * std::pow(2, aspiration_adjustments)));
+                int new_beta = (guess + (25 * (1 << aspiration_adjustments)));
 
                 beta = std::clamp(new_beta, beta, static_cast<int>(INF));
             }
