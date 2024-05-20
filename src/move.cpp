@@ -40,7 +40,7 @@ void Move::print()
 
 bool Move::is_quiet()
 {
-    return move_flag() & 12 == 0;
+    return (move_flag() & 12) == 0;
 }
 
 // OrderedMove::OrderedMove() : Move() {

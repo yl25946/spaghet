@@ -90,9 +90,9 @@ void UCI_loop()
     int hash_size = 16;
     uint32_t age = 0;
     TranspositionTable transposition_table(hash_size);
+    QuietHistory history;
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
-    QuietHistory history;
 
     std::cout << "id Spaghet\n"
               << "id author Li Ying\n"
@@ -104,6 +104,17 @@ void UCI_loop()
     while (true)
     {
         std::getline(std::cin, line);
+
+        // for (int i = 0; i < 2; ++i)
+        // {
+        //     for (int j = 0; j < 64; ++j)
+        //     {
+        //         for (int k = 0; k < 64; ++k)
+        //         {
+        //             std::cout << history.butterfly_table[i][j][k] << " ";
+        //         }
+        //     }
+        // }
 
         if (line[0] == '\n')
             continue;
