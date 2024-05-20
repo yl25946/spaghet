@@ -40,6 +40,7 @@ Started from piece counting and standard negamax
 - History Heuristic (+99)
 - History Heuristic Bug Fix (only adding non-captures) (+47)
 - Killers (+25.7)
+- Aspiration Windows (+34)
 
 
 # Testing
