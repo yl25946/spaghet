@@ -156,6 +156,9 @@ void UCI_loop()
             // starts searching
             searcher.search();
 
+            // finished searching, update history
+            history.update();
+
             // now that we've called go once, we can increase the age
             ++age;
         }

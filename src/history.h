@@ -12,6 +12,10 @@ public:
 
     void clear();
 
+    // call this after completing a search or before the another search
+    // halves the values in the table
+    void update();
+
     // side_to_move is based on the side that is playing the move
 
     // inserts a move into the butterfly tables
