@@ -1,6 +1,6 @@
 #pragma once
 
-#include "defs.h";
+#include "defs.h"
 #include "move.h"
 
 class QuietHistory

@@ -36,7 +36,7 @@ void QuietHistory::insert(Move move, int depth, uint8_t side_to_move, bool good)
     const int delta = good ? depth * depth : -depth * depth;
 
     // formula taken from ethereal
-    butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
+    butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * delta / MAX_HISTORY);
 }
 
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
