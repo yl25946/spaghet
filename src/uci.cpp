@@ -105,16 +105,22 @@ void UCI_loop()
     {
         std::getline(std::cin, line);
 
+        // int64_t min = 0;
+        // int64_t max = 0;
         // for (int i = 0; i < 2; ++i)
         // {
         //     for (int j = 0; j < 64; ++j)
         //     {
         //         for (int k = 0; k < 64; ++k)
         //         {
-        //             std::cout << history.butterfly_table[i][j][k] << " ";
+        //             // std::cout << history.butterfly_table[i][j][k] << " ";
+        //             min = std::min(min, history.butterfly_table[i][j][k]);
+        //             max = std::max(max, history.butterfly_table[i][j][k]);
         //         }
         //     }
         // }
+
+        // std::cout << min << " " << max << "\n";
 
         if (line[0] == '\n')
             continue;
