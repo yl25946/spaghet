@@ -224,6 +224,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     }
 
     MoveList move_list;
+    MoveList malus_moves;
 
     generate_moves(board, move_list);
 
@@ -337,6 +338,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.insert(curr_move, depth, board.side_to_move, true);
                         killers.insert(curr_move, ply);
+
+                        // add maluses
+                        history.insert(malus_moves, depth, board.side_to_move, false);
                     }
                     break;
                 }
@@ -347,7 +351,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // give a malus if it didn't fail high
             if (curr_move.is_quiet())
             {
-                history.insert(curr_move, depth, board.side_to_move, false);
+                malus_moves.insert(curr_move);
             }
         }
     }

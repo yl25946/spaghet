@@ -39,6 +39,14 @@ void QuietHistory::insert(Move move, int depth, uint8_t side_to_move, bool good)
     butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
 }
 
+void QuietHistory::insert(const MoveList &move_list, int depth, uint8_t side_to_move, bool good)
+{
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        insert(move_list.moves[i], depth, side_to_move, good);
+    }
+}
+
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
 {
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];

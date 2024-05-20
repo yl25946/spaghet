@@ -1,5 +1,10 @@
 #include "movelist.h"
 
+void MoveList::insert(Move move)
+{
+    moves[count++] = OrderedMove(move);
+}
+
 void MoveList::insert(uint8_t from, uint8_t to, uint8_t move_flag)
 {
     moves[count++] = OrderedMove(from, to, move_flag);

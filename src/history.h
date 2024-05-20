@@ -2,6 +2,9 @@
 
 #include "defs.h"
 #include "move.h"
+#include "movelist.h"
+
+class MoveList;
 
 class QuietHistory
 {
@@ -20,6 +23,7 @@ public:
 
     // inserts a move into the butterfly tables
     void insert(Move move, int depth, uint8_t side_to_move, bool good);
+    void insert(const MoveList &move_list, int depth, uint8_t side_to_move, bool good);
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 

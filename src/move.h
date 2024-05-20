@@ -55,6 +55,7 @@ public:
 
     // undefined behavior, do not use
     OrderedMove(){};
+    OrderedMove(Move move);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, int64_t value);
 

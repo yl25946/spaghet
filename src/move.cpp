@@ -43,8 +43,7 @@ bool Move::is_quiet()
     return (move_flag() & 12) == 0;
 }
 
-// OrderedMove::OrderedMove() : Move() {
-//                              };
+OrderedMove::OrderedMove(Move move) : Move(move){};
 
 OrderedMove::OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag) : Move(from, to, move_flag)
 {
