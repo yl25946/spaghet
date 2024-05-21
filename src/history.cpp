@@ -39,11 +39,14 @@ void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
     butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
 }
 
-void QuietHistory::update(const MoveList &move_list, int depth, uint8_t side_to_move, bool good)
+void QuietHistory::update(const MoveList &move_list, Move best_move, int depth, uint8_t side_to_move)
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        update(move_list.moves[i], depth, side_to_move, good);
+        if (move_list.moves[i].info == best_move.info)
+            update(move_list.moves[i], depth, side_to_move, true);
+        else
+            update(move_list.moves[i], depth, side_to_move, false);
     }
 }
 

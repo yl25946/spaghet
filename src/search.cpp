@@ -224,7 +224,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     }
 
     MoveList move_list;
-    MoveList malus_moves;
+    MoveList quiet_moves;
 
     generate_moves(board, move_list);
 
@@ -247,6 +247,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         if (!copy.was_legal())
             continue;
+
+        if (curr_move.is_quiet())
+            quiet_moves.insert(curr_move);
 
         ++legal_moves;
 
@@ -336,20 +339,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     if (curr_move.is_quiet())
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-                        history.update(curr_move, depth, board.side_to_move, true);
-                        history.update(malus_moves, depth, board.side_to_move, false);
+
                         killers.insert(curr_move, ply);
                     }
                     break;
                 }
-            }
-        }
-        else
-        {
-            // give a malus
-            if (curr_move.is_quiet())
-            {
-                malus_moves.insert(curr_move);
             }
         }
     }
