@@ -42,6 +42,7 @@ Started from piece counting and standard negamax
 - Killers (+25.7)
 - Aspiration Windows (+34)
 - malus + persistent history (+10.65)
+- Late Move Pruning (+33)
 
 
 # Testing
