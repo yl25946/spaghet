@@ -71,3 +71,15 @@ int lmr_reduction_captures_promotions(int depth, int move_number)
 {
     return 0.2 + ((std::log(depth) * std::log(move_number)) / 3.35);
 }
+
+bool is_mate_score(int score)
+{
+    return score >= MAX_MATE_SCORE || score <= MIN_MATE_SCORE;
+}
+
+int mate_score_to_moves(int score)
+{
+    int mate_ply = score > 0 ? MATE - score + 1 : -MATE - score;
+
+    return mate_ply / 2;
+}

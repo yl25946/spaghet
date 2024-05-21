@@ -27,6 +27,9 @@ uint8_t rank(uint8_t square);
 int lmr_reduction_quiet(int depth, int move_number);
 int lmr_reduction_captures_promotions(int depth, int move_number);
 
+bool is_mate_score(int score);
+int mate_score_to_moves(int score);
+
 // checks if a Piece (enum) is white
 // NOTE: no_piece is white
 // bool isWhite(uint8_t piece);

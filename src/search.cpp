@@ -498,7 +498,10 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+        if (is_mate_score(best_score))
+            std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+        else
+            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
