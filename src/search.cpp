@@ -339,7 +339,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     if (curr_move.is_quiet())
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-
+                        history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         killers.insert(curr_move, ply);
                     }
                     break;
