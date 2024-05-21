@@ -263,7 +263,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         ++legal_moves;
 
         // applies late move pruning
-        if (curr_move.is_quiet() && legal_moves >= 3 + depth * depth)
+        if (curr_move.is_quiet() && legal_moves >= 6 + 2 * depth * depth)
             continue;
 
         int current_eval;
