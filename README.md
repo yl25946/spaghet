@@ -41,6 +41,7 @@ Started from piece counting and standard negamax
 - History Heuristic Bug Fix (only adding non-captures) (+47)
 - Killers (+25.7)
 - Aspiration Windows (+34)
+- malus + persistent history (+10.65)
 
 
 # Testing
