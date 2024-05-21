@@ -21,7 +21,7 @@ void QuietHistory::update()
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 64; ++j)
             for (int k = 0; k < 64; ++k)
-                butterfly_table[i][j][k] /= 2;
+                butterfly_table[i][j][k] /= 4;
 }
 
 void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
