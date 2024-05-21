@@ -5,6 +5,9 @@
 #include "transposition_table.h"
 #include "history.h"
 
+class Killer;
+class QuietHistory;
+
 class MoveList
 {
 public:
@@ -18,6 +21,7 @@ public:
     // MoveList();
 
     // move order value defaults to 0
+    void insert(Move move);
     void insert(uint8_t from, uint8_t to, uint8_t move_flag);
     void insert(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
     // scores all the moves

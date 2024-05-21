@@ -54,5 +54,7 @@ https://spaghet.pythonanywhere.com/
 - Write legality check before making a move (usually gains 0-10 elo)
 
 # Special Thanks
-- Zuppa and Ciekce for dealing with me
+- The entirety of Stockfish Discord
+- Zuppa, Ciekce, fury, and shawn_xu for dealing with me
 - AGE for writing OB
+- To Makism Korzh for writing BBC tutorial, which helped me write movegen with magic bitboards and precalculated lookup tables

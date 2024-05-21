@@ -29,13 +29,15 @@ public:
     uint16_t info;
 
     // undefined behavior, do not use
-    Move() {};
+    Move(){};
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 
     uint8_t from_square();
     uint8_t to_square();
     uint8_t move_flag();
+
+    bool is_quiet();
 
     // bool is_null_move();
 
@@ -49,12 +51,13 @@ class OrderedMove : public Move
 public:
     // Move move;
     // value of the move for sorting
-    uint16_t value;
+    int64_t value;
 
     // undefined behavior, do not use
-    OrderedMove() {};
+    OrderedMove(){};
+    OrderedMove(Move move);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
-    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
+    OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, int64_t value);
 
     // std::string to_string();
 };

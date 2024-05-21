@@ -90,6 +90,7 @@ void UCI_loop()
     int hash_size = 16;
     uint32_t age = 0;
     TranspositionTable transposition_table(hash_size);
+    QuietHistory history;
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
@@ -103,6 +104,23 @@ void UCI_loop()
     while (true)
     {
         std::getline(std::cin, line);
+
+        // int64_t min = 0;
+        // int64_t max = 0;
+        // for (int i = 0; i < 2; ++i)
+        // {
+        //     for (int j = 0; j < 64; ++j)
+        //     {
+        //         for (int k = 0; k < 64; ++k)
+        //         {
+        //             // std::cout << history.butterfly_table[i][j][k] << " ";
+        //             min = std::min(min, history.butterfly_table[i][j][k]);
+        //             max = std::max(max, history.butterfly_table[i][j][k]);
+        //         }
+        //     }
+        // }
+
+        // std::cout << min << " " << max << "\n";
 
         if (line[0] == '\n')
             continue;
@@ -130,7 +148,7 @@ void UCI_loop()
 
             Time time(line);
 
-            Searcher searcher(board, move_list, transposition_table, age);
+            Searcher searcher(board, move_list, transposition_table, history, age);
 
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
@@ -143,6 +161,9 @@ void UCI_loop()
 
             // starts searching
             searcher.search();
+
+            // finished searching, update history
+            history.update();
 
             // now that we've called go once, we can increase the age
             ++age;
@@ -161,6 +182,7 @@ void UCI_loop()
         {
             age = 0;
             transposition_table = TranspositionTable(hash_size);
+            history.clear();
         }
         else if (!line.compare(0, 3, "uci"))
         {

@@ -1,5 +1,10 @@
 #include "movelist.h"
 
+void MoveList::insert(Move move)
+{
+    moves[count++] = OrderedMove(move);
+}
+
 void MoveList::insert(uint8_t from, uint8_t to, uint8_t move_flag)
 {
     moves[count++] = OrderedMove(from, to, move_flag);
@@ -48,7 +53,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         if (has_tt_move && tt_move.info == current_move.info)
         {
             // this ensures that the move comes first
-            moves[i].value = INF;
+            moves[i].value = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
@@ -78,7 +83,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].value = 14;
+                moves[i].value = 1400 + CAPTURE_BONUS;
                 continue;
             }
 
@@ -90,7 +95,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             uint8_t attacking_piece = board.mailbox[source_square];
             uint8_t captured_piece = board.mailbox[target_square];
 
-            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece];
+            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece] + CAPTURE_BONUS;
 
             continue;
         }
@@ -100,9 +105,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         else
         {
             // std::cout << history.move_value(moves[i]) << "\n";
-
-            // base value for history
-            moves[i].value = history.move_value(moves[i]);
+            moves[i].value = history.move_value(moves[i], board.side_to_move);
 
             // check killer moves
             const int killers_size = killers.size(ply);
@@ -121,9 +124,9 @@ Move MoveList::next_move()
 {
     // tracks the index and the value of the greatest index value in this entire list
     int max_entry_index = -1;
-    int max_entry_value = -1;
+    int64_t max_entry_value = INT64_MIN;
 
-    uint8_t search_index = left_swap_index;
+    int search_index = left_swap_index;
 
     for (; search_index < size(); ++search_index)
     {

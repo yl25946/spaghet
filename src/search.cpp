@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age) : board(board), transposition_table(transposition_table)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -23,9 +23,10 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->board = board;
     this->age = age;
     this->transposition_table = transposition_table;
+    this->history = history;
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -40,6 +41,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->board = board;
     this->age = age;
     this->transposition_table = transposition_table;
+    this->history = history;
     this->end_time = end_time;
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
@@ -231,6 +233,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     }
 
     MoveList move_list;
+    MoveList quiet_moves;
 
     generate_moves(board, move_list);
 
@@ -253,6 +256,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         if (!copy.was_legal())
             continue;
+
+        if (curr_move.is_quiet())
+            quiet_moves.insert(curr_move);
 
         ++legal_moves;
 
@@ -345,16 +351,17 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             {
                 alpha = current_eval;
                 best_move = curr_move;
+
+                // fail high
                 if (alpha >= beta)
                 {
 
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
-
-                    if ((curr_move.move_flag() & MOVE_FLAG::CAPTURES) == 0)
+                    if (curr_move.is_quiet())
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-                        history.insert(curr_move, depth);
+                        history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         killers.insert(curr_move, ply);
                     }
                     break;
@@ -362,6 +369,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             }
         }
     }
+
+    // uncomment this if it doesn't work
+    // write the best move down at the current depth
+    if (ply == 0)
+        this->current_depth_best_move = best_move;
 
     if (legal_moves == 0)
     {
@@ -375,10 +387,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
     }
-    // uncomment this if it doesn't work
-    // write the best move down at the current depth
-    if (ply == 0)
-        this->current_depth_best_move = best_move;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
@@ -560,10 +568,10 @@ void Searcher::bench()
     {
         transposition_table.clear();
         this->board = Board(fen);
+        history.clear();
         int alpha = -INF;
         int beta = INF;
         int best_score;
-
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;

@@ -61,11 +61,16 @@ constexpr int NULL_MOVE_DEPTH_REDUCTION = 3;
 constexpr int DEPTH_MARGIN = 6;
 constexpr int MARGIN = 80;
 
-// this is a clamp value used for history
-constexpr int MAX_HISTORY = 597;
+// used for move ordering
+constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT64_MAX;
+constexpr int64_t CAPTURE_BONUS = 1LL << 31;
 
-// this is the move ordering value for killers
-constexpr int MAX_KILLERS = 599;
+// this is a clamp value used for history
+constexpr int64_t MAX_HISTORY = 1 << 14;
+constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
+
+// this is the move ordering value for killers, make sure it's above histories
+constexpr int64_t MAX_KILLERS = 1 << 20;
 
 // board squares
 enum square

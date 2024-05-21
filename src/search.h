@@ -24,7 +24,7 @@ public:
 
     TranspositionTable &transposition_table;
 
-    QuietHistory history;
+    QuietHistory &history;
     Killer killers;
 
     // tracks how many times we've called "go" command to check age in TT
@@ -46,8 +46,8 @@ public:
     // uint64_t total_nodes = 0;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age);
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, uint32_t age, uint64_t end_time);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // uses iterative deepening
