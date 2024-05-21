@@ -88,6 +88,9 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 {
     // return evaluate(board);
 
+    if (stopped)
+        return 0;
+
     ++node_count;
     if (!(node_count & 4095))
         if (get_time() >= end_time)
@@ -162,6 +165,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 {
     ++node_count;
 
+    if (stopped)
+        return 0;
+
     if (!(node_count & 4095))
         if (get_time() >= end_time)
         {
@@ -215,6 +221,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
 
+        if (stopped)
+            return 0;
+
         threefold_repetition.pop_back();
 
         if (null_move_score >= beta)
@@ -257,6 +266,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
             current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node, false);
 
+            if (stopped)
+                return 0;
+
             // stopped searching that line, so we can get rid of the hash
             threefold_repetition.pop_back();
         }
@@ -283,6 +295,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
             current_eval = -negamax(copy, -alpha - 1, -alpha, depth - reduction, ply + 1, false, false);
+
+            if (stopped)
+                return 0;
+
             // stopped searching that line, so we can get rid of the hash
             threefold_repetition.pop_back();
 
@@ -294,6 +310,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
                 current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
 
+                if (stopped)
+                    return 0;
+
+                threefold_repetition.pop_back();
+
                 // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn' t our best move,
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && in_pv_node)
@@ -301,6 +322,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     threefold_repetition.push_back(copy.hash);
 
                     current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+
+                    if (stopped)
+                        return 0;
 
                     // stopped searching that line, so we can get rid of the hash
                     threefold_repetition.pop_back();
@@ -310,8 +334,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         if (stopped)
             return 0;
-
-        // if alpha
 
         // fail soft framework
         if (current_eval > best_eval)
