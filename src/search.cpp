@@ -95,8 +95,6 @@ bool SEE(const Board &board, Move move, int threshold)
     uint8_t to_square = move.to_square();
     uint8_t move_flag = move.move_flag();
 
-    uint64_t attacks = board.attackers(to_square, board.side_to_move ^ 1);
-
     uint8_t target = move_flag == EN_PASSANT_CAPTURE ? PAWN : colored_to_uncolored(board.mailbox[to_square]);
     uint8_t promo = move.promotion_piece();
     int value = SEEValue[target] - threshold;
@@ -121,11 +119,12 @@ bool SEE(const Board &board, Move move, int threshold)
     if (value >= 0)
         return true;
 
-    uint64_t occupied = board.blockers();
-    remove_bit(occupied, from_square);
-    remove_bit(occupied, to_square);
+    // doesn't matter if the square is occupied or not
+    uint64_t occupied = board.blockers() ^ (1ULL << from_square) ^ (1ULL << to_square);
 
-    uint64_t attackers = board.attackers(to_square, board.side_to_move ^ 1);
+    // removed the piece on the from_square from the attackers bitboard, because we already used the piece to capture
+    uint64_t attackers = board.attackers(to_square) ^ (1ULL << from_square);
+
     uint8_t side = board.side_to_move ^ 1;
 
     // manually adds in the ep attacks
