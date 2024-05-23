@@ -43,6 +43,7 @@ extern std::string repetitions;
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
 #define colored_to_uncolored(piece) (piece >> 1)
+#define uncolored_to_colored(piece, color) (piece << 1 | color)
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;
@@ -71,6 +72,10 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = 1 << 20;
+
+// SEE values
+constexpr int SEEValue[15] = {100, 422, 422, 642, 1015, 0,
+                              100, 422, 422, 642, 1015, 0, 0, 0, 0};
 
 // board squares
 enum square

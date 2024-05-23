@@ -271,6 +271,32 @@ bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
     return false;
 }
 
+uint64_t Board::attackers(uint8_t square, uint8_t side_attacking) const
+{
+    // attacks by sliding pieces
+    uint64_t blocking_pieces = blockers();
+    uint64_t attacks = 0;
+
+    attacks |= side_attacking == WHITE ? (pawn_attacks[BLACK][square] & bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][square] & bitboard(BLACK_PAWN));
+
+    // attacked by knights
+    attacks |= knight_attacks[square] & (colors[side_attacking] & pieces[KNIGHT]);
+
+    // attacked by king
+    attacks |= king_attacks[square] & (colors[side_attacking] & pieces[KING]);
+
+    // attacked by bishop
+    attacks |= get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[BISHOP]);
+
+    // attacked by rooks
+    attacks |= get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[ROOK]);
+
+    // attacked by queens
+    attacks |= get_queen_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[QUEEN]);
+
+    return attacks;
+}
+
 bool Board::is_in_check()
 {
     return is_square_attacked(lsb(bitboard(WHITE_KING + side_to_move)), (side_to_move ^ 1));

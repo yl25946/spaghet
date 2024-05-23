@@ -35,27 +35,18 @@ int main(int argc, char *argv[])
 
     // Board board(start_position);
 
-    // std::vector<Move> move_list;
-
-    // move_list.push_back(Move(g1, f3, 0));
-    // move_list.push_back(Move(g8, f6, 0));
-    // move_list.push_back(Move(f3, g1, 0));
-    // move_list.push_back(Move(f6, g8, 0));
-    // move_list.push_back(Move(g1, f3, 0));
-    // move_list.push_back(Move(g8, f6, 0));
-    // move_list.push_back(Move(f3, g1, 0));
-    // move_list.push_back(Move(f6, g8, 0));
-    // move_list.push_back(Move(g1, f3, 0));
-    // move_list.push_back(Move(g8, f6, 0));
-    // move_list.push_back(Move(f3, g1, 0));
-    // move_list.push_back(Move(f6, g8, 0));
-
-    // Searcher searcher(board, move_list);
-
-    // std::cout << searcher.threefold(board);
-
-    // Board board(tricky_position);
+    // Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     // std::cout << perft_debug(board, 4, 4);
+
+    // Board board("rnbqkb1r/ppp1pppp/5n2/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
+    // print_bitboard(board.attackers(d5, WHITE));
+
+    // Board board("rnbqkb1r/ppp1pppp/5n2/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
+    // std::vector<Move> move_list;
+    // TranspositionTable dummy(16);
+    // QuietHistory history;
+    // Searcher searcher(board, move_list, dummy, history, 0, UINT64_MAX);
+    // std::cout << (searcher.SEE(board, Move(e5, d6, MOVE_FLAG::EN_PASSANT_CAPTURE), 0) ? "true" : "false");
 
     return 0;
 }

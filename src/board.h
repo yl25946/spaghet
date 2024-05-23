@@ -50,6 +50,7 @@ public:
 
     // checks whether a given square is attacked by the given side
     bool is_square_attacked(uint8_t square, uint8_t side_attacking) const;
+    uint64_t attackers(uint8_t square, uint8_t side_attacking) const;
 
     // checks if a move is pseudolegal
     bool is_pseudolegal(Move move) const;

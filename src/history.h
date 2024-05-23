@@ -27,14 +27,14 @@ public:
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 
-class Killer
+class Killers
 {
 public:
     Move killers[MAX_PLY][2];
 
     uint8_t count[MAX_PLY];
 
-    Killer();
+    Killers();
 
     void insert(Move move, int ply);
 

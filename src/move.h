@@ -29,21 +29,26 @@ public:
     uint16_t info;
 
     // undefined behavior, do not use
-    Move(){};
+    Move() {};
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 
-    uint8_t from_square();
-    uint8_t to_square();
-    uint8_t move_flag();
+    uint8_t from_square() const;
+    uint8_t to_square() const;
+    uint8_t move_flag() const;
 
-    bool is_quiet();
+    bool is_quiet() const;
+    bool is_castle() const;
+    bool is_promotion() const;
+    // NOT ERROR CHECKED!
+    // returns an uncolored pieec
+    uint8_t promotion_piece() const;
 
     // bool is_null_move();
 
     // uci compliant
-    std::string to_string();
-    void print();
+    std::string to_string() const;
+    void print() const;
 };
 
 class OrderedMove : public Move
@@ -54,7 +59,7 @@ public:
     int64_t value;
 
     // undefined behavior, do not use
-    OrderedMove(){};
+    OrderedMove() {};
     OrderedMove(Move move);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag);
     OrderedMove(uint8_t from, uint8_t to, uint8_t move_flag, int64_t value);
