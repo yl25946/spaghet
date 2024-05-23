@@ -6,9 +6,10 @@
 #include "movelist.h"
 #include "movegen.h"
 #include "transposition_table.h"
-#include "history.h"
+// #include "history.h"
 
 class QuietHistory;
+class Killers;
 class MoveList;
 
 constexpr uint64_t check_count = 4096;

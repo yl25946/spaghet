@@ -2,7 +2,7 @@
 
 #include "defs.h"
 #include "move.h"
-#include "movelist.h"
+// #include "movelist.h"
 
 class MoveList;
 
@@ -23,7 +23,7 @@ public:
 
     // inserts a move into the butterfly tables
     void update(Move move, int depth, uint8_t side_to_move, bool good);
-    void update(const MoveList &move_list, Move best_move, int depth, uint8_t side_to_move);
+    void update(MoveList &move_list, Move best_move, int depth, uint8_t side_to_move);
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 
