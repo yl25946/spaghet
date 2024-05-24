@@ -153,6 +153,8 @@ void UCI_loop()
         }
         else if (!line.compare(0, 2, "go"))
         {
+            // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
+            threads.terminate();
 
             Searcher searcher(board, move_list, transposition_table, history, info.age);
 
