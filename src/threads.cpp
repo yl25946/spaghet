@@ -14,7 +14,7 @@ void Threads::insert(Searcher &searcher)
 void Threads::go()
 {
     for (Searcher &searcher : thread_data)
-        threads.push_back(std::thread(search, &searcher, &options));
+        threads.push_back(std::thread(search, searcher, options));
 }
 
 void Threads::terminate()

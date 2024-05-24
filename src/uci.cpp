@@ -155,6 +155,8 @@ void UCI_loop()
         {
             // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
             threads.terminate();
+            // update history before searching to prevent race conditions
+            history.update();
 
             Searcher searcher(board, move_list, transposition_table, history, info.age);
 
@@ -175,9 +177,6 @@ void UCI_loop()
 
             threads.go();
 
-            // finished searching, update history
-            history.update();
-
             // now that we've called go once, we can increase the age
             ++info.age;
         }
@@ -197,6 +196,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 10, "ucinewgame"))
         {
+            threads.terminate();
             info.reset();
             transposition_table = TranspositionTable(info.hash_size);
             history.clear();
