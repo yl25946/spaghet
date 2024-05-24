@@ -131,7 +131,8 @@ bool SEE(const Board &board, Move move, int threshold)
     if (move_flag == MOVE_FLAG::DOUBLE_PAWN_PUSH)
     {
         int en_passant_square = to_square + (board.side_to_move == COLOR::WHITE ? 8 : -8);
-        attackers |= board.side_to_move == WHITE ? (pawn_attacks[BLACK][en_passant_square] & board.bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][en_passant_square] & board.bitboard(BLACK_PAWN));
+        // we need to look a move ahead, so we use the same color
+        attackers |= board.side_to_move == WHITE ? (pawn_attacks[WHITE][en_passant_square] & board.bitboard(BLACK_PAWN)) : (pawn_attacks[BLACK][en_passant_square] & board.bitboard(WHITE_PAWN));
     }
 
     // print_bitboard(attackers);
