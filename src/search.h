@@ -6,6 +6,7 @@
 #include "movelist.h"
 #include "movegen.h"
 #include "transposition_table.h"
+#include "threads.h"
 // #include "history.h"
 
 class QuietHistory;
@@ -18,7 +19,6 @@ constexpr uint64_t check_count = 4096;
 extern int max_depth;
 
 bool SEE(const Board &board, Move move, int threshold);
-
 class Searcher
 {
 public:

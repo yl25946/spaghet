@@ -82,22 +82,30 @@ void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
     return;
 }
 
+void UciOptions::reset()
+{
+    hash_size = 16;
+    age = 0;
+    threads = 0;
+}
+
 void UCI_loop()
 {
     std::string line;
     Board board(start_position);
+    UciOptions info;
     std::vector<Move> move_list;
-    int hash_size = 16;
-    uint32_t age = 0;
-    TranspositionTable transposition_table(hash_size);
+    TranspositionTable transposition_table(info.hash_size);
     QuietHistory history;
+    Threads threads;
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
-    std::cout << "id Spaghet\n"
-              << "id author Li Ying\n"
-              << "option name Hash type spin default 16 min 1 max 1024\n"
-              << "uciok\n";
+    std::cout
+        << "id Spaghet\n"
+        << "id author Li Ying\n"
+        << "option name Hash type spin default 16 min 1 max 1024\n"
+        << "uciok\n";
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
 
@@ -148,31 +156,30 @@ void UCI_loop()
 
             Time time(line);
 
-            Searcher searcher(board, move_list, transposition_table, history, age);
+            Searcher searcher(board, move_list, transposition_table, history, info.age);
 
             // gets the endtime
             searcher.end_time = time.get_move_time(searcher.board.side_to_move);
 
-            // std::cout << searcher.board.only_pawns(WHITE) << "\n";
+            threads.insert(searcher);
 
-            // std::cout << searcher.board.hash << "\n";
-
-            // perft_debug(searcher.board, 1, 1);
-
-            // starts searching
-            searcher.search();
+            threads.go();
 
             // finished searching, update history
             history.update();
 
             // now that we've called go once, we can increase the age
-            ++age;
+            ++info.age;
+        }
+        else if (!line.compare(0, 2, "go"))
+        {
+            threads.terminate();
         }
         else if (!line.compare(0, 14, "setoption Hash"))
         {
-            hash_size = std::stoi(line.substr(15));
+            info.hash_size = std::stoi(line.substr(15));
             // std::cout << hash_size << "\n";
-            transposition_table.resize(hash_size);
+            transposition_table.resize(info.hash_size);
         }
         else if (!line.compare(0, 14, "option Threads"))
         {
@@ -180,8 +187,8 @@ void UCI_loop()
         }
         else if (!line.compare(0, 10, "ucinewgame"))
         {
-            age = 0;
-            transposition_table = TranspositionTable(hash_size);
+            info.reset();
+            transposition_table = TranspositionTable(info.hash_size);
             history.clear();
         }
         else if (!line.compare(0, 3, "uci"))
@@ -193,6 +200,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 4, "quit"))
         {
+            threads.terminate();
             break;
         }
     }
