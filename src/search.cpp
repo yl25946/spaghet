@@ -128,10 +128,10 @@ bool SEE(const Board &board, Move move, int threshold)
     uint8_t side = board.side_to_move ^ 1;
 
     // manually adds in the ep attacks
-    if (board.en_passant_square != no_square)
+    if (move_flag == MOVE_FLAG::DOUBLE_PAWN_PUSH)
     {
-        int pawn_en_passant_square = board.en_passant_square + (board.side_to_move == COLOR::WHITE ? 8 : -8);
-        attackers |= board.side_to_move == WHITE ? (pawn_attacks[BLACK][board.en_passant_square] & board.bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][board.en_passant_square] & board.bitboard(BLACK_PAWN));
+        int en_passant_square = to_square + (board.side_to_move == COLOR::WHITE ? 8 : -8);
+        attackers |= board.side_to_move == WHITE ? (pawn_attacks[BLACK][en_passant_square] & board.bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][en_passant_square] & board.bitboard(BLACK_PAWN));
     }
 
     // print_bitboard(attackers);
