@@ -24,11 +24,11 @@ public:
 class Threads
 {
 public:
-    UciOptions options;
+    UciOptions &options;
     std::vector<std::thread> threads;
     std::vector<Searcher> thread_data;
 
-    Threads(){};
+    Threads() : options(options){};
 
     void insert(Searcher &searcher);
 

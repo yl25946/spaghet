@@ -154,12 +154,20 @@ void UCI_loop()
         else if (!line.compare(0, 2, "go"))
         {
 
-            Time time(line);
-
             Searcher searcher(board, move_list, transposition_table, history, info.age);
 
-            // gets the endtime
-            searcher.end_time = time.get_move_time(searcher.board.side_to_move);
+            // implements the go infinite command
+            if (!line.compare(0, 11, "go infinite"))
+            {
+                searcher.end_time = UINT64_MAX;
+            }
+            else
+            {
+                Time time(line);
+
+                // gets the endtime
+                searcher.end_time = time.get_move_time(searcher.board.side_to_move);
+            }
 
             threads.insert(searcher);
 
@@ -171,7 +179,7 @@ void UCI_loop()
             // now that we've called go once, we can increase the age
             ++info.age;
         }
-        else if (!line.compare(0, 2, "go"))
+        else if (!line.compare(0, 4, "stop"))
         {
             threads.terminate();
         }
