@@ -157,6 +157,8 @@ void UCI_loop()
             threads.terminate();
             // update history before searching to prevent race conditions
             history.update();
+            // now that we've called go, we can increase the age
+            ++info.age;
 
             Searcher searcher(board, move_list, transposition_table, history, info.age);
 
@@ -176,9 +178,6 @@ void UCI_loop()
             threads.insert(searcher);
 
             threads.go();
-
-            // now that we've called go once, we can increase the age
-            ++info.age;
         }
         else if (!line.compare(0, 4, "stop"))
         {
