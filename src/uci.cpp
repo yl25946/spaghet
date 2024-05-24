@@ -171,7 +171,8 @@ void UCI_loop()
             {
                 Time time(line);
 
-                // gets the endtime
+                // gets the endtime and startime
+                searcher.start_time = get_time();
                 searcher.end_time = time.get_move_time(searcher.board.side_to_move);
             }
 

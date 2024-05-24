@@ -517,7 +517,7 @@ void Searcher::search()
     int alpha = -INF;
     int beta = INF;
 
-    this->start_time = get_time();
+    // this->start_time = get_time();
     this->node_count = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
