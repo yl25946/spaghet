@@ -83,7 +83,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].value = 1400 + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                moves[i].value = 1400 + CAPTURE_BONUS;
                 continue;
             }
 
@@ -95,7 +95,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             uint8_t attacking_piece = board.mailbox[source_square];
             uint8_t captured_piece = board.mailbox[target_square];
 
-            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece] + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece] + CAPTURE_BONUS;
 
             continue;
         }
