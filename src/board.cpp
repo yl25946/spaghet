@@ -81,28 +81,24 @@ Board::Board(const std::string &fen)
         {
         case 'K':
             rights |= WHITE_KING_CASTLE;
-            ++char_it;
             break;
 
         case 'Q':
             rights |= WHITE_QUEEN_CASTLE;
-            ++char_it;
             break;
 
         case 'k':
             rights |= BLACK_KING_CASTLE;
-            ++char_it;
             break;
 
         case 'q':
             rights |= BLACK_QUEEN_CASTLE;
-            ++char_it;
             break;
 
         default:
-            ++char_it;
             break;
         }
+        ++char_it;
     }
 
     ++char_it;

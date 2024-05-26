@@ -257,14 +257,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (!copy.was_legal())
             continue;
 
-        if (curr_move.is_quiet())
-            quiet_moves.insert(curr_move);
-
         ++legal_moves;
 
-        // applies late move pruning
-        if (curr_move.is_quiet() && legal_moves >= 6 + 2 * depth * depth)
-            continue;
+        if (curr_move.is_quiet())
+        {
+            quiet_moves.insert(curr_move);
+            // applies late move pruning
+            if (legal_moves >= 6 + 2 * depth * depth)
+                continue;
+        }
 
         int current_eval;
 
@@ -291,13 +292,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies the late move reduction
             if (legal_moves > 2)
             {
-                // if it is a capture or a promotion
-                if (curr_move.move_flag() & 12)
+                if (curr_move.is_quiet())
                     // legal moves - 1 counts the number of legal moves from 0
-                    reduction += lmr_reduction_captures_promotions(depth, legal_moves - 1);
-                // quiet move
-                else
                     reduction += lmr_reduction_quiet(depth, legal_moves - 1);
+                // noisy move
+                else
+                    reduction += lmr_reduction_captures_promotions(depth, legal_moves - 1);
             }
 
             // we can check for threefold repetition later, updates the state though
@@ -421,7 +421,6 @@ void Searcher::search()
     int alpha = -INF;
     int beta = INF;
 
-    this->start_time = get_time();
     this->node_count = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
