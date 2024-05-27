@@ -172,7 +172,8 @@ void UCI_loop()
             {
                 Time time(line);
 
-                // gets the endtime
+                // gets the endtime and startime
+                searcher.start_time = get_time();
                 searcher.end_time = time.get_move_time(searcher.board.side_to_move);
             }
 
@@ -199,6 +200,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 10, "ucinewgame"))
         {
+            threads.terminate();
             info.reset();
             transposition_table = TranspositionTable(info.hash_size);
             history.clear();

@@ -17,6 +17,9 @@ constexpr uint64_t check_count = 4096;
 
 // tracking the max depth across the engine
 extern int max_depth;
+
+bool SEE(const Board &board, Move move, int threshold);
+
 class Searcher
 {
 public:
