@@ -104,6 +104,9 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     // creates a baseline
     int stand_pat = evaluate(board);
 
+    if (ply >= MAX_PLY - 1)
+        return stand_pat;
+
     if (stand_pat >= beta)
         return stand_pat; // fail soft
 
@@ -210,8 +213,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (!in_pv_node && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
         return static_eval;
 
-    // applies null move pruning
+    // bailout if
+    if (ply >= MAX_PLY - 1)
+        return static_eval;
 
+    // applies null move pruning
     if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
@@ -325,7 +331,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
                 threefold_repetition.pop_back();
 
-                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn' t our best move,
+                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && in_pv_node)
                 {

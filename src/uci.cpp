@@ -97,7 +97,7 @@ void UCI_loop()
     std::vector<Move> move_list;
     TranspositionTable transposition_table(info.hash_size);
     QuietHistory history;
-    Threads threads;
+    Threads threads(info);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
@@ -166,6 +166,7 @@ void UCI_loop()
             if (!line.compare(0, 11, "go infinite"))
             {
                 searcher.end_time = UINT64_MAX;
+                max_depth = 255;
             }
             else
             {
@@ -174,6 +175,9 @@ void UCI_loop()
                 // gets the endtime
                 searcher.end_time = time.get_move_time(searcher.board.side_to_move);
             }
+
+            // account for the start_time
+            searcher.start_time = get_time();
 
             threads.insert(searcher);
 

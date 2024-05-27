@@ -9,9 +9,9 @@ else
 endif
 
 compile: 
-	$(CXX) src/*.cpp -o $(EXE)$(EXTENSION) -O3 -march=native -std=c++17 $(WARNINGS)
+	$(CXX) src/*.cpp -o $(EXE)$(EXTENSION) -O3 -march=native -std=c++17 -Wl,--stack=16777216 $(WARNINGS)
 
 debug: 
-	clang++ -fsanitize=undefined,address -fno-omit-frame-pointer -g -std=c++17 src/*.cpp $(EXE).exe
+	clang++ -fsanitize=undefined,address -fno-omit-frame-pointer -g -std=c++17 -Wl,--stack=16777216 src/*.cpp -o $(EXE)$(EXTENSION)
 clean: 
 	del /S *.exe

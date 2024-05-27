@@ -6,6 +6,11 @@ void search(Searcher *searcher, UciOptions *options)
     searcher->search();
 }
 
+Threads::Threads(UciOptions &options) : options(options)
+{
+    this->options = options;
+}
+
 void Threads::insert(Searcher &searcher)
 {
     thread_data.push_back(searcher);
