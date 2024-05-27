@@ -77,7 +77,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         //         break;
         //     }
         // }
-        if (move_flag & CAPTURES)
+        if (!moves[i].is_quiet())
         {
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
