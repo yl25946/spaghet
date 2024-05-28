@@ -46,7 +46,11 @@ public:
     uint64_t start_time;
     uint64_t end_time;
 
+    // current deth for iterative deepening
     int curr_depth = 0;
+
+    // use for tracking seldepth
+    int seldepth = 0;
 
     // represents the number of nodes for a depths search
     uint64_t node_count;

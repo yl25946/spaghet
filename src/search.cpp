@@ -187,6 +187,9 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     if (stopped)
         return 0;
 
+    if (ply > seldepth)
+        seldepth = ply;
+
     ++node_count;
     if (!(node_count & 4095))
         if (get_time() >= end_time)
@@ -266,6 +269,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     if (stopped)
         return 0;
+
+    if (depth == 0 && ply > seldepth)
+        seldepth = ply;
 
     if (!(node_count & 4095))
         if (get_time() >= end_time)
@@ -543,6 +549,7 @@ void Searcher::search()
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
+        this->seldepth = 0;
 
         Board copy = board;
 
@@ -605,7 +612,7 @@ void Searcher::search()
         if (is_mate_score(best_score))
             std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
         else
-            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " seldepth " << seldepth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
