@@ -232,7 +232,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         // }
 
         // qsearch SEE pruning
-        if(!SEE(board, curr_move, -7))
+        if (!SEE(board, curr_move, -7))
             continue;
 
         int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
@@ -278,13 +278,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
 
+    bool in_root = ply <= 0;
+
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
-    if (ply > 0 && board.fifty_move_counter >= 100)
+    if (!in_root && board.fifty_move_counter >= 100)
         return 0;
 
     // if there's a threefold draw
-    if (ply > 0 && threefold(board))
+    if (!in_root && threefold(board))
     {
         // std::cout << "threefold repetition" << "\n";
         return 0;
@@ -344,7 +346,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     // scores moves to order them
     move_list.score(board, transposition_table, history, killers, -107, ply);
 
-    uint8_t legal_moves = 0;
+    int legal_moves = 0;
+    int moves_seen = 0;
 
     const int original_alpha = alpha;
 
@@ -364,8 +367,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         ++legal_moves;
 
         if (curr_move.is_quiet())
-        {
             quiet_moves.insert(curr_move);
+
+        if (!in_root && best_eval > MIN_MATE_SCORE)
+        {
             // applies late move pruning
             if (legal_moves >= 6 + 2 * depth * depth)
                 continue;
@@ -445,6 +450,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 }
             }
         }
+
+        ++moves_seen;
 
         if (stopped)
             return 0;
