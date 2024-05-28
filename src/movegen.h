@@ -5,6 +5,8 @@
 #include "board.h"
 #include "movelist.h"
 
+class MoveList;
+
 // generates all pseudolegal moves and puts them into an array
 void generate_moves(Board &board, MoveList &move_list);
 

@@ -14,6 +14,8 @@
 #include <ctime>
 #include <list>
 #include <algorithm>
+#include <thread>
+#include <exception>
 
 // #include "utils.h"
 // #include "attacks.h"
@@ -43,6 +45,7 @@ extern std::string repetitions;
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
 #define colored_to_uncolored(piece) (piece >> 1)
+#define uncolored_to_colored(piece, color) (piece << 1 | color)
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;
@@ -71,6 +74,10 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = 1 << 20;
+
+// SEE values
+constexpr int SEEValue[15] = {100, 422, 422, 642, 1015, 0,
+                              100, 422, 422, 642, 1015, 0, 0, 0, 0};
 
 // board squares
 enum square
@@ -234,8 +241,8 @@ constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
 extern std::map<char, uint8_t> char_pieces;
 
 // used for mvv vla, takes in a colored piece value
-constexpr uint16_t piece_value[12] = {
-    100, 100, 300, 300, 350, 350, 500, 500, 900, 900, 0, 0};
+constexpr uint16_t piece_value[13] = {
+    100, 100, 300, 300, 350, 350, 500, 500, 900, 900, 0, 0, 0};
 
 // sides to move (colors)
 enum COLOR

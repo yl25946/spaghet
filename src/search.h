@@ -6,12 +6,19 @@
 #include "movelist.h"
 #include "movegen.h"
 #include "transposition_table.h"
-#include "history.h"
+#include "threads.h"
+// #include "history.h"
+
+class QuietHistory;
+class Killers;
+class MoveList;
 
 constexpr uint64_t check_count = 4096;
 
 // tracking the max depth across the engine
 extern int max_depth;
+
+bool SEE(const Board &board, Move move, int threshold);
 
 class Searcher
 {
@@ -25,7 +32,7 @@ public:
     TranspositionTable &transposition_table;
 
     QuietHistory &history;
-    Killer killers;
+    Killers killers;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
@@ -49,6 +56,8 @@ public:
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
+
+    // bool SEE(const Board &board, Move move, int threshold);
 
     // uses iterative deepening
     void search();

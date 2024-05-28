@@ -4,8 +4,9 @@
 #include "move.h"
 #include "transposition_table.h"
 #include "history.h"
+#include "search.h"
 
-class Killer;
+class Killers;
 class QuietHistory;
 
 class MoveList
@@ -25,7 +26,7 @@ public:
     void insert(uint8_t from, uint8_t to, uint8_t move_flag);
     void insert(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value);
     // scores all the moves
-    void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killer &killers, int ply);
+    void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int ply);
     // gets the next move with the highest value
     Move next_move();
 

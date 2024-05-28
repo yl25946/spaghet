@@ -54,6 +54,7 @@ https://spaghet.pythonanywhere.com/
 - Add TT-cutoffs in qSearch
 - Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
+- Speed up multithreading using conditional
 
 # Special Thanks
 - The entirety of Stockfish Discord

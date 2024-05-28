@@ -82,22 +82,30 @@ void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
     return;
 }
 
+void UciOptions::reset()
+{
+    hash_size = 16;
+    age = 0;
+    threads = 0;
+}
+
 void UCI_loop()
 {
     std::string line;
     Board board(start_position);
+    UciOptions info;
     std::vector<Move> move_list;
-    int hash_size = 16;
-    uint32_t age = 0;
-    TranspositionTable transposition_table(hash_size);
+    TranspositionTable transposition_table(info.hash_size);
     QuietHistory history;
+    Threads threads(info);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
-    std::cout << "id Spaghet\n"
-              << "id author Li Ying\n"
-              << "option name Hash type spin default 16 min 1 max 1024\n"
-              << "uciok\n";
+    std::cout
+        << "id Spaghet\n"
+        << "id author Li Ying\n"
+        << "option name Hash type spin default 16 min 1 max 1024\n"
+        << "uciok\n";
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
 
@@ -145,34 +153,46 @@ void UCI_loop()
         }
         else if (!line.compare(0, 2, "go"))
         {
-
-            Time time(line);
-
-            Searcher searcher(board, move_list, transposition_table, history, age);
-
-            // gets the endtime
-            searcher.end_time = time.get_move_time(searcher.board.side_to_move);
-
-            // std::cout << searcher.board.only_pawns(WHITE) << "\n";
-
-            // std::cout << searcher.board.hash << "\n";
-
-            // perft_debug(searcher.board, 1, 1);
-
-            // starts searching
-            searcher.search();
-
-            // finished searching, update history
+            // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
+            threads.terminate();
+            // update history before searching to prevent race conditions
             history.update();
+            // now that we've called go, we can increase the age
+            ++info.age;
 
-            // now that we've called go once, we can increase the age
-            ++age;
+            Searcher searcher(board, move_list, transposition_table, history, info.age);
+
+            // implements the go infinite command
+            if (!line.compare(0, 11, "go infinite"))
+            {
+                searcher.end_time = UINT64_MAX;
+                max_depth = 255;
+            }
+            else
+            {
+                Time time(line);
+
+                // gets the endtime and startime
+                searcher.start_time = get_time();
+                searcher.end_time = time.get_move_time(searcher.board.side_to_move);
+            }
+
+            // account for the start_time
+            searcher.start_time = get_time();
+
+            threads.insert(searcher);
+
+            threads.go();
+        }
+        else if (!line.compare(0, 4, "stop"))
+        {
+            threads.terminate();
         }
         else if (!line.compare(0, 14, "setoption Hash"))
         {
-            hash_size = std::stoi(line.substr(15));
+            info.hash_size = std::stoi(line.substr(15));
             // std::cout << hash_size << "\n";
-            transposition_table.resize(hash_size);
+            transposition_table.resize(info.hash_size);
         }
         else if (!line.compare(0, 14, "option Threads"))
         {
@@ -180,8 +200,9 @@ void UCI_loop()
         }
         else if (!line.compare(0, 10, "ucinewgame"))
         {
-            age = 0;
-            transposition_table = TranspositionTable(hash_size);
+            threads.terminate();
+            info.reset();
+            transposition_table = TranspositionTable(info.hash_size);
             history.clear();
         }
         else if (!line.compare(0, 3, "uci"))
@@ -193,6 +214,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 4, "quit"))
         {
+            threads.terminate();
             break;
         }
     }

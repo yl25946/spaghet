@@ -29,7 +29,7 @@ void MoveList::print()
     }
 };
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killer &killers, int ply)
+void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int ply)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -77,13 +77,13 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         //         break;
         //     }
         // }
-        if (move_flag & CAPTURES)
+        if (!moves[i].is_quiet())
         {
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].value = 1400 + CAPTURE_BONUS;
+                moves[i].value = 1400 + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -91,16 +91,26 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
             uint8_t target_square = current_move.to_square();
 
             // use mvv-lva to find the move value
+            int attacking_piece_value = piece_value[board.mailbox[source_square]];
+            int captured_piece_value = piece_value[board.mailbox[target_square]];
 
-            uint8_t attacking_piece = board.mailbox[source_square];
-            uint8_t captured_piece = board.mailbox[target_square];
+            // apply a promotion bonus if necessary
+            int promotion_piece_value = 0;
+            if (moves[i].is_promotion())
+            {
+                uint8_t promotion_piece = moves[i].promotion_piece();
 
-            moves[i].value = 15 * piece_value[captured_piece] - piece_value[attacking_piece] + CAPTURE_BONUS;
+                // if the piece is a queen or a knight, we apply it's promotion value
+                if (promotion_piece == BITBOARD_PIECES::QUEEN)
+                    promotion_piece_value = piece_value[PIECES::WHITE_QUEEN];
+                else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
+                    promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
+            }
+
+            moves[i].value = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
-        // TODO: add SEE
-
         // not a capture, use history table
         else
         {
