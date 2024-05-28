@@ -29,7 +29,7 @@ void MoveList::print()
     }
 };
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int ply)
+void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
