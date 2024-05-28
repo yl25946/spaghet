@@ -213,7 +213,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, ply);
+    move_list.score(board, transposition_table, history, killers, -107, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -230,6 +230,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         // {
         //     return -50000 + depth
         // }
+
+        // qsearch SEE pruning
+        if(!SEE(board, curr_move, -7))
+            continue;
 
         int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
 
@@ -338,7 +342,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, ply);
+    move_list.score(board, transposition_table, history, killers, -107, ply);
 
     uint8_t legal_moves = 0;
 
