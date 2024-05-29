@@ -356,6 +356,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     // get pvs here
     int best_eval = -INF - 1;
     Move best_move;
+    bool is_quiet;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -368,15 +369,17 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         ++legal_moves;
 
-        if (curr_move.is_quiet())
-            quiet_moves.insert(curr_move);
+        is_quiet = curr_move.is_quiet();
 
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
-            if (moves_seen >= 3 + depth * depth)
+            if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
         }
+
+        if (is_quiet)
+            quiet_moves.insert(curr_move);
 
         int current_eval;
 
@@ -403,7 +406,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies the late move reduction
             if (legal_moves > 2)
             {
-                if (curr_move.is_quiet())
+                if (is_quiet)
                     // legal moves - 1 counts the number of legal moves from 0
                     reduction += lmr_reduction_quiet(depth, legal_moves - 1);
                 // noisy move
@@ -475,7 +478,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
-                    if (curr_move.is_quiet())
+                    if (is_quiet)
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.update(quiet_moves, curr_move, depth, board.side_to_move);
