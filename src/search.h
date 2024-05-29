@@ -52,6 +52,8 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
+    std::array<MoveList, MAX_PLY + 4> pv;
+
     // represents the number of nodes for a depths search
     uint64_t node_count;
     // uint64_t total_nodes = 0;

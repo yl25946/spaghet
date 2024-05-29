@@ -29,6 +29,7 @@ public:
     void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int ply);
     // gets the next move with the highest value
     Move next_move();
+    void pop_back() { --count; }
 
     void print();
 };
