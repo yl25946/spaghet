@@ -372,7 +372,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
-            if (legal_moves >= 6 + 2 * depth * depth)
+            if (moves_seen >= 3 + depth * depth)
                 continue;
         }
 
