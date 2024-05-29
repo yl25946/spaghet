@@ -213,12 +213,12 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, -107, ply);
+    move_list.score(board, transposition_table, history, killers, -7, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        Move curr_move = move_list.next_move();
+        OrderedMove curr_move = move_list.next_move();
 
         copy.make_move(curr_move);
 
@@ -232,8 +232,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         // }
 
         // qsearch SEE pruning
-        if (!SEE(board, curr_move, -7))
-            continue;
+        // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
+        // since everything after it will also not pass the SEE threshold
+        if (curr_move.score < 0)
+            break;
 
         int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
 

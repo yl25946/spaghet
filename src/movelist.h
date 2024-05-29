@@ -28,7 +28,8 @@ public:
     // scores all the moves
     void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply);
     // gets the next move with the highest value
-    Move next_move();
+    // Move next_move();
+    OrderedMove next_move();
 
     void print();
 };
