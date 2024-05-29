@@ -356,6 +356,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     // get pvs here
     int best_eval = -INF - 1;
     Move best_move;
+    bool is_quiet;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -368,13 +369,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         ++legal_moves;
 
-        if (curr_move.is_quiet())
+        is_quiet = curr_move.is_quiet();
+
+        if (is_quiet)
             quiet_moves.insert(curr_move);
 
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
-            if (moves_seen >= 3 + depth * depth)
+            if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
         }
 
