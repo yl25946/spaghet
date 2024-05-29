@@ -65,8 +65,8 @@ constexpr int DEPTH_MARGIN = 6;
 constexpr int MARGIN = 80;
 
 // used for move ordering
-constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT64_MAX;
-constexpr int64_t CAPTURE_BONUS = 1LL << 31;
+constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
+constexpr int64_t CAPTURE_BONUS = 1LL << 21;
 
 // this is a clamp value used for history
 constexpr int64_t MAX_HISTORY = 1 << 14;
