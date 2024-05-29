@@ -357,6 +357,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     int best_eval = -INF - 1;
     Move best_move;
     bool is_quiet;
+    bool skip_quiets = false;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -371,11 +372,17 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         is_quiet = curr_move.is_quiet();
 
+        if (is_quiet && skip_quiets)
+            continue;
+
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
             if (is_quiet && moves_seen >= 3 + depth * depth)
+            {
+                skip_quiets = true;
                 continue;
+            }
         }
 
         if (is_quiet)
@@ -500,11 +507,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (board.is_in_check())
         {
             // prioritize faster mates
-            best_eval = -MATE + ply;
+            return -MATE + ply;
         }
         else
         {
-            best_eval = 0;
+            return 0;
         }
     }
 
@@ -521,8 +528,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // failed to raise alpha, fail low
         bound_flag = BOUND::FAIL_LOW;
     }
-    if (best_eval != (-INF - 1))
-        transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
+    transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 
     return best_eval;
 }
