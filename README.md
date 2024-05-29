@@ -53,6 +53,7 @@ https://spaghet.pythonanywhere.com/
 - Add check evasion to qSearch
 - Add promotions in qSearch
 - Add TT-cutoffs in qSearch
+- Add board.is_in_check() and copy.is_in_check() for late move pruning
 - Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
 - Speed up multithreading using conditional

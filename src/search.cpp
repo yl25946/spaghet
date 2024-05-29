@@ -371,15 +371,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         is_quiet = curr_move.is_quiet();
 
-        if (is_quiet)
-            quiet_moves.insert(curr_move);
-
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
-            if (is_quiet && !board.is_in_check() && moves_seen >= 3 + depth * depth)
+            if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
         }
+
+        if (is_quiet)
+            quiet_moves.insert(curr_move);
 
         int current_eval;
 
