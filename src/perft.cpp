@@ -82,6 +82,25 @@ void perft_driver(const std::string &fen, uint8_t depth)
     std::cout << "\nTotal Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second";
 }
 
+void perft_debug_driver(const std::string &fen, uint8_t depth)
+{
+    Board board(fen);
+
+    // board.print();.
+
+    std::cout << "PERFT: \n";
+
+    auto start = std::chrono::system_clock::now();
+
+    uint64_t nodes = perft_debug(board, depth, depth);
+
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
+    std::cout << "Total Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second\n";
+}
+
 void captures_perft_driver(const std::string &fen, uint8_t depth)
 {
 }

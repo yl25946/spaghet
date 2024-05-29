@@ -45,11 +45,12 @@ Board parse_position(std::string &line)
     else
     {
         // position fen
-        const uint8_t fen_start = 13;
-        uint8_t fen_length = move_it - fen_start;
+        const size_t fen_start = 13;
+        size_t fen_length = move_it - fen_start;
         std::string fen = line.substr(fen_start, fen_length);
         // std::cout << fen;
         board = Board(fen);
+        std::cout << board.fen();
     }
 
     return board;
@@ -187,6 +188,24 @@ void UCI_loop()
         else if (!line.compare(0, 4, "stop"))
         {
             threads.terminate();
+        }
+        else if (!line.compare(0, 5, "perft"))
+        {
+            for (Move move : move_list)
+                board.make_move(move);
+
+            // parses the depth
+            int depth;
+            size_t end_line;
+            size_t go_pt = line.find("depth");
+            if (go_pt != std::string::npos)
+            {
+                go_pt += 6;
+                end_line = line.find(" ", go_pt);
+                depth = stoi(line.substr(go_pt, end_line - go_pt));
+            }
+
+            perft_debug_driver(board.fen(), depth);
         }
         else if (!line.compare(0, 14, "setoption Hash"))
         {

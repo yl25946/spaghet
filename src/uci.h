@@ -28,8 +28,9 @@ void UCI_loop();
 // position fen
 // position startpos
 // ... moves e2e4 e7e5
-Board parse_position(std::string &line);
+// automatically adds " fen " to the end of the command
+Board parse_position(const std::string &command, std::string &line);
 
-void parse_moves(std::string &line, std::vector<Move> &move_list);
+void parse_moves(std::vector<Move> &move_list);
 
 // Board &parse_position(const std::string &command);
