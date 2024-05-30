@@ -31,5 +31,6 @@ public:
     Move next_move();
     void pop_back() { --count; }
 
+    std::string to_string();
     void print();
 };

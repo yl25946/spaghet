@@ -280,6 +280,14 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
 
+    // updates the pv
+    if (in_pv_node)
+    {
+        // not in root, simplify later
+        if (ply > 0)
+            pv[ply] = pv[ply - 1];
+    }
+
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
     if (ply > 0 && board.fifty_move_counter >= 100)
@@ -378,6 +386,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // don't do pvs on the first node
         if (legal_moves == 1)
         {
+            if (in_pv_node)
+                pv[ply].insert(curr_move);
+
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
 
@@ -435,6 +446,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && in_pv_node)
                 {
+                    // updates the pv
+                    pv[ply].pop_back();
+                    pv[ply].insert(curr_move);
+
                     threefold_repetition.push_back(copy.hash);
 
                     current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
@@ -610,9 +625,9 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+            std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[current_depth - 1].to_string() << std::endl;
         else
-            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " seldepth " << seldepth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " seldepth " << seldepth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[current_depth - 1].to_string() << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());

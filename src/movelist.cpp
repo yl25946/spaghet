@@ -20,6 +20,17 @@ uint8_t MoveList::size() const
     return count;
 }
 
+std::string MoveList::to_string()
+{
+    std::string movelist_string = moves[0].to_string();
+
+    for (int i = 1; i < size(); ++i)
+    {
+        movelist_string += " " + moves[i].to_string();
+    }
+
+    return movelist_string;
+}
 void MoveList::print()
 {
     for (int i = 0; i < count; ++i)
