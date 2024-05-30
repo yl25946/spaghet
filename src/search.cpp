@@ -24,6 +24,9 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->age = age;
     this->transposition_table = transposition_table;
     this->history = history;
+
+    // allows us to track the pv
+    pv.resize(MAX_PLY + 1);
 }
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
@@ -43,6 +46,9 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->transposition_table = transposition_table;
     this->history = history;
     this->end_time = end_time;
+
+    // allows us to track the pv
+    pv.resize(MAX_PLY + 1);
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
@@ -483,9 +489,6 @@ void Searcher::search()
         }
     }
 
-    // allows us to track the pv
-    pv.resize(MAX_PLY + 1);
-
     for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
     {
         this->curr_depth = current_depth;
@@ -633,6 +636,9 @@ void Searcher::bench()
         for (int current_depth = 1; current_depth <= max_depth; ++current_depth)
         {
             this->curr_depth = current_depth;
+
+            for (int i = 0; i < pv.size(); ++i)
+                pv[i].clear();
 
             Board copy = board;
 
