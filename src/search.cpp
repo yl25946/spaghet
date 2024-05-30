@@ -376,6 +376,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies late move pruning
             if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
+
+            const int see_threshold = is_quiet ? -30 * depth : -150 * depth;
+            if (moves_seen > 0 && !SEE(board, curr_move, see_threshold))
+                continue;
         }
 
         if (is_quiet)

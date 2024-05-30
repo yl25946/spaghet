@@ -50,6 +50,7 @@ Started from piece counting and standard negamax
 https://spaghet.pythonanywhere.com/
 
 # TODO:
+- simplification with a "skip_quiets" boolean flag, set that as true when enter lmp, and just skip quiets without doing lmp again
 - Add check evasion to qSearch
 - Add promotions in qSearch
 - Add TT-cutoffs in qSearch
