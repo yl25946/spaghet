@@ -404,7 +404,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             int reduction = 1;
 
             // applies the late move reduction
-            if (legal_moves > 2)
+            if (moves_seen > 1)
             {
                 if (is_quiet)
                     // legal moves - 1 counts the number of legal moves from 0
