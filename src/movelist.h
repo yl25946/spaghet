@@ -4,7 +4,7 @@
 #include "move.h"
 #include "transposition_table.h"
 #include "history.h"
-#include "search.h"
+#include "see.h"
 
 class Killers;
 class QuietHistory;
@@ -30,6 +30,7 @@ public:
     // gets the next move with the highest value
     Move next_move();
     void pop_back() { --count; }
+    void clear() { count = 0; }
 
     std::string to_string();
     void print();

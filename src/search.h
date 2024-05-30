@@ -7,6 +7,7 @@
 #include "movegen.h"
 #include "transposition_table.h"
 #include "threads.h"
+#include "see.h"
 // #include "history.h"
 
 class QuietHistory;
@@ -16,8 +17,6 @@ constexpr uint64_t check_count = 4096;
 
 // tracking the max depth across the engine
 extern int max_depth;
-
-bool SEE(const Board &board, Move move, int threshold);
 
 class Searcher
 {
@@ -51,7 +50,7 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::array<MoveList, MAX_PLY + 4> pv;
+    std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
     uint64_t node_count;
