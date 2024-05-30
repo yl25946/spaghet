@@ -310,7 +310,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         int current_eval;
 
         // don't do pvs on the first node
-        if (legal_moves == 1)
+        if (moves_seen == 0)
         {
             if (in_pv_node)
                 pv[ply].insert(curr_move);
@@ -333,14 +333,14 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             int reduction = 1;
 
             // applies the late move reduction
-            if (legal_moves > 2)
+            if (moves_seen > 1)
             {
                 if (is_quiet)
                     // legal moves - 1 counts the number of legal moves from 0
-                    reduction += lmr_reduction_quiet(depth, legal_moves - 1);
+                    reduction += lmr_reduction_quiet(depth, moves_seen);
                 // noisy move
                 else
-                    reduction += lmr_reduction_captures_promotions(depth, legal_moves - 1);
+                    reduction += lmr_reduction_captures_promotions(depth, moves_seen);
             }
 
             // we can check for threefold repetition later, updates the state though
