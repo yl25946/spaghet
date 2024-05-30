@@ -31,7 +31,10 @@ public:
     OrderedMove next_move();
     void pop_back() { --count; }
     void clear() { count = 0; }
+    void copy_over(MoveList &move_list);
 
     std::string to_string();
+    // iterates through the moves backwards (used for PV Tables)
+    std::string reverse_to_string();
     void print();
 };
