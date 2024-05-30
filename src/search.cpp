@@ -26,7 +26,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->history = history;
 
     // allows us to track the pv
-    pv.resize(MAX_PLY + 1);
+    pv.resize(MAX_PLY + 4);
 }
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
@@ -48,7 +48,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->end_time = end_time;
 
     // allows us to track the pv
-    pv.resize(MAX_PLY + 1);
+    pv.resize(MAX_PLY + 4);
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
@@ -205,8 +205,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     {
         pv[ply] = pv[ply - 1];
     }
-
-    std::cout << static_cast<int>(pv[ply].size()) << "\n";
 
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
@@ -372,6 +370,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && in_pv_node)
                 {
+
                     // updates the pv
                     pv[ply].pop_back();
                     pv[ply].insert(curr_move);
@@ -457,7 +456,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (best_eval != (-INF - 1))
         transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 
-    std::cout << static_cast<int>(pv[ply].size()) << "\n";
+    if (in_pv_node)
+        std::cout << pv[ply].to_string() << "\n";
 
     return best_eval;
 }
@@ -519,6 +519,10 @@ void Searcher::search()
 
         while (best_score <= alpha || best_score >= beta)
         {
+            // clears the pv before starting the new search
+            for (int i = 0; i < pv.size(); ++i)
+                pv[i].clear();
+
             if (best_score <= alpha)
             {
                 // debugging purposes
@@ -555,6 +559,10 @@ void Searcher::search()
         beta = best_score + 25;
 
         best_move = this->current_depth_best_move;
+
+        // clears the pv before starting the new search
+        for (int i = 0; i < MAX_PLY; ++i)
+            std::cout << static_cast<int>(pv[i].size()) << " ";
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
