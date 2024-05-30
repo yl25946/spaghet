@@ -122,12 +122,12 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     generate_capture_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, ply);
+    move_list.score(board, transposition_table, history, killers, -7, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        Move curr_move = move_list.next_move();
+        OrderedMove curr_move = move_list.next_move();
 
         copy.make_move(curr_move);
 
@@ -139,6 +139,12 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         // {
         //     return -50000 + depth
         // }
+
+        // qsearch SEE pruning
+        // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
+        // since everything after it will also not pass the SEE threshold
+        if (curr_move.score < 0)
+            break;
 
         int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
 
@@ -186,21 +192,23 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
 
+    bool in_root = ply <= 0;
+
     // updates the pv
     if (in_pv_node)
     {
         // not in root, simplify later
-        if (ply > 0)
+        if (!in_root)
             pv[ply] = pv[ply - 1];
     }
 
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
-    if (ply > 0 && board.fifty_move_counter >= 100)
+    if (!in_root && board.fifty_move_counter >= 100)
         return 0;
 
     // if there's a threefold draw
-    if (ply > 0 && threefold(board))
+    if (!in_root && threefold(board))
     {
         // std::cout << "threefold repetition" << "\n";
         return 0;
@@ -258,15 +266,17 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, ply);
+    move_list.score(board, transposition_table, history, killers, -107, ply);
 
-    uint8_t legal_moves = 0;
+    int legal_moves = 0;
+    int moves_seen = 0;
 
     const int original_alpha = alpha;
 
     // get pvs here
     int best_eval = -INF - 1;
     Move best_move;
+    bool is_quiet;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -279,13 +289,17 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         ++legal_moves;
 
-        if (curr_move.is_quiet())
+        is_quiet = curr_move.is_quiet();
+
+        if (!in_root && best_eval > MIN_MATE_SCORE)
         {
-            quiet_moves.insert(curr_move);
             // applies late move pruning
-            if (legal_moves >= 6 + 2 * depth * depth)
+            if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
         }
+
+        if (is_quiet)
+            quiet_moves.insert(curr_move);
 
         int current_eval;
 
@@ -315,7 +329,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies the late move reduction
             if (legal_moves > 2)
             {
-                if (curr_move.is_quiet())
+                if (is_quiet)
                     // legal moves - 1 counts the number of legal moves from 0
                     reduction += lmr_reduction_quiet(depth, legal_moves - 1);
                 // noisy move
@@ -369,6 +383,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             }
         }
 
+        ++moves_seen;
+
         if (stopped)
             return 0;
 
@@ -389,7 +405,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
                     // std::cout << (int)curr_move.move_flag() << "\n";
                     // we update the history table if it's not a capture
-                    if (curr_move.is_quiet())
+                    if (is_quiet)
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.update(quiet_moves, curr_move, depth, board.side_to_move);
