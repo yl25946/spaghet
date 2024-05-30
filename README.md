@@ -62,5 +62,6 @@ https://spaghet.pythonanywhere.com/
 # Special Thanks
 - The entirety of Stockfish Discord
 - Zuppa, Ciekce, fury, and shawn_xu for dealing with me
+- Everyone on my OB instance
 - AGE for writing OB
 - To Makism Korzh for writing BBC tutorial, which helped me write movegen with magic bitboards and precalculated lookup tables
