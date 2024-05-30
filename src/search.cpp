@@ -201,12 +201,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     bool in_root = ply <= 0;
 
     // updates the pv
-    if (in_pv_node)
+    if (in_pv_node && !in_root)
     {
-        // not in root, simplify later
-        if (!in_root)
-            pv[ply] = pv[ply - 1];
+        pv[ply] = pv[ply - 1];
     }
+
+    std::cout << static_cast<int>(pv[ply].size()) << "\n";
 
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
@@ -457,6 +457,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (best_eval != (-INF - 1))
         transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 
+    std::cout << static_cast<int>(pv[ply].size()) << "\n";
+
     return best_eval;
 }
 
@@ -555,6 +557,8 @@ void Searcher::search()
         best_move = this->current_depth_best_move;
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
+
+        std::cout << static_cast<int>(pv[current_depth - 1].size()) << "\n";
 
         if (is_mate_score(best_score))
             std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[current_depth - 1].to_string() << std::endl;
