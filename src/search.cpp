@@ -209,7 +209,7 @@ bool SEE(const Board &board, Move move, int threshold)
     return side != board.side_to_move;
 }
 
-int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
+int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node)
 {
     // return evaluate(board);
 
@@ -229,7 +229,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (entry.hash == board.hash && entry.can_use_score(alpha, beta))
+    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta))
     {
         return entry.usable_score(ply);
     }
@@ -250,6 +250,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
+
+    Move best_move;
+
+    const int original_alpha = alpha;
 
     // scores moves to order them
     move_list.score(board, transposition_table, history, killers, -7, ply);
@@ -276,7 +280,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
+        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1, in_pv_node);
 
         if (stopped)
             return 0;
@@ -284,6 +288,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (current_eval > best_eval)
         {
             best_eval = current_eval;
+            best_move = curr_move;
 
             // ++capture_moves;
 
@@ -298,8 +303,20 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         }
     }
 
-    // if (!capture_moves)
-    //     return evaluate(board);
+    // add to TT
+    uint8_t bound_flag = BOUND::EXACT;
+
+    if (alpha >= beta)
+    {
+        // beta cutoff, fail high
+        bound_flag = BOUND::FAIL_HIGH;
+    }
+    else if (alpha <= original_alpha)
+    {
+        // failed to raise alpha, fail low
+        bound_flag = BOUND::FAIL_LOW;
+    }
+    transposition_table.insert(board, best_move, best_eval, 0, ply, age, bound_flag);
 
     // TODO: add check moves
     return best_eval;
