@@ -1,7 +1,7 @@
 #include "history.h"
 #include "movelist.h"
 
-QuietHistory::QuietHistory()
+QuietHistory::QuietHistory() : butterfly_table(2)
 {
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 64; ++j)
@@ -54,14 +54,6 @@ void QuietHistory::update(MoveList &move_list, Move best_move, int depth, uint8_
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
 {
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];
-}
-
-Killers::Killers()
-{
-    for (int i = 0; i < MAX_PLY; ++i)
-    {
-        count[i] = 0;
-    }
 }
 
 void Killers::insert(Move move, int ply)

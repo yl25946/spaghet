@@ -9,7 +9,7 @@ class MoveList;
 class QuietHistory
 {
 public:
-    int64_t butterfly_table[2][64][64];
+    std::vector<std::array<std::array<int64_t, 64>, 64>> butterfly_table;
 
     QuietHistory();
 
@@ -30,11 +30,11 @@ public:
 class Killers
 {
 public:
-    Move killers[MAX_PLY][2];
+    std::vector<std::array<Move, 2>> killers;
 
-    uint8_t count[MAX_PLY];
+    std::vector<uint8_t> count;
 
-    Killers();
+    Killers() : killers(MAX_PLY + 1), count(MAX_PLY + 1, 0) {};
 
     void insert(Move move, int ply);
 
