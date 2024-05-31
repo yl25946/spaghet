@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <thread>
 #include <exception>
+#include <sstream>
 
 // #include "utils.h"
 // #include "attacks.h"
@@ -85,6 +86,17 @@ constexpr int SEEValue[7] = {
     0,
     0,
 };
+
+// debug SEE values
+// constexpr int SEEValue[7] = {
+//     100,
+//     300,
+//     300,
+//     500,
+//     900,
+//     0,
+//     0,
+// };
 
 // board squares
 enum square
