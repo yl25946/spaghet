@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <thread>
 #include <exception>
+#include <sstream>
 
 // #include "utils.h"
 // #include "attacks.h"
@@ -76,8 +77,26 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 constexpr int64_t MAX_KILLERS = 1 << 20;
 
 // SEE values
-constexpr int SEEValue[15] = {100, 422, 422, 642, 1015, 0,
-                              100, 422, 422, 642, 1015, 0, 0, 0, 0};
+constexpr int SEEValue[7] = {
+    100,
+    422,
+    422,
+    642,
+    1015,
+    0,
+    0,
+};
+
+// debug SEE values
+// constexpr int SEEValue[7] = {
+//     100,
+//     300,
+//     300,
+//     500,
+//     900,
+//     0,
+//     0,
+// };
 
 // board squares
 enum square

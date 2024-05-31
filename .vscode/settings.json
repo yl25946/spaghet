@@ -78,6 +78,7 @@
         "xtree": "cpp",
         "list": "cpp",
         "span": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "semaphore": "cpp"
     }
 }

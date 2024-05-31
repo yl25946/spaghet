@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    // SEE_suite();
+
     UCI_loop();
 
     // perft_driver(tricky_position, 5);
