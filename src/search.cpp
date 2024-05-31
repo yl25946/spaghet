@@ -251,7 +251,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     MoveList move_list;
     generate_capture_moves(board, move_list);
 
-    Move best_move;
+    // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
+    Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
 
     const int original_alpha = alpha;
 
@@ -363,7 +364,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     }
 
     if (depth <= 0)
-        return quiescence_search(board, alpha, beta, ply);
+        return quiescence_search(board, alpha, beta, ply, in_pv_node);
 
     int static_eval = evaluate(board);
 
