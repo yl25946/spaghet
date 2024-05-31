@@ -405,6 +405,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies late move pruning
             if (is_quiet && moves_seen >= 3 + depth * depth)
                 continue;
+
+            // applies pvs see pruning
+            const int see_threshold = is_quiet ? -80 * depth : -30 * depth * depth;
+
+            if (depth <= 8 && moves_seen > 0 && !SEE(board, curr_move, see_threshold))
+                continue;
         }
 
         if (is_quiet)
