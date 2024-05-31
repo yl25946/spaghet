@@ -224,6 +224,16 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
             return 0;
         }
 
+    // we check if the TT has seen this before
+    TT_Entry &entry = transposition_table.probe(board);
+
+    // tt cutoff
+    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    if (entry.hash == board.hash && entry.can_use_score(alpha, beta))
+    {
+        return entry.usable_score(ply);
+    }
+
     // creates a baseline
     int stand_pat = evaluate(board);
 
@@ -325,7 +335,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // bool in_pv_node = beta - alpha > 1;
 
-    // // we check if the TT has seen this before
+    // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
 
     // tt cutoff
