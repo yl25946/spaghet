@@ -407,7 +407,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 continue;
 
             // applies pvs see pruning
-            const int see_threshold = is_quiet ? -80 * depth : -30 * depth * depth;
+            const int see_threshold = is_quiet ? -80 * depth : -130 * depth;
 
             if (depth <= 8 && moves_seen > 0 && !SEE(board, curr_move, see_threshold))
                 continue;
