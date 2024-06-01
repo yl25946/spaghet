@@ -53,7 +53,6 @@ https://spaghet.pythonanywhere.com/
 - simplification with a "skip_quiets" boolean flag, set that as true when enter lmp, and just skip quiets without doing lmp again
 - Add check evasion to qSearch
 - Add promotions in qSearch
-- Add TT-cutoffs in qSearch
 - Add board.is_in_check() and copy.is_in_check() for late move pruning
 - Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
