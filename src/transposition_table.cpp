@@ -94,6 +94,8 @@ void TranspositionTable::resize(uint64_t size)
 
     uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
+    // std::cout << tt_entry_count << "\n";
+
     // size is now 0
     hashtable.clear();
 

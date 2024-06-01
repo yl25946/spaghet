@@ -188,10 +188,10 @@ void UCI_loop()
         {
             threads.terminate();
         }
-        else if (!line.compare(0, 14, "setoption Hash"))
+        else if (!line.compare(0, 25, "setoption name Hash value"))
         {
-            info.hash_size = std::stoi(line.substr(15));
-            // std::cout << hash_size << "\n";
+            info.hash_size = std::stoi(line.substr(26));
+            // std::cout << info.hash_size << "\n";
             transposition_table.resize(info.hash_size);
         }
         else if (!line.compare(0, 14, "option Threads"))
