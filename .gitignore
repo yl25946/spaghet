@@ -4,3 +4,5 @@
 *.ilk
 *.lib
 *.pdb
+*.o
+*.d
