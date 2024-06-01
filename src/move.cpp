@@ -29,7 +29,8 @@ std::string Move::to_string() const
     uint8_t flag = move_flag();
     std::string move_string = square_to_coordinate[from_square()];
     move_string += square_to_coordinate[to_square()];
-    move_string += ((flag & 0b1000) ? ascii_pieces[2 * (flag & 0b11) + 3] : '\0');
+    if (flag & PROMOTION)
+        move_string += ascii_pieces[2 * (flag & 0b11) + 3];
     return move_string;
 }
 

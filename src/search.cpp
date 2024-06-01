@@ -698,11 +698,12 @@ void Searcher::search()
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
-        std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << std::endl;
+        std::cout << "info depth " << static_cast<int>(current_depth) << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
+                  << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
-    std::cout << "bestmove " << best_move.to_string() << std::endl;
+    std::cout << "bestmove " << best_move.to_string() << " " << std::endl;
 }
 
 // yoinked from stormphrax for tradition
