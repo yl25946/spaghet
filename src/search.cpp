@@ -92,7 +92,7 @@ bool Searcher::threefold(Board &board)
     return matching_positions >= 2;
 }
 
-int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
+int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node)
 {
     // return evaluate(board);
 
@@ -110,6 +110,16 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
             return 0;
         }
 
+    // we check if the TT has seen this before
+    TT_Entry &entry = transposition_table.probe(board);
+
+    // tt cutoff
+    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta))
+    {
+        return entry.usable_score(ply);
+    }
+
     // creates a baseline
     int stand_pat = evaluate(board);
 
@@ -126,6 +136,11 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
+
+    // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
+    Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
+
+    const int original_alpha = alpha;
 
     // scores moves to order them
     move_list.score(board, transposition_table, history, killers, -7, ply);
@@ -152,7 +167,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1);
+        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1, in_pv_node);
 
         if (stopped)
             return 0;
@@ -160,6 +175,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         if (current_eval > best_eval)
         {
             best_eval = current_eval;
+            best_move = curr_move;
 
             // ++capture_moves;
 
@@ -174,8 +190,20 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply)
         }
     }
 
-    // if (!capture_moves)
-    //     return evaluate(board);
+    // add to TT
+    uint8_t bound_flag = BOUND::EXACT;
+
+    if (alpha >= beta)
+    {
+        // beta cutoff, fail high
+        bound_flag = BOUND::FAIL_HIGH;
+    }
+    else if (alpha <= original_alpha)
+    {
+        // failed to raise alpha, fail low
+        bound_flag = BOUND::FAIL_LOW;
+    }
+    transposition_table.insert(board, best_move, best_eval, 0, ply, age, bound_flag);
 
     // TODO: add check moves
     return best_eval;
@@ -219,7 +247,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // bool in_pv_node = beta - alpha > 1;
 
-    // // we check if the TT has seen this before
+    // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
 
     // tt cutoff
@@ -230,7 +258,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     }
 
     if (depth <= 0)
-        return quiescence_search(board, alpha, beta, ply);
+        return quiescence_search(board, alpha, beta, ply, in_pv_node);
 
     int static_eval = evaluate(board);
 
@@ -281,6 +309,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     Move best_move;
     bool is_quiet;
 
+    const int futility_margin = 150 + 100 * depth;
+
+    bool skip_quiets = false;
+
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
@@ -294,11 +326,30 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
         is_quiet = curr_move.is_quiet();
 
+        if (is_quiet && skip_quiets)
+            continue;
+
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
             if (is_quiet && moves_seen >= 3 + depth * depth)
+            {
+                skip_quiets = true;
                 continue;
+            }
+
+            // applies pvs see pruning
+            const int see_threshold = is_quiet ? -80 * depth : -30 * depth * depth;
+
+            if (depth <= 8 && moves_seen > 0 && !SEE(board, curr_move, see_threshold))
+                continue;
+
+            // applies futility pruning
+            if (depth <= 8 && !board.is_in_check() && is_quiet && static_eval + futility_margin < alpha)
+            {
+                skip_quiets = true;
+                continue;
+            }
         }
 
         if (is_quiet)
@@ -565,13 +616,15 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info score mate " << mate_score_to_moves(best_score) << " depth " << (int)current_depth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << std::endl;
+            std::cout << "info depth " << static_cast<int>(current_depth) << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
+                      << std::endl;
         else
-            std::cout << "info score cp " << best_score << " depth " << (int)current_depth << " seldepth " << seldepth << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << std::endl;
+            std::cout << "info depth " << static_cast<int>(current_depth) << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
+                      << std::endl;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
-    std::cout << "bestmove " << best_move.to_string() << std::endl;
+    std::cout << "bestmove " << best_move.to_string() << " " << std::endl;
 }
 
 // yoinked from stormphrax for tradition

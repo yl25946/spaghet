@@ -103,10 +103,10 @@ void UCI_loop()
     // Searcher searcher(board, move_list, UINT64_MAX);
 
     std::cout
-        << "id Spaghet\n"
+        << "id name Spaghet v0.1\n"
         << "id author Li Ying\n"
         << "option name Hash type spin default 16 min 1 max 1024\n"
-        << "uciok\n";
+        << "uciok" << std::endl;
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
 
@@ -135,7 +135,7 @@ void UCI_loop()
             continue;
 
         if (!line.compare(0, 7, "isready"))
-            std::cout << "readyok\n";
+            std::cout << "readyok" << std::endl;
         else if (!line.compare(0, 8, "position"))
         {
             // make sure we don't accidentially stack on previous position moves
@@ -207,10 +207,11 @@ void UCI_loop()
 
             perft_debug_driver(board.fen(), depth);
         }
-        else if (!line.compare(0, 14, "setoption Hash"))
+
+        else if (!line.compare(0, 25, "setoption name Hash value"))
         {
-            info.hash_size = std::stoi(line.substr(15));
-            // std::cout << hash_size << "\n";
+            info.hash_size = std::stoi(line.substr(26));
+            // std::cout << info.hash_size << "\n";
             transposition_table.resize(info.hash_size);
         }
         else if (!line.compare(0, 14, "option Threads"))
@@ -226,10 +227,10 @@ void UCI_loop()
         }
         else if (!line.compare(0, 3, "uci"))
         {
-            std::cout << "id Spaghet\n"
+            std::cout << "id name Spaghet v0.1\n"
                       << "id author Li Ying\n"
                       << "option name Hash type spin default 16 min 1 max 1024\n"
-                      << "uciok\n";
+                      << "uciok" << std::endl;
         }
         else if (!line.compare(0, 4, "quit"))
         {
