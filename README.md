@@ -45,6 +45,10 @@ Started from piece counting and standard negamax
 - Late Move Pruning (+33)
 - Static Exchange Evaluation(SEE) Move Ordering (+20-48)
 - SEE QS Pruning (+47)
+- SEE PVS Pruning (+22)
+- QS TT Cutoffs (+5)
+- Futility Pruning (+6)
+
 
 # Testing
 https://spaghet.pythonanywhere.com/
