@@ -50,7 +50,7 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::vector<MoveList> pv;
+    // std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
     uint64_t node_count;

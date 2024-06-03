@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -26,7 +26,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->history = history;
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
 {
     threefold_repetition.push_back(board.hash);
 
@@ -222,10 +222,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     bool in_root = ply <= 0;
 
-    if (in_pv_node)
-    {
-        pv[ply + 1].clear();
-    }
+    // if (in_pv_node)
+    // {
+    //      pv[ply + 1].clear();
+    // }
 
     // cut the search short if there's a draw
     // if it's a draw at the root node, we'll play a null move
@@ -440,13 +440,13 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 alpha = current_eval;
                 best_move = curr_move;
 
-                // logic to update the pv when we have a new best_move
-                if (in_pv_node)
-                {
-                    pv[ply].clear();
-                    pv[ply].insert(best_move);
-                    pv[ply].copy_over(pv[ply + 1]);
-                }
+                // // logic to update the pv when we have a new best_move
+                // if (in_pv_node)
+                // {
+                //     pv[ply].clear();
+                //     pv[ply].insert(best_move);
+                //     pv[ply].copy_over(pv[ply + 1]);
+                // }
 
                 // fail high
                 if (alpha >= beta)
@@ -608,10 +608,10 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
                       << std::endl;
     }
 
