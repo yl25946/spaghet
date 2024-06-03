@@ -257,7 +257,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     const int original_alpha = alpha;
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, -7, ply);
+    move_list.score(board, transposition_table, history, killers, -107, ply);
 
     for (int i = 0; i < move_list.size(); ++i)
     {

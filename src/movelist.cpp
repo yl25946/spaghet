@@ -107,7 +107,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
                     promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
             }
 
-            moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
