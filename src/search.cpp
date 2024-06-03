@@ -10,6 +10,8 @@ int max_depth = 255;
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history)
 {
+    threefold_repetition.reserve(300 + MAX_PLY);
+
     threefold_repetition.push_back(board.hash);
 
     for (Move m : move_list)
@@ -28,6 +30,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
 {
+    threefold_repetition.reserve(300 + MAX_PLY);
+
     threefold_repetition.push_back(board.hash);
 
     for (Move m : move_list)
