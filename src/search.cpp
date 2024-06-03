@@ -461,6 +461,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (is_quiet)
             quiet_moves.insert(curr_move);
 
+        int new_depth = depth - 1;
+        int extension = 0;
+
+        // extensions
+        if (copy.is_in_check())
+            extension += 1;
+
+        new_depth += extension;
+
         int current_eval;
 
         // don't do pvs on the first node
@@ -469,7 +478,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
 
-            current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, in_pv_node, false);
+            current_eval = -negamax(copy, -beta, -alpha, new_depth, ply + 1, in_pv_node, false);
 
             if (stopped)
                 return 0;
@@ -479,26 +488,22 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         }
         else
         {
-            // implements late move reduction
-            // no reduction
-            int reduction = 1;
-
             // applies the late move reduction
             if (moves_seen > 1)
             {
                 if (is_quiet)
                     // legal moves - 1 counts the number of legal moves from 0
-                    reduction += lmr_reduction_quiet(depth, moves_seen);
+                    new_depth -= lmr_reduction_quiet(depth, moves_seen);
                 // noisy move
                 else
-                    reduction += lmr_reduction_captures_promotions(depth, moves_seen);
+                    new_depth -= lmr_reduction_captures_promotions(depth, moves_seen);
             }
 
             // we can check for threefold repetition later, updates the state though
             threefold_repetition.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, depth - reduction, ply + 1, false, false);
+            current_eval = -negamax(copy, -alpha - 1, -alpha, new_depth, ply + 1, false, false);
 
             if (stopped)
                 return 0;
