@@ -30,7 +30,7 @@ Move parse_move(const std::string &move_string, Board &board)
     return Move(from_square, to_square, move_flag);
 }
 
-Board parse_position(std::string &line)
+Board parse_position(const std::string &line)
 {
     Board board(start_position);
     // this iterator tracks after the moves
@@ -57,7 +57,7 @@ Board parse_position(std::string &line)
 }
 
 // creates a copy of the board because we need to modify the board
-void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
+void parse_moves(const std::string &line, std::vector<Move> &moves, Board board)
 {
     size_t move_it = line.find("moves");
     if (move_it == std::string::npos)
