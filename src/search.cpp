@@ -537,9 +537,9 @@ void Searcher::search()
         this->curr_depth = current_depth;
         this->seldepth = 0;
 
-        // clears the pv before starting the new search
-        for (int i = 0; i < pv.size(); ++i)
-            pv[i].clear();
+        // // clears the pv before starting the new search
+        // for (int i = 0; i < pv.size(); ++i)
+        //     pv[i].clear();
 
         Board copy = board;
 
