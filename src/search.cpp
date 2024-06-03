@@ -492,7 +492,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             if (moves_seen > 1)
             {
                 if (is_quiet)
-                    // legal moves - 1 counts the number of legal moves from 0
                     new_depth -= lmr_reduction_quiet(depth, moves_seen);
                 // noisy move
                 else
