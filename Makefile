@@ -4,7 +4,7 @@ _ROOT       := $(_THIS)
 # EVALFILE     = $(NETWORK_NAME)
 CXX         := g++
 CLEAN       := rm -rf
-NOOP		:= true
+NOOP		:=:
 NULL 	    := /dev/null
 TARGET      := Spaghet
 WARNINGS     = -Wall -Wcast-qual -Wextra -Wshadow -Wdouble-promotion -Wformat=2 -Wnull-dereference -Wlogical-op -Wold-style-cast -Wundef -pedantic

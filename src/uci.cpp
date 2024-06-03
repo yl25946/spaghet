@@ -50,7 +50,7 @@ Board parse_position(const std::string &line)
         std::string fen = line.substr(fen_start, fen_length);
         // std::cout << fen;
         board = Board(fen);
-        std::cout << board.fen();
+        // std::cout << board.fen();
     }
 
     return board;
