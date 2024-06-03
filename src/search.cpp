@@ -690,8 +690,8 @@ void Searcher::bench()
         {
             this->curr_depth = current_depth;
 
-            for (int i = 0; i < pv.size(); ++i)
-                pv[i].clear();
+            // for (int i = 0; i < pv.size(); ++i)
+            //     pv[i].clear();
 
             Board copy = board;
 
