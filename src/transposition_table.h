@@ -42,6 +42,8 @@ public:
     void resize(uint64_t size);
     void insert(const Board &board, Move best_move, int16_t best_score, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
     void clear();
+    // prints out permille what percent of the hashtable is full
+    int hash_full();
     // bool contains(uint64_t hash);
     TT_Entry &probe(const Board &board);
 };

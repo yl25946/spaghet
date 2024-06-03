@@ -3,6 +3,9 @@ _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 _ROOT       := $(_THIS)
 # EVALFILE     = $(NETWORK_NAME)
 CXX         := g++
+CLEAN       := rm -rf
+NOOP		:= :
+NULL 	    := /dev/null
 TARGET      := Spaghet
 WARNINGS     = -Wall -Wcast-qual -Wextra -Wshadow -Wdouble-promotion -Wformat=2 -Wnull-dereference -Wlogical-op -Wold-style-cast -Wundef -pedantic
 CXXFLAGS    :=  -funroll-loops -O3 -flto -fno-exceptions -std=gnu++2a -DNDEBUG $(WARNINGS)
@@ -16,6 +19,7 @@ NAME        := Spaghet
 
 TMPDIR = .tmp
 
+
 # Detect Clang
 ifeq ($(CXX), clang++)
 CXXFLAGS = -funroll-loops -O3 -flto -fuse-ld=lld -fno-exceptions -std=gnu++2a -DNDEBUG
@@ -24,6 +28,9 @@ endif
 # Detect Windows
 ifeq ($(OS), Windows_NT)
 	MKDIR   := mkdir
+	CLEAN   := del /S /q
+	NOOP 	:= cd.
+	NULL	:= NUL
 else
 ifeq ($(COMP), MINGW)
 	MKDIR   := mkdir
@@ -161,12 +168,18 @@ CXXFLAGS += -DNETWORK_NAME=\"$(NETWORK_NAME)\" -DEVALFILE=\"$(EVALFILE)\"
 
 SOURCES := $(wildcard src/*.cpp)
 OBJECTS := $(patsubst %.cpp,$(TMPDIR)/%.o,$(SOURCES))
-DEPENDS := $(patsubst %.cpp,$(TMPDIR)/%.d,$(SOURCES))
+ifeq ($(OS), Windows_NT)
+	DEPENDS := $(patsubst %.cpp,$(TMPDIR)\%.d,$(SOURCES))
+else
+	DEPENDS := $(patsubst %.cpp,$(TMPDIR)//%.d,$(SOURCES))
+endif
 EXE	    := $(NAME)$(SUFFIX)
 
 all: $(TARGET)
 clean:
-	@rm -rf $(TMPDIR) *.o  $(DEPENDS) *.d
+	@$(CLEAN) *.o  $(DEPENDS) *.d $(EXE) 2> $(NULL) || $(NOOP)
+	@rmdir $(TMPDIR)\src 2> $(NULL) || $(NOOP)
+	@rmdir $(TMPDIR) 2> $(NULL) || $(NOOP)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(NATIVE) -MMD -MP -o $(EXE) $^ $(FLAGS)

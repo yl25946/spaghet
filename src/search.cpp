@@ -260,7 +260,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (!in_pv_node && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
         return static_eval;
 
-    // bailout if
+    // bailout
     if (ply >= MAX_PLY - 1)
         return static_eval;
 
@@ -500,8 +500,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (best_eval != (-INF - 1))
         transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
 
-    pv[ply].insert(best_move);
-
     return best_eval;
 }
 
@@ -562,9 +560,9 @@ void Searcher::search()
 
         while (best_score <= alpha || best_score >= beta)
         {
-            // clears the pv before starting the new search
-            for (int i = 0; i < pv.size(); ++i)
-                pv[i].clear();
+            // // clears the pv before starting the new search
+            // for (int i = 0; i < pv.size(); ++i)
+            //     pv[i].clear();
 
             if (best_score <= alpha)
             {
@@ -604,16 +602,16 @@ void Searcher::search()
         best_move = this->current_depth_best_move;
 
         // clears the pv before starting the new search
-        for (int i = 0; i < MAX_PLY; ++i)
-            std::cout << static_cast<int>(pv[i].size()) << " ";
+        // for (int i = 0; i < MAX_PLY; ++i)
+        //     std::cout << static_cast<int>(pv[i].size()) << " ";
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(current_depth) << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(current_depth) << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << best_move.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
                       << std::endl;
     }
 
