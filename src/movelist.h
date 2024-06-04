@@ -4,7 +4,7 @@
 #include "move.h"
 #include "transposition_table.h"
 #include "history.h"
-#include "search.h"
+#include "see.h"
 
 class Killers;
 class QuietHistory;
@@ -28,8 +28,13 @@ public:
     // scores all the moves
     void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply);
     // gets the next move with the highest value
-    // Move next_move();
     OrderedMove next_move();
+    void pop_back() { --count; }
+    void clear() { count = 0; }
+    void copy_over(MoveList &move_list);
 
+    std::string to_string();
+    // iterates through the moves backwards (used for PV Tables)
+    std::string reverse_to_string();
     void print();
 };

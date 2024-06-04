@@ -134,3 +134,8 @@ void TranspositionTable::clear()
 
     hashtable.resize(original_size);
 }
+
+int TranspositionTable::hash_full()
+{
+    return 0;
+}

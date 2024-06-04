@@ -30,7 +30,7 @@ Move parse_move(const std::string &move_string, Board &board)
     return Move(from_square, to_square, move_flag);
 }
 
-Board parse_position(std::string &line)
+Board parse_position(const std::string &line)
 {
     Board board(start_position);
     // this iterator tracks after the moves
@@ -45,18 +45,19 @@ Board parse_position(std::string &line)
     else
     {
         // position fen
-        const uint8_t fen_start = 13;
-        uint8_t fen_length = move_it - fen_start;
+        const size_t fen_start = 13;
+        size_t fen_length = move_it - fen_start;
         std::string fen = line.substr(fen_start, fen_length);
         // std::cout << fen;
         board = Board(fen);
+        // std::cout << board.fen();
     }
 
     return board;
 }
 
 // creates a copy of the board because we need to modify the board
-void parse_moves(std::string &line, std::vector<Move> &moves, Board board)
+void parse_moves(const std::string &line, std::vector<Move> &moves, Board board)
 {
     size_t move_it = line.find("moves");
     if (move_it == std::string::npos)
@@ -188,6 +189,25 @@ void UCI_loop()
         {
             threads.terminate();
         }
+        else if (!line.compare(0, 5, "perft"))
+        {
+            for (Move move : move_list)
+                board.make_move(move);
+
+            // parses the depth
+            int depth;
+            size_t end_line;
+            size_t go_pt = line.find("depth");
+            if (go_pt != std::string::npos)
+            {
+                go_pt += 6;
+                end_line = line.find(" ", go_pt);
+                depth = stoi(line.substr(go_pt, end_line - go_pt));
+            }
+
+            perft_debug_driver(board.fen(), depth);
+        }
+
         else if (!line.compare(0, 25, "setoption name Hash value"))
         {
             info.hash_size = std::stoi(line.substr(26));
