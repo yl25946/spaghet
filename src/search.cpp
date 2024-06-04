@@ -130,9 +130,14 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
         alpha = stand_pat;
 
     int best_eval = stand_pat;
-    // int capture_moves = 0;
+
     MoveList move_list;
-    generate_capture_moves(board, move_list);
+
+    // if we're in check, we can generate all moves
+    if (board.is_in_check())
+        generate_moves(board, move_list);
+    else
+        generate_capture_moves(board, move_list);
 
     // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
     Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
