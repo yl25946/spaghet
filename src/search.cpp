@@ -10,14 +10,17 @@ int max_depth = 255;
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
 {
-    threefold_repetition.push_back(board.hash);
+    // reserves enough space so we don't have to resize
+    game_history.reserve(300 + MAX_PLY);
+
+    game_history.push_back(board.hash);
 
     for (Move m : move_list)
     {
         board.make_move(m);
         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
         //     board.print();
-        threefold_repetition.push_back(board.hash);
+        game_history.push_back(board.hash);
     }
 
     this->board = board;
@@ -28,14 +31,17 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
 {
-    threefold_repetition.push_back(board.hash);
+    // reserves enough space so we don't have to resize
+    game_history.reserve(300 + MAX_PLY);
+
+    game_history.push_back(board.hash);
 
     for (Move m : move_list)
     {
         board.make_move(m);
         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
         //     board.print();
-        threefold_repetition.push_back(board.hash);
+        game_history.push_back(board.hash);
     }
 
     this->board = board;
@@ -63,27 +69,24 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 //     return false;
 // }
 
-bool Searcher::threefold(Board &board)
+bool Searcher::twofold(Board &board)
 {
-    // in here, the board's hash is already added into the threefold_repetition
+    // in here, the board's hash is already added into the game_history
     uint64_t hash = board.hash;
 
-    // the number of hashes matching the board argument's hash
-    uint8_t matching_positions = 0;
-
     // index of the last element of the array
-    size_t last_element_index = threefold_repetition.size() - 1;
+    size_t last_element_index = game_history.size() - 1;
 
     int threefold_max_it = std::min((size_t)board.fifty_move_counter, last_element_index);
 
     for (int i = 4; i <= threefold_max_it; i += 2)
     {
-        if (hash == threefold_repetition[last_element_index - i])
-            ++matching_positions;
+        if (hash == game_history[last_element_index - i])
+            return true;
     }
 
     // did not find a matching hash
-    return matching_positions >= 2;
+    return false;
 }
 
 int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node)
@@ -233,7 +236,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return 0;
 
     // if there's a threefold draw
-    if (!in_root && threefold(board))
+    if (!in_root && twofold(board))
     {
         // std::cout << "threefold repetition" << "\n";
         return 0;
@@ -272,14 +275,14 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         copy.make_null_move();
 
         // to help detect threefold in nmp
-        threefold_repetition.push_back(copy.hash);
+        game_history.push_back(copy.hash);
 
         int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
 
         if (stopped)
             return 0;
 
-        threefold_repetition.pop_back();
+        game_history.pop_back();
 
         if (null_move_score >= beta)
             return null_move_score;
@@ -364,7 +367,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (moves_seen == 0)
         {
             // we can check for threefold repetition later, updates the state though
-            threefold_repetition.push_back(copy.hash);
+            game_history.push_back(copy.hash);
 
             current_eval = -negamax(copy, -beta, -alpha, new_depth, ply + 1, in_pv_node, false);
 
@@ -372,7 +375,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 return 0;
 
             // stopped searching that line, so we can get rid of the hash
-            threefold_repetition.pop_back();
+            game_history.pop_back();
         }
         else
         {
@@ -387,7 +390,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             }
 
             // we can check for threefold repetition later, updates the state though
-            threefold_repetition.push_back(copy.hash);
+            game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
             current_eval = -negamax(copy, -alpha - 1, -alpha, new_depth, ply + 1, false, false);
@@ -396,26 +399,26 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 return 0;
 
             // stopped searching that line, so we can get rid of the hash
-            threefold_repetition.pop_back();
+            game_history.pop_back();
 
             // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
             // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
             if (current_eval > alpha)
             {
-                threefold_repetition.push_back(copy.hash);
+                game_history.push_back(copy.hash);
 
                 current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
 
                 if (stopped)
                     return 0;
 
-                threefold_repetition.pop_back();
+                game_history.pop_back();
 
                 // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && in_pv_node)
                 {
-                    threefold_repetition.push_back(copy.hash);
+                    game_history.push_back(copy.hash);
 
                     current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
 
@@ -423,7 +426,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                         return 0;
 
                     // stopped searching that line, so we can get rid of the hash
-                    threefold_repetition.pop_back();
+                    game_history.pop_back();
                 }
             }
         }

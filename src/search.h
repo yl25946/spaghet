@@ -22,7 +22,7 @@ class Searcher
 {
 public:
     // zorbrist hashes
-    std::vector<uint64_t> threefold_repetition;
+    std::vector<uint64_t> game_history;
 
     // don't really change this lol, just for reference
     Board &board;
@@ -73,7 +73,7 @@ public:
 
     // checks if there's a threefold draw
     // returns true if there is a draw
-    bool threefold(Board &board);
+    bool twofold(Board &board);
 
     void bench();
 };
