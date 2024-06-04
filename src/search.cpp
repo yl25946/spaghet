@@ -133,15 +133,22 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
 
     MoveList move_list;
 
+    bool in_check = board.is_in_check();
+
     // if we're in check, we can generate all moves
-    if (board.is_in_check())
+    if (in_check)
+    {
+        best_eval = -INF - 1;
         generate_moves(board, move_list);
+    }
     else
         generate_capture_moves(board, move_list);
 
     // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
     Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
 
+    // used to detect checkmate if we're doing check evasion
+    int moves_seen = 0;
     const int original_alpha = alpha;
 
     // scores moves to order them
@@ -156,6 +163,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
 
         if (!copy.was_legal())
             continue;
+
+        ++moves_seen;
 
         // do we need to check for checkmate in qsearch?
         // if (is_checkmate(copy))
@@ -191,6 +200,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
             }
         }
     }
+
+    // if we can't evade the check, it's checkmate
+    if (in_check && moves_seen == 0)
+        return -MATE + ply;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
