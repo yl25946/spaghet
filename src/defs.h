@@ -80,7 +80,7 @@ constexpr int64_t MAX_KILLERS = 1 << 20;
 constexpr int SEEValue[7] = {
     100,
     422,
-    422,
+    432,
     642,
     1015,
     0,
