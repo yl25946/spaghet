@@ -1,4 +1,4 @@
-#include "movelist.h"
+#include "movepicker.h"
 
 void MoveList::insert(Move move)
 {
@@ -61,7 +61,7 @@ void MoveList::copy_over(MoveList &move_list)
     }
 }
 
-void MoveList::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
+void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -74,18 +74,18 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
     }
 
     // just compare the info because they are different objects
-    for (int i = 0; i < size(); ++i)
+    for (int i = 0; i < move_list.size(); ++i)
     {
-        Move current_move = moves[i];
+        Move current_move = move_list.moves[i];
         uint8_t move_flag = current_move.move_flag();
 
         // make sure we don't get any weird values floating around in value of the orderedmove
-        moves[i].score = 0;
+        move_list.moves[i].score = 0;
 
         if (has_tt_move && tt_move.info == current_move.info)
         {
             // this ensures that the move comes first
-            moves[i].score = MAX_MOVE_ORDERING_SCORE;
+            move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
@@ -109,13 +109,13 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         //         break;
         //     }
         // }
-        if (!moves[i].is_quiet())
+        if (!move_list.moves[i].is_quiet())
         {
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                moves[i].score = 1400 + (SEE(board, moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score = 1400 + (SEE(board, move_list.moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -128,9 +128,9 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
-            if (moves[i].is_promotion())
+            if (move_list.moves[i].is_promotion())
             {
-                uint8_t promotion_piece = moves[i].promotion_piece();
+                uint8_t promotion_piece = move_list.moves[i].promotion_piece();
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
@@ -139,7 +139,7 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
                     promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
             }
 
-            moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list.moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
@@ -147,22 +147,22 @@ void MoveList::score(const Board &board, TranspositionTable &transposition_table
         else
         {
             // std::cout << history.move_value(moves[i]) << "\n";
-            moves[i].score = history.move_value(moves[i], board.side_to_move);
+            move_list.moves[i].score = history.move_value(move_list.moves[i], board.side_to_move);
 
             // check killer moves
             const int killers_size = killers.size(ply);
             for (int j = 0; j < killers_size; ++j)
             {
-                if (moves[i].info == killers.killers[ply][j].info)
+                if (move_list.moves[i].info == killers.killers[ply][j].info)
                 {
-                    moves[i].score = MAX_KILLERS - j;
+                    move_list.moves[i].score = MAX_KILLERS - j;
                 }
             }
         }
     }
 }
 
-OrderedMove MoveList::next_move()
+OrderedMove MovePicker::next_move()
 {
     // tracks the index and the value of the greatest index value in this entire list
     int max_entry_index = -1;
@@ -170,18 +170,28 @@ OrderedMove MoveList::next_move()
 
     int search_index = left_swap_index;
 
-    for (; search_index < size(); ++search_index)
+    for (; search_index < move_list.size(); ++search_index)
     {
-        if (moves[search_index].score > max_entry_value)
+        if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
+            continue;
+
+        if (move_list.moves[search_index].score > max_entry_value)
         {
             max_entry_index = search_index;
-            max_entry_value = moves[search_index].score;
+            max_entry_value = move_list.moves[search_index].score;
         }
     }
 
+    // if we don't have another move we return gibberish
+    if (max_entry_index == -1)
+    {
+        has_next = false;
+        return OrderedMove();
+    }
+
     // swaps the two values so the greates is at the start
-    std::swap(moves[left_swap_index], moves[max_entry_index]);
+    std::swap(move_list.moves[left_swap_index], move_list.moves[max_entry_index]);
 
     // increments it
-    return moves[left_swap_index++];
+    return move_list.moves[left_swap_index++];
 }

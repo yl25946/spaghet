@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "board.h"
 #include "eval.h"
-#include "movelist.h"
+#include "movepicker.h"
 #include "movegen.h"
 #include "transposition_table.h"
 #include "threads.h"

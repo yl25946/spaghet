@@ -1,5 +1,5 @@
 #include "history.h"
-#include "movelist.h"
+#include "movepicker.h"
 
 QuietHistory::QuietHistory()
 {

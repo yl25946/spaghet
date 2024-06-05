@@ -44,7 +44,7 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
 
     for (int i = 0; i < move_list.count; ++i)
     {
-        Move move = move_list.next_move();
+        Move move = move_list.moves[i];
         Board copy = board;
         copy.make_move(move_list.moves[i]);
         if (!copy.was_legal())
