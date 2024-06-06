@@ -143,13 +143,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     MovePicker move_picker(move_list);
     move_picker.score(board, transposition_table, history, killers, -107, ply);
 
-    while (true)
+    while (move_picker.has_next())
     {
         Board copy = board;
         OrderedMove curr_move = move_picker.next_move();
-
-        if (!move_picker.has_next_move())
-            break;
 
         copy.make_move(curr_move);
 
@@ -312,18 +309,16 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     bool skip_quiets = false;
 
-    while (true)
+    while (move_picker.has_next())
     {
         Board copy = board;
         Move curr_move = move_picker.next_move();
-
-        if (!move_picker.has_next_move())
-            break;
-
         copy.make_move(curr_move);
 
         if (!copy.was_legal())
             continue;
+
+        move_picker.update_legal_moves();
 
         is_quiet = curr_move.is_quiet();
 
@@ -479,7 +474,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (ply == 0)
         this->current_depth_best_move = best_move;
 
-    if (move_picker.moves_seen() == 0)
+    if (move_picker.legal_moves() == 0)
     {
         if (board.is_in_check())
         {

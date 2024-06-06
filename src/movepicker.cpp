@@ -61,6 +61,19 @@ void MoveList::copy_over(MoveList &move_list)
     }
 }
 
+MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
+{
+    this->move_list = move_list;
+
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        if (move_list.moves[i].is_quiet())
+            ++quiet_moves;
+    }
+
+    moves_remaining = move_list.count;
+}
+
 void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
@@ -182,16 +195,20 @@ OrderedMove MovePicker::next_move()
         }
     }
 
-    // if we don't have another move we return gibberish
-    if (max_entry_index == -1)
-    {
-        has_next = false;
-        return OrderedMove();
-    }
-
     // swaps the two values so the greates is at the start
     std::swap(move_list.moves[left_swap_index], move_list.moves[max_entry_index]);
 
+    // updates all the information in the move picker
+    --moves_remaining;
+
+    if (move_list.moves[left_swap_index].is_quiet())
+        --quiet_moves;
+
     // increments it
     return move_list.moves[left_swap_index++];
+}
+
+bool MovePicker::has_next()
+{
+    return moves_remaining != 0;
 }

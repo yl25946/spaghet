@@ -41,26 +41,34 @@ class MovePicker
 public:
     MoveList &move_list;
 
+    int quiet_moves = 0;
+    int moves_remaining;
+
     bool skip_quiet_moves = false;
-    bool has_next = true;
 
     int moves_picked = 0;
+    int legals = 0;
 
     // this is used to track the left pointer to swap with in selection sort
     int left_swap_index = 0;
 
-    MovePicker(MoveList &move_list) : move_list(move_list) { this->move_list = move_list; };
+    MovePicker(MoveList &move_list);
 
-    void skip_quiets() { skip_quiet_moves = true; };
+    void skip_quiets()
+    {
+        moves_remaining -= quiet_moves;
+        skip_quiet_moves = true;
+    };
 
     // returns gibberish if there isn't a next move, it is up to the search to catch it
     OrderedMove next_move();
 
     void update_moves_seen() { ++moves_picked; };
-
+    void update_legal_moves() { ++legals; };
     int moves_seen() { return moves_picked; };
+    int legal_moves() { return legals; };
 
-    bool has_next_move() { return this->has_next; };
+    bool has_next();
 
     void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply);
 };
