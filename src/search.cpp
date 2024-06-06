@@ -472,7 +472,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (ply == 0)
         this->current_depth_best_move = best_move;
 
-    if (move_picker.legal_moves() == 0)
+    if (move_picker.moves_seen() == 0)
     {
         if (board.is_in_check())
         {
