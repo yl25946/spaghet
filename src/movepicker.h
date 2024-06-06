@@ -54,10 +54,10 @@ public:
 
     MovePicker(MoveList &move_list);
 
-    void skip_quiets()
-    {
-        moves_remaining -= quiet_moves;
-        skip_quiet_moves = true;
+    void skip_quiets() {
+        // moves_remaining -= quiet_moves;
+        // // quiet_moves = 0;
+        // skip_quiet_moves = true;
     };
 
     // returns gibberish if there isn't a next move, it is up to the search to catch it

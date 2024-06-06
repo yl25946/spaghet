@@ -63,7 +63,7 @@ void MoveList::copy_over(MoveList &move_list)
 
 MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
 {
-    this->move_list = move_list;
+    // this->move_list = move_list;
 
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -71,7 +71,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
             ++quiet_moves;
     }
 
-    moves_remaining = move_list.count;
+    moves_remaining = move_list.size();
 }
 
 void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
@@ -185,8 +185,10 @@ OrderedMove MovePicker::next_move()
 
     for (; search_index < move_list.size(); ++search_index)
     {
-        if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
-            continue;
+        // if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
+        // {
+        //     continue;
+        // }
 
         if (move_list.moves[search_index].score > max_entry_value)
         {

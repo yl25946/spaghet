@@ -307,8 +307,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     const int futility_margin = 150 + 100 * depth;
 
-    bool skip_quiets = false;
-
     while (move_picker.has_next())
     {
         Board copy = board;
@@ -340,7 +338,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // applies futility pruning
             if (depth <= 8 && !board.is_in_check() && is_quiet && static_eval + futility_margin < alpha)
             {
-                skip_quiets = true;
+                move_picker.skip_quiets();
                 continue;
             }
         }
