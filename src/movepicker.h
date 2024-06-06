@@ -54,13 +54,14 @@ public:
 
     MovePicker(MoveList &move_list);
 
-    void skip_quiets() {
-        // moves_remaining -= quiet_moves;
-        // // quiet_moves = 0;
-        // skip_quiet_moves = true;
+    void skip_quiets()
+    {
+        moves_remaining -= quiet_moves;
+        quiet_moves = 0;
+        skip_quiet_moves = true;
     };
 
-    // returns gibberish if there isn't a next move, it is up to the search to catch it
+    // segfaults if there is no next move, it is up to the search to catch it
     OrderedMove next_move();
 
     void update_moves_seen() { ++moves_picked; };

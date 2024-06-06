@@ -185,10 +185,10 @@ OrderedMove MovePicker::next_move()
 
     for (; search_index < move_list.size(); ++search_index)
     {
-        // if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
-        // {
-        //     continue;
-        // }
+        if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
+        {
+            continue;
+        }
 
         if (move_list.moves[search_index].score > max_entry_value)
         {
