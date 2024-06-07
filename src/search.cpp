@@ -48,7 +48,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->age = age;
     this->transposition_table = transposition_table;
     this->history = history;
-    this->end_time = end_time;
+    this->max_stop_time = end_time;
+    this->optimum_stop_time = end_time;
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
@@ -101,7 +102,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
 
     ++node_count;
     if (!(node_count & 4095))
-        if (get_time() >= end_time)
+        if (get_time() >= max_stop_time)
         {
             stopped = true;
             return 0;
@@ -218,7 +219,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         seldepth = ply;
 
     if (!(node_count & 4095))
-        if (get_time() >= end_time)
+        if (get_time() >= max_stop_time)
         {
             stopped = true;
             return 0;
@@ -614,6 +615,9 @@ void Searcher::search()
         else
             std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
                       << std::endl;
+
+        if (get_time() > optimum_stop_time)
+            break;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
@@ -624,7 +628,7 @@ void Searcher::search()
 void Searcher::bench()
 {
     max_depth = 12;
-    end_time = UINT64_MAX;
+    max_stop_time = UINT64_MAX;
     node_count = 0;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
