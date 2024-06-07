@@ -847,12 +847,12 @@ int pesto_eval(Board &board)
     if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move))) == 2)
     {
         mgScore += 25;
-        egScore += 100;
+        egScore += 50;
     }
     if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move ^ 1))) == 2)
     {
         mgScore -= 25;
-        egScore -= 100;
+        egScore -= 50;
     }
 
     int mgPhase = gamePhase;
