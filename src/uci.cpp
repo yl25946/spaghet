@@ -166,16 +166,15 @@ void UCI_loop()
             // implements the go infinite command
             if (!line.compare(0, 11, "go infinite"))
             {
-                searcher.end_time = UINT64_MAX;
+
                 max_depth = 255;
+
+                searcher.optimum_stop_time = UINT64_MAX;
+                searcher.max_stop_time = UINT64_MAX;
             }
             else
             {
                 Time time(line);
-
-                // gets the endtime and startime
-                searcher.start_time = get_time();
-                searcher.end_time = time.get_move_time(searcher.board.side_to_move);
             }
 
             // account for the start_time

@@ -24,7 +24,7 @@ public:
     // zorbrist hashes
     std::vector<uint64_t> game_history;
 
-    // don't really change this lol, just for reference
+    // will play all the moves in the movelist
     Board &board;
 
     TranspositionTable &transposition_table;
@@ -42,7 +42,10 @@ public:
 
     // start time of the current id so we can calculate nps
     uint64_t start_time;
-    uint64_t end_time;
+    // if it exceeds this time and it's at the end of the search, we cut it
+    uint64_t optimum_stop_time;
+    // we force the search to stop at this time
+    uint64_t max_stop_time;
 
     // current deth for iterative deepening
     int curr_depth = 0;
@@ -58,6 +61,8 @@ public:
 
     // Searcher();
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+
+    // creates a hard time limit
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
