@@ -30,6 +30,25 @@ int main(int argc, char *argv[])
     }
 
     // SEE_suite();
+    // Board board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+    // MoveList move_list;
+    // generate_moves(board, move_list);
+    // MovePicker move_picker(move_list);
+    // move_picker.skip_quiets();
+    // while (move_picker.has_next())
+    // {
+    //     Move move = move_picker.next_move();
+    //     Board copy = board;
+    //     copy.make_move(move);
+
+    //     if (!copy.was_legal())
+    //         continue;
+
+    //     std::cout << move.to_string() << "\n";
+    //     move_picker.update_legal_moves();
+    // }
+
+    // std::cout << move_picker.legal_moves();
 
     UCI_loop();
 

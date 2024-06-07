@@ -42,11 +42,13 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
 
     // move_list.score(board, tt);
 
-    for (int i = 0; i < move_list.count; ++i)
+    MovePicker move_picker(move_list);
+
+    while (move_picker.has_next())
     {
-        Move move = move_list.next_move();
+        Move move = move_picker.next_move();
         Board copy = board;
-        copy.make_move(move_list.moves[i]);
+        copy.make_move(move);
         if (!copy.was_legal())
             continue;
 

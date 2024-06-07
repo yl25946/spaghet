@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "attacks.h"
 #include "board.h"
-#include "movelist.h"
+#include "movepicker.h"
 
 class MoveList;
 

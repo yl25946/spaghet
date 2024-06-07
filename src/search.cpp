@@ -140,12 +140,13 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     const int original_alpha = alpha;
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, -107, ply);
+    MovePicker move_picker(move_list);
+    move_picker.score(board, transposition_table, history, killers, -107, ply);
 
-    for (int i = 0; i < move_list.size(); ++i)
+    while (move_picker.has_next())
     {
         Board copy = board;
-        OrderedMove curr_move = move_list.next_move();
+        OrderedMove curr_move = move_picker.next_move();
 
         copy.make_move(curr_move);
 
@@ -294,10 +295,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     generate_moves(board, move_list);
 
     // scores moves to order them
-    move_list.score(board, transposition_table, history, killers, -107, ply);
-
-    int legal_moves = 0;
-    int moves_seen = 0;
+    MovePicker move_picker(move_list);
+    move_picker.score(board, transposition_table, history, killers, -107, ply);
 
     const int original_alpha = alpha;
 
@@ -308,43 +307,38 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     const int futility_margin = 150 + 100 * depth;
 
-    bool skip_quiets = false;
-
-    for (int i = 0; i < move_list.size(); ++i)
+    while (move_picker.has_next())
     {
         Board copy = board;
-        Move curr_move = move_list.next_move();
+        Move curr_move = move_picker.next_move();
         copy.make_move(curr_move);
 
         if (!copy.was_legal())
             continue;
 
-        ++legal_moves;
+        move_picker.update_legal_moves();
 
         is_quiet = curr_move.is_quiet();
-
-        if (is_quiet && skip_quiets)
-            continue;
 
         if (!in_root && best_eval > MIN_MATE_SCORE)
         {
             // applies late move pruning
-            if (is_quiet && moves_seen >= 3 + depth * depth)
+            if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth)
             {
-                skip_quiets = true;
+                move_picker.skip_quiets();
                 continue;
             }
 
             // applies pvs see pruning
             const int see_threshold = is_quiet ? -80 * depth : -30 * depth * depth;
 
-            if (depth <= 8 && moves_seen > 0 && !SEE(board, curr_move, see_threshold))
+            if (depth <= 8 && move_picker.moves_seen() > 0 && !SEE(board, curr_move, see_threshold))
                 continue;
 
             // applies futility pruning
             if (depth <= 8 && !board.is_in_check() && is_quiet && static_eval + futility_margin < alpha)
             {
-                skip_quiets = true;
+                move_picker.skip_quiets();
                 continue;
             }
         }
@@ -364,7 +358,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         int current_eval;
 
         // don't do pvs on the first node
-        if (moves_seen == 0)
+        if (move_picker.moves_seen() == 0)
         {
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
@@ -380,13 +374,13 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         else
         {
             // applies the late move reduction
-            if (moves_seen > 1)
+            if (move_picker.moves_seen() > 1)
             {
                 if (is_quiet)
-                    new_depth -= lmr_reduction_quiet(depth, moves_seen);
+                    new_depth -= lmr_reduction_quiet(depth, move_picker.moves_seen());
                 // noisy move
                 else
-                    new_depth -= lmr_reduction_captures_promotions(depth, moves_seen);
+                    new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
 
             // we can check for threefold repetition later, updates the state though
@@ -431,7 +425,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             }
         }
 
-        ++moves_seen;
+        move_picker.update_moves_seen();
 
         if (stopped)
             return 0;
@@ -478,7 +472,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (ply == 0)
         this->current_depth_best_move = best_move;
 
-    if (legal_moves == 0)
+    if (move_picker.moves_seen() == 0)
     {
         if (board.is_in_check())
         {
