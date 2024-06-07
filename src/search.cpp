@@ -23,10 +23,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
         game_history.push_back(board.hash);
     }
 
-    this->board = board;
     this->age = age;
-    this->transposition_table = transposition_table;
-    this->history = history;
 }
 
 Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
@@ -44,10 +41,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
         game_history.push_back(board.hash);
     }
 
-    this->board = board;
     this->age = age;
-    this->transposition_table = transposition_table;
-    this->history = history;
     this->end_time = end_time;
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)

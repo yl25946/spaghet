@@ -8,7 +8,6 @@ void search(Searcher *searcher, UciOptions *options)
 
 Threads::Threads(UciOptions &options) : options(options)
 {
-    this->options = options;
 }
 
 void Threads::insert(Searcher &searcher)
