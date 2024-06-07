@@ -50,6 +50,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->history = history;
     this->max_stop_time = end_time;
     this->optimum_stop_time = end_time;
+    this->max_stop_time_duration = end_time - get_time();
+    this->optimum_stop_time_duration = end_time - get_time();
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)

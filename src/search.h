@@ -44,8 +44,10 @@ public:
     uint64_t start_time;
     // if it exceeds this time and it's at the end of the search, we cut it
     uint64_t optimum_stop_time;
+    uint64_t optimum_stop_time_duration;
     // we force the search to stop at this time
     uint64_t max_stop_time;
+    uint64_t max_stop_time_duration;
 
     // current deth for iterative deepening
     int curr_depth = 0;

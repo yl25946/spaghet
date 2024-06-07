@@ -175,6 +175,8 @@ void UCI_loop()
             else
             {
                 Time time(line);
+
+                time.set_time(searcher);
             }
 
             // account for the start_time
