@@ -24,7 +24,7 @@ public:
     // zorbrist hashes
     std::vector<uint64_t> game_history;
 
-    // don't really change this lol, just for reference
+    // will play all the moves in the movelist
     Board &board;
 
     TranspositionTable &transposition_table;
@@ -42,7 +42,15 @@ public:
 
     // start time of the current id so we can calculate nps
     uint64_t start_time;
-    uint64_t end_time;
+    // if it exceeds this time and it's at the end of the search, we cut it
+    uint64_t optimum_stop_time;
+    uint64_t optimum_stop_time_duration;
+    // we force the search to stop at this time
+    uint64_t max_stop_time;
+    uint64_t max_stop_time_duration;
+
+    // if we're playing on btime, wtime, binc, winc commands
+    bool time_set = false;
 
     // current deth for iterative deepening
     int curr_depth = 0;
@@ -53,11 +61,15 @@ public:
     std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
-    uint64_t node_count;
+    uint64_t nodes;
     // uint64_t total_nodes = 0;
+
+    std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+
+    // creates a hard time limit
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
@@ -74,6 +86,8 @@ public:
     // checks if there's a threefold draw
     // returns true if there is a draw
     bool twofold(Board &board);
+
+    void scale_time(int best_move_stability_factor);
 
     void bench();
 };

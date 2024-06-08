@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "search.h"
 
-constexpr uint64_t move_overhead = 16;
+constexpr uint64_t MOVE_OVERHEAD = 16;
 constexpr int64_t min_move_time = 20;
 
 class Time
@@ -25,5 +25,5 @@ public:
     int moves_to_go;
 
     // will give you the time in milliseconds of hwen the search should end, and subtracts the buffer from the acutal time to account for computation time
-    uint64_t get_move_time(uint8_t side_to_move);
+    void set_time(Searcher &searcher);
 };

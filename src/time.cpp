@@ -63,23 +63,44 @@ Time::Time(const std::string &go_command)
 }
 
 // time controls yoinked from Alexandria
-uint64_t Time::get_move_time(uint8_t side_to_move)
+void Time::set_time(Searcher &searcher)
 {
     if (has_depth)
-        return UINT64_MAX;
-
-    if (side_to_move == WHITE)
     {
-        if (move_time)
-            return get_time() + move_time - move_overhead;
+        searcher.optimum_stop_time = UINT64_MAX;
+        searcher.max_stop_time = UINT64_MAX;
+    }
 
-        return get_time() + std::max((int64_t)(white_time * 0.054 + white_increment * 0.85) - (int64_t)move_overhead, min_move_time);
+    if (move_time)
+    {
+        searcher.optimum_stop_time = move_time - MOVE_OVERHEAD;
+        searcher.max_stop_time = move_time - MOVE_OVERHEAD;
+    }
+
+    searcher.time_set = true;
+
+    uint64_t base_time;
+    uint64_t max_time_bound;
+    // if we only recieved binc and winc commands
+    if (searcher.board.side_to_move == WHITE)
+    {
+        base_time = white_time * 0.054 + white_increment * 0.85;
+        max_time_bound = 0.76 * white_time;
     }
     else
     {
-        if (move_time)
-            return get_time() + move_time - move_overhead;
 
-        return get_time() + std::max((int64_t)(black_time * 0.054 + black_increment * 0.85) - (int64_t)move_overhead, min_move_time);
+        base_time = black_time * 0.054 + black_increment * 0.85;
+        max_time_bound = 0.76 * black_time;
     }
+
+    searcher.start_time = get_time();
+
+    const uint64_t optimum_time = std::min<uint64_t>(0.86 * base_time, max_time_bound);
+    const uint64_t max_time = std::min<uint64_t>(3.04 * base_time, max_time_bound);
+
+    searcher.optimum_stop_time = get_time() + optimum_time - MOVE_OVERHEAD;
+    searcher.optimum_stop_time_duration = optimum_time - MOVE_OVERHEAD;
+    searcher.max_stop_time = get_time() + max_time - MOVE_OVERHEAD;
+    searcher.max_stop_time_duration = max_time - MOVE_OVERHEAD;
 }
