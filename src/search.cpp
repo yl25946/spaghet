@@ -325,6 +325,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     const int futility_margin = 150 + 100 * depth;
 
+    int nodes_before_search = nodes;
+
     while (move_picker.has_next())
     {
         Board copy = board;
@@ -444,6 +446,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         }
 
         move_picker.update_moves_seen();
+
+        if (in_root)
+        {
+            nodes_spent_table[curr_move.from_to()] += nodes - nodes_before_search;
+            nodes_before_search = nodes;
+        }
 
         if (stopped)
             return 0;
