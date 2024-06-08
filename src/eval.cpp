@@ -861,6 +861,9 @@ int pesto_eval(Board &board)
     int egPhase = 24 - mgPhase;
     int pesto_score = (mgScore * mgPhase + egScore * egPhase) / 24;
 
+    // adds a bonus for tempo
+    pesto_score += 8;
+
     // clamp for a sanity check
     int actual_score = std::max(int(MIN_MATE_SCORE + 1), pesto_score);
     actual_score = std::min(int(MAX_MATE_SCORE - 1), pesto_score);
