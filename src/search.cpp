@@ -23,6 +23,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
         game_history.push_back(board.hash);
     }
 
+    nodes_spent_table.fill(0);
+
     this->board = board;
     this->age = age;
     this->transposition_table = transposition_table;
@@ -43,6 +45,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
         //     board.print();
         game_history.push_back(board.hash);
     }
+
+    nodes_spent_table.fill(0);
 
     this->board = board;
     this->age = age;
@@ -92,6 +96,17 @@ bool Searcher::twofold(Board &board)
     return false;
 }
 
+void Searcher::scale_time(int best_move_stability_factor)
+{
+    constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
+    const Move best_move = current_depth_best_move;
+    const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
+    const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
+    const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
+    // scal9e the time based on how many nodes we spent ond how the best move changed
+    optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
+}
+
 int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node)
 {
     // return evaluate(board);
@@ -102,8 +117,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     if (ply > seldepth)
         seldepth = ply;
 
-    ++node_count;
-    if (!(node_count & 4095))
+    ++nodes;
+    if (!(nodes & 4095))
         if (get_time() >= max_stop_time)
         {
             stopped = true;
@@ -212,7 +227,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
 
 int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node, bool null_moved)
 {
-    ++node_count;
+    ++nodes;
 
     if (stopped)
         return 0;
@@ -220,7 +235,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     if (depth == 0 && ply > seldepth)
         seldepth = ply;
 
-    if (!(node_count & 4095))
+    if (!(nodes & 4095))
         if (get_time() >= max_stop_time)
         {
             stopped = true;
@@ -510,15 +525,15 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 void Searcher::search()
 {
     int best_score;
-    // used to track aspiration windows
-    int guess;
-    Move best_move;
+    Move previous_best_move(a8, a8, 0);
+    Move best_move(a8, a8, 0);
+    int best_move_stability_factor = 0;
     uint64_t time_elapsed;
     int alpha = -INF;
     int beta = INF;
 
     // this->start_time = get_time();
-    this->node_count = 0;
+    this->nodes = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
     MoveList move_list;
@@ -557,8 +572,6 @@ void Searcher::search()
             break;
         }
 
-        guess = best_score;
-
         // tracks how many times we've had to adjust the aspiration window
         int aspiration_adjustments = 0;
 
@@ -571,14 +584,14 @@ void Searcher::search()
             if (best_score <= alpha)
             {
                 // debugging purposes
-                int new_alpha = (guess - (25 * (1 << aspiration_adjustments)));
+                int new_alpha = (best_score - (25 * (1 << aspiration_adjustments)));
 
                 alpha = std::clamp(new_alpha, static_cast<int>(-INF), alpha);
             }
             else if (best_score >= beta)
             {
                 // debugging purposes
-                int new_beta = (guess + (25 * (1 << aspiration_adjustments)));
+                int new_beta = (best_score + (25 * (1 << aspiration_adjustments)));
 
                 beta = std::clamp(new_beta, beta, static_cast<int>(INF));
             }
@@ -612,14 +625,29 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << node_count << " time " << time_elapsed << " nps " << (uint64_t)((double)node_count / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(current_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
                       << std::endl;
 
         if (get_time() > optimum_stop_time)
             break;
+
+        if (best_move == previous_best_move)
+        {
+            best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
+        }
+        else
+        {
+            best_move_stability_factor = 0;
+            previous_best_move = best_move;
+        }
+
+        if (current_depth > 7 && time_set)
+        {
+            scale_time(best_move_stability_factor);
+        }
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
@@ -631,7 +659,7 @@ void Searcher::bench()
 {
     max_depth = 12;
     max_stop_time = UINT64_MAX;
-    node_count = 0;
+    nodes = 0;
     std::array<std::string, 50> Fens{// fens from alexandria, ultimately from bitgenie
                                      "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
                                      "4rrk1/2p1b1p1/p1p3q1/4p3/2P2n1p/1P1NR2P/PB3PP1/3R1QK1 b - - 2 24",
@@ -757,6 +785,6 @@ void Searcher::bench()
 
     std::cout << "info string " << time / 1000 << " seconds"
               << "\n";
-    std::cout << node_count << " nodes " << (uint64_t)((double)node_count / time * 1000) << " nps"
+    std::cout << nodes << " nodes " << (uint64_t)((double)nodes / time * 1000) << " nps"
               << "\n";
 }

@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "search.h"
 
-constexpr uint64_t move_overhead = 16;
+constexpr uint64_t MOVE_OVERHEAD = 16;
 constexpr int64_t min_move_time = 20;
 
 class Time

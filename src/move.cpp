@@ -19,6 +19,11 @@ uint8_t Move::to_square() const
     return info & 0b111111;
 }
 
+uint16_t Move::from_to() const
+{
+    return info && 0b1111111111;
+}
+
 uint8_t Move::move_flag() const
 {
     return info >> 12;

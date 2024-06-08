@@ -161,30 +161,33 @@ void UCI_loop()
             // now that we've called go, we can increase the age
             ++info.age;
 
-            Searcher searcher(board, move_list, transposition_table, history, info.age);
-
             // implements the go infinite command
             if (!line.compare(0, 11, "go infinite"))
             {
 
                 max_depth = 255;
 
-                searcher.optimum_stop_time = UINT64_MAX;
-                searcher.max_stop_time = UINT64_MAX;
+                Searcher searcher(board, move_list, transposition_table, history, info.age, UINT64_MAX);
+
+                // account for the start_time
+                searcher.start_time = get_time();
+
+                threads.insert(searcher);
+
+                threads.go();
             }
             else
             {
                 Time time(line);
 
+                Searcher searcher(board, move_list, transposition_table, history, info.age);
+
                 time.set_time(searcher);
+
+                threads.insert(searcher);
+
+                threads.go();
             }
-
-            // account for the start_time
-            searcher.start_time = get_time();
-
-            threads.insert(searcher);
-
-            threads.go();
         }
         else if (!line.compare(0, 4, "stop"))
         {

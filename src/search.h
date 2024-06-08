@@ -49,6 +49,9 @@ public:
     uint64_t max_stop_time;
     uint64_t max_stop_time_duration;
 
+    // if we're playing on btime, wtime, binc, winc commands
+    bool time_set = false;
+
     // current deth for iterative deepening
     int curr_depth = 0;
 
@@ -58,8 +61,10 @@ public:
     std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
-    uint64_t node_count;
+    uint64_t nodes;
     // uint64_t total_nodes = 0;
+
+    std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
     Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
@@ -81,6 +86,8 @@ public:
     // checks if there's a threefold draw
     // returns true if there is a draw
     bool twofold(Board &board);
+
+    void scale_time(int best_move_stability_factor);
 
     void bench();
 };
