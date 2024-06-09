@@ -855,14 +855,14 @@ int pesto_eval(Board &board)
         egScore -= 50;
     }
 
+    // adds a bonus for tempo, doesn't matter much in endgame
+    mgScore += 35;
+
     int mgPhase = gamePhase;
     if (mgPhase > 24)
         mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
     int pesto_score = (mgScore * mgPhase + egScore * egPhase) / 24;
-
-    // adds a bonus for tempo
-    pesto_score += 8;
 
     // clamp for a sanity check
     int actual_score = std::max(int(MIN_MATE_SCORE + 1), pesto_score);
