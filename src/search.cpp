@@ -246,6 +246,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     if (in_pv_node)
     {
+        pv[ply].clear();
         pv[ply + 1].clear();
     }
 
