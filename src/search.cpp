@@ -565,12 +565,6 @@ void Searcher::search()
 
     // for (; root_depth <= 3; ++root_depth)
     // {
-    //     this->curr_depth = root_depth;
-    //     this->seldepth = 0;
-
-    //     // // clears the pv before starting the new search
-    //     // for (int i = 0; i < pv.size(); ++i)
-    //     //     pv[i].clear();
 
     //     Board copy = board;
 
@@ -620,22 +614,6 @@ void Searcher::search()
         this->curr_depth = root_depth;
         this->seldepth = 0;
 
-        // // clears the pv before starting the new search
-        // for (int i = 0; i < pv.size(); ++i)
-        //     pv[i].clear();
-
-        // Board copy = board;
-
-        // best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
-
-        // std::cout << get_time() << "\n"
-        //           << end_time << "\n";
-
-        // if (stopped)
-        // {
-        //     break;
-        // }
-
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
         // stockfish uses 9, let's try that later
@@ -653,8 +631,8 @@ void Searcher::search()
 
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
-            int root_delta = beta - alpha;
-            int best_score = negamax(copy, alpha, beta, adjusted_depth, 0, true, false);
+            // int root_delta = beta - alpha;
+            best_score = negamax(copy, alpha, beta, adjusted_depth, 0, true, false);
 
             if (stopped)
                 break;
