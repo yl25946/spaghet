@@ -561,55 +561,54 @@ void Searcher::search()
         }
     }
 
-    // int root_depth = 1;
+    int root_depth = 1;
 
-    // for (; root_depth <= 3; ++root_depth)
-    // {
+    // once search is better we can just simp this out
+    for (; root_depth <= 5 && root_depth <= max_depth; ++root_depth)
+    {
+        this->curr_depth = root_depth;
+        this->seldepth = 0;
 
-    //     Board copy = board;
+        Board copy = board;
 
-    //     best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
+        best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
 
-    //     // std::cout << get_time() << "\n"
-    //     //           << end_time << "\n";
+        // std::cout << get_time() << "\n"
+        //           << end_time << "\n";
 
-    //     if (stopped)
-    //     {
-    //         break;
-    //     }
+        if (stopped)
+        {
+            break;
+        }
 
-    //     best_move = this->current_depth_best_move;
+        best_move = this->current_depth_best_move;
 
-    //     // clears the pv before starting the new search
-    //     // for (int i = 0; i < MAX_PLY; ++i)
-    //     //     std::cout << static_cast<int>(pv[i].size()) << " ";
+        time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
-    //     time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
+        if (is_mate_score(best_score))
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+                      << std::endl;
+        else
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+                      << std::endl;
 
-    //     if (is_mate_score(best_score))
-    //         std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
-    //                   << std::endl;
-    //     else
-    //         std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
-    //                   << std::endl;
+        if (get_time() > optimum_stop_time)
+            break;
 
-    //     if (get_time() > optimum_stop_time)
-    //         break;
+        if (best_move == previous_best_move)
+        {
+            best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
+        }
+        else
+        {
+            best_move_stability_factor = 0;
+            previous_best_move = best_move;
+        }
 
-    //     if (best_move == previous_best_move)
-    //     {
-    //         best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
-    //     }
-    //     else
-    //     {
-    //         best_move_stability_factor = 0;
-    //         previous_best_move = best_move;
-    //     }
+        average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
+    }
 
-    //     average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
-    // }
-
-    for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
+    for (; root_depth <= max_depth; ++root_depth)
     {
         this->curr_depth = root_depth;
         this->seldepth = 0;
