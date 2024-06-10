@@ -561,54 +561,7 @@ void Searcher::search()
         }
     }
 
-    int root_depth = 1;
-
-    // once search is better we can just simp this out
-    for (; root_depth <= 3 && root_depth <= max_depth; ++root_depth)
-    {
-        this->curr_depth = root_depth;
-        this->seldepth = 0;
-
-        Board copy = board;
-
-        best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
-
-        // std::cout << get_time() << "\n"
-        //           << end_time << "\n";
-
-        if (stopped)
-        {
-            break;
-        }
-
-        best_move = this->current_depth_best_move;
-
-        time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
-
-        if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
-                      << std::endl;
-        else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
-                      << std::endl;
-
-        if (get_time() > optimum_stop_time)
-            break;
-
-        if (best_move == previous_best_move)
-        {
-            best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
-        }
-        else
-        {
-            best_move_stability_factor = 0;
-            previous_best_move = best_move;
-        }
-
-        average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
-    }
-
-    for (; root_depth <= max_depth; ++root_depth)
+    for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
     {
         this->curr_depth = root_depth;
         this->seldepth = 0;
@@ -617,9 +570,16 @@ void Searcher::search()
 
         // stockfish uses 9, let's try that later
         // int delta = 30 + average_score * average_score / 10182;
-        int delta = 30 + average_score * average_score / 10182;
-        alpha = std::max<int>(average_score - delta, -INF);
-        beta = std::max<int>(average_score + delta, INF);
+        int delta = 30;
+
+        alpha = -INF;
+        beta = INF;
+
+        if (root_depth > 3)
+        {
+            alpha = std::max<int>(best_score - delta, -INF);
+            beta = std::max<int>(best_score + delta, INF);
+        }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
         int failed_high_count = 0;
@@ -630,7 +590,7 @@ void Searcher::search()
 
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
-            // int root_delta = beta - alpha;
+            int root_delta = beta - alpha;
             best_score = negamax(copy, alpha, beta, adjusted_depth, 0, true, false);
 
             if (stopped)
