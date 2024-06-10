@@ -570,12 +570,12 @@ void Searcher::search()
 
         // stockfish uses 9, let's try that later
         // int delta = 30 + average_score * average_score / 10182;
-        int delta = 30;
+        int delta = 25;
 
         alpha = -INF;
         beta = INF;
 
-        if (root_depth > 5)
+        if (root_depth > 1)
         {
             alpha = std::max<int>(best_score - delta, -INF);
             beta = std::max<int>(best_score + delta, INF);
