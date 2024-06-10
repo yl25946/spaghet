@@ -575,7 +575,7 @@ void Searcher::search()
         alpha = -INF;
         beta = INF;
 
-        if (root_depth > 3)
+        if (root_depth > 5)
         {
             alpha = std::max<int>(best_score - delta, -INF);
             beta = std::max<int>(best_score + delta, INF);
