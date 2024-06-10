@@ -103,7 +103,7 @@ void UCI_loop()
     // Searcher searcher(board, move_list, UINT64_MAX);
 
     std::cout
-        << "id name Spaghet v0.1\n"
+        << "id name Spaghet Pesto 1.0\n"
         << "id author Li Ying\n"
         << "option name Hash type spin default 16 min 1 max 1024\n"
         << "uciok" << std::endl;
@@ -231,7 +231,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 3, "uci"))
         {
-            std::cout << "id name Spaghet v0.1\n"
+            std::cout << "id name Spaghet Pesto 1.0\n"
                       << "id author Li Ying\n"
                       << "option name Hash type spin default 16 min 1 max 1024\n"
                       << "uciok" << std::endl;
