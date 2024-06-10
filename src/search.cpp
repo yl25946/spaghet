@@ -569,17 +569,17 @@ void Searcher::search()
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
         // stockfish uses 9, let's try that later
-        // int delta = 30 + average_score * average_score / 10182;
-        int delta = 25;
+        int delta = 9 + average_score * average_score / 10182;
+        // int delta = 25;
 
-        alpha = -INF;
-        beta = INF;
+        // alpha = -INF;
+        // beta = INF;
 
-        if (root_depth > 5)
-        {
-            alpha = std::max<int>(best_score - delta, -INF);
-            beta = std::min<int>(best_score + delta, INF);
-        }
+        // if (root_depth > 5)
+        // {
+        alpha = std::max<int>(best_score - delta, -INF);
+        beta = std::min<int>(best_score + delta, INF);
+        // }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
         int failed_high_count = 0;
