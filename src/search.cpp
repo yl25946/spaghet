@@ -564,7 +564,7 @@ void Searcher::search()
     int root_depth = 1;
 
     // once search is better we can just simp this out
-    for (; root_depth <= 5 && root_depth <= max_depth; ++root_depth)
+    for (; root_depth <= 3 && root_depth <= max_depth; ++root_depth)
     {
         this->curr_depth = root_depth;
         this->seldepth = 0;
