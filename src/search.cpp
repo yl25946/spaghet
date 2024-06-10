@@ -578,7 +578,7 @@ void Searcher::search()
         if (root_depth > 1)
         {
             alpha = std::max<int>(best_score - delta, -INF);
-            beta = std::max<int>(best_score + delta, INF);
+            beta = std::min<int>(best_score + delta, INF);
         }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
