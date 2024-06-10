@@ -587,7 +587,8 @@ void Searcher::search()
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
         // stockfish uses 9, let's try that later
-        int delta = 30 + average_score * average_score / 10182;
+        // int delta = 30 + average_score * average_score / 10182;
+        int delta = 30;
         alpha = std::max<int>(average_score - delta, -INF);
         beta = std::max<int>(average_score + delta, INF);
 
