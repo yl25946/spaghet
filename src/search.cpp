@@ -586,8 +586,8 @@ void Searcher::search()
 
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
-        // tracks how many times we've had to adjust the aspiration window
-        int delta = 9 + average_score * average_score / 10182;
+        // stockfish uses 9, let's try that later
+        int delta = 30 + average_score * average_score / 10182;
         alpha = std::max<int>(average_score - delta, -INF);
         beta = std::max<int>(average_score + delta, INF);
 
