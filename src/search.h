@@ -58,6 +58,10 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
+    // used for tracking aspiration window size
+    int average_score = -INF;
+    // bool increase_depth = true;
+
     std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
@@ -89,5 +93,5 @@ public:
 
     void scale_time(int best_move_stability_factor);
 
-    void bench();
+    // void bench();
 };
