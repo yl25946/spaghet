@@ -452,8 +452,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         {
             nodes_spent_table[curr_move.from_to()] += nodes - nodes_before_search;
             nodes_before_search = nodes;
-
-            average_score = average_score != -INF ? (2 * current_eval + average_score) / 3 : current_eval;
         }
 
         if (stopped)
@@ -535,13 +533,13 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
 void Searcher::search()
 {
-    int best_score;
+    int best_score = -INF;
     Move previous_best_move(a8, a8, 0);
     Move best_move(a8, a8, 0);
     int best_move_stability_factor = 0;
     uint64_t time_elapsed;
-    int alpha;
-    int beta;
+    int alpha = -INF;
+    int beta = INF;
     int search_again_counter = 0;
 
     // this->start_time = get_time();
@@ -563,6 +561,60 @@ void Searcher::search()
         }
     }
 
+    // int root_depth = 1;
+
+    // for (; root_depth <= 3; ++root_depth)
+    // {
+    //     this->curr_depth = root_depth;
+    //     this->seldepth = 0;
+
+    //     // // clears the pv before starting the new search
+    //     // for (int i = 0; i < pv.size(); ++i)
+    //     //     pv[i].clear();
+
+    //     Board copy = board;
+
+    //     best_score = negamax(copy, alpha, beta, curr_depth, 0, true, false);
+
+    //     // std::cout << get_time() << "\n"
+    //     //           << end_time << "\n";
+
+    //     if (stopped)
+    //     {
+    //         break;
+    //     }
+
+    //     best_move = this->current_depth_best_move;
+
+    //     // clears the pv before starting the new search
+    //     // for (int i = 0; i < MAX_PLY; ++i)
+    //     //     std::cout << static_cast<int>(pv[i].size()) << " ";
+
+    //     time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
+
+    //     if (is_mate_score(best_score))
+    //         std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+    //                   << std::endl;
+    //     else
+    //         std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+    //                   << std::endl;
+
+    //     if (get_time() > optimum_stop_time)
+    //         break;
+
+    //     if (best_move == previous_best_move)
+    //     {
+    //         best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
+    //     }
+    //     else
+    //     {
+    //         best_move_stability_factor = 0;
+    //         previous_best_move = best_move;
+    //     }
+
+    //     average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
+    // }
+
     for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
     {
         this->curr_depth = root_depth;
@@ -579,16 +631,16 @@ void Searcher::search()
         // std::cout << get_time() << "\n"
         //           << end_time << "\n";
 
-        if (stopped)
-        {
-            break;
-        }
+        // if (stopped)
+        // {
+        //     break;
+        // }
 
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
         // stockfish uses 9, let's try that later
         // int delta = 30 + average_score * average_score / 10182;
-        int delta = 30;
+        int delta = 30 + average_score * average_score / 10182;
         alpha = std::max<int>(average_score - delta, -INF);
         beta = std::max<int>(average_score + delta, INF);
 
@@ -660,6 +712,8 @@ void Searcher::search()
         {
             scale_time(best_move_stability_factor);
         }
+
+        average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
