@@ -237,7 +237,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 }
 
 template <bool inPV>
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss)
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool null_moved)
 {
     ++nodes;
 
@@ -309,9 +309,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         // to help detect threefold in nmp
         game_history.push_back(copy.hash);
 
-        (ss + 1)->null_moved = true;
+        // (ss + 1)->null_moved = true;
 
-        int null_move_score = -negamax<nonPV>(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
+        int null_move_score = -negamax<nonPV>(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1, true);
 
         if (stopped)
             return 0;
@@ -319,7 +319,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         game_history.pop_back();
 
         // we're done with null move pruning so now we can safely set the search stack to not be a null move
-        (ss + 1)->null_moved = false;
+        // (ss + 1)->null_moved = false;
 
         if (null_move_score >= beta)
             return null_move_score;
@@ -401,7 +401,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
 
-            current_eval = -negamax<inPV>(copy, -beta, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<inPV>(copy, -beta, -alpha, new_depth, ss + 1, false);
 
             if (stopped)
                 return 0;
@@ -425,7 +425,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, new_depth, ss + 1, false);
 
             if (stopped)
                 return 0;
@@ -439,7 +439,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             {
                 game_history.push_back(copy.hash);
 
-                current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, depth - 1, ss + 1);
+                current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, depth - 1, ss + 1, false);
 
                 if (stopped)
                     return 0;
@@ -452,7 +452,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                 {
                     game_history.push_back(copy.hash);
 
-                    current_eval = -negamax<PV>(copy, -beta, -alpha, depth - 1, ss + 1);
+                    current_eval = -negamax<PV>(copy, -beta, -alpha, depth - 1, ss + 1, false);
 
                     if (stopped)
                         return 0;
@@ -607,7 +607,7 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(copy, alpha, beta, adjusted_depth, &search_stack[4]);
+            best_score = negamax<PV>(copy, alpha, beta, adjusted_depth, &search_stack[4], false);
 
             if (stopped)
                 break;
