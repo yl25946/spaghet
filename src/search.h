@@ -49,9 +49,6 @@ public:
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
 
-    Move current_depth_best_move;
-    // Move best_move;
-
     bool stopped = false;
 
     // start time of the current id so we can calculate nps

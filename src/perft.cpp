@@ -14,7 +14,7 @@ uint64_t perft(Board &board, uint8_t depth)
     for (int i = 0; i < move_list.count; ++i)
     {
         Board copy = board;
-        copy.make_move(move_list.moves[i]);
+        copy.make_move(move_list[i]);
         if (!copy.was_legal())
             continue;
         nodes += perft(copy, depth - 1);

@@ -17,6 +17,9 @@ public:
 
     uint8_t size() const;
 
+    OrderedMove operator[](int i) const { return moves[i]; };
+    OrderedMove &operator[](int i) { return moves[i]; };
+
     // MoveList();
 
     // move order value defaults to 0

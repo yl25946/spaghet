@@ -109,7 +109,7 @@ bool Searcher::twofold(Board &board)
 void Searcher::scale_time(int best_move_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    const Move best_move = current_depth_best_move;
+    const Move best_move = search_stack[4].pv[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
@@ -508,8 +508,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     // uncomment this if it doesn't work
     // write the best move down at the current depth
-    if (ss->ply == 0)
-        this->current_depth_best_move = best_move;
 
     if (move_picker.moves_seen() == 0)
     {
@@ -564,11 +562,11 @@ void Searcher::search()
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        copy.make_move(move_list.moves[i]);
+        copy.make_move(move_list[i]);
 
         if (copy.was_legal())
         {
-            best_move = move_list.moves[i];
+            best_move = move_list[i];
             break;
         }
     }
@@ -630,7 +628,7 @@ void Searcher::search()
         if (stopped)
             break;
 
-        best_move = this->current_depth_best_move;
+        best_move = search_stack[4].pv[0];
 
         // clears the pv before starting the new search
         // for (int i = 0; i < MAX_PLY; ++i)

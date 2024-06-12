@@ -57,7 +57,7 @@ void MoveList::copy_over(MoveList &move_list)
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        insert(move_list.moves[i]);
+        insert(move_list[i]);
     }
 }
 
@@ -67,7 +67,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
 
     for (int i = 0; i < move_list.size(); ++i)
     {
-        if (move_list.moves[i].is_quiet())
+        if (move_list[i].is_quiet())
             ++quiet_moves;
     }
 
@@ -89,16 +89,16 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
     // just compare the info because they are different objects
     for (int i = 0; i < move_list.size(); ++i)
     {
-        Move current_move = move_list.moves[i];
+        Move current_move = move_list[i];
         uint8_t move_flag = current_move.move_flag();
 
         // make sure we don't get any weird values floating around in value of the orderedmove
-        move_list.moves[i].score = 0;
+        move_list[i].score = 0;
 
         if (has_tt_move && tt_move == current_move)
         {
             // this ensures that the move comes first
-            move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
+            move_list[i].score = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions
@@ -122,13 +122,13 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
         //         break;
         //     }
         // }
-        if (!move_list.moves[i].is_quiet())
+        if (!move_list[i].is_quiet())
         {
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score = 1400 + (SEE(board, move_list.moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list[i].score = 1400 + (SEE(board, move_list[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -141,9 +141,9 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
-            if (move_list.moves[i].is_promotion())
+            if (move_list[i].is_promotion())
             {
-                uint8_t promotion_piece = move_list.moves[i].promotion_piece();
+                uint8_t promotion_piece = move_list[i].promotion_piece();
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
@@ -152,7 +152,7 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
                     promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
             }
 
-            move_list.moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
@@ -160,15 +160,15 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
         else
         {
             // std::cout << history.move_value(moves[i]) << "\n";
-            move_list.moves[i].score = history.move_value(move_list.moves[i], board.side_to_move);
+            move_list[i].score = history.move_value(move_list[i], board.side_to_move);
 
             // check killer moves
             const int killers_size = killers.size();
             for (int j = 0; j < killers_size; ++j)
             {
-                if (move_list.moves[i] == killers.killers[j])
+                if (move_list[i] == killers.killers[j])
                 {
-                    move_list.moves[i].score = MAX_KILLERS - j;
+                    move_list[i].score = MAX_KILLERS - j;
                 }
             }
         }
@@ -185,29 +185,29 @@ OrderedMove MovePicker::next_move()
 
     for (; search_index < move_list.size(); ++search_index)
     {
-        if (skip_quiet_moves && move_list.moves[search_index].is_quiet())
+        if (skip_quiet_moves && move_list[search_index].is_quiet())
         {
             continue;
         }
 
-        if (move_list.moves[search_index].score > max_entry_value)
+        if (move_list[search_index].score > max_entry_value)
         {
             max_entry_index = search_index;
-            max_entry_value = move_list.moves[search_index].score;
+            max_entry_value = move_list[search_index].score;
         }
     }
 
     // swaps the two values so the greates is at the start
-    std::swap(move_list.moves[left_swap_index], move_list.moves[max_entry_index]);
+    std::swap(move_list[left_swap_index], move_list[max_entry_index]);
 
     // updates all the information in the move picker
     --moves_remaining;
 
-    if (move_list.moves[left_swap_index].is_quiet())
+    if (move_list[left_swap_index].is_quiet())
         --quiet_moves;
 
     // increments it
-    return move_list.moves[left_swap_index++];
+    return move_list[left_swap_index++];
 }
 
 bool MovePicker::has_next()

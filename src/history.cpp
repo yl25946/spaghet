@@ -44,10 +44,10 @@ void QuietHistory::update(MoveList &move_list, Move best_move, int depth, uint8_
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        if (move_list.moves[i].info == best_move.info)
-            update(move_list.moves[i], depth, side_to_move, true);
+        if (move_list[i].info == best_move.info)
+            update(move_list[i], depth, side_to_move, true);
         else
-            update(move_list.moves[i], depth, side_to_move, false);
+            update(move_list[i], depth, side_to_move, false);
     }
 }
 
