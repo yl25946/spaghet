@@ -74,7 +74,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
+void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -95,7 +95,7 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
         // make sure we don't get any weird values floating around in value of the orderedmove
         move_list.moves[i].score = 0;
 
-        if (has_tt_move && tt_move.info == current_move.info)
+        if (has_tt_move && tt_move == current_move)
         {
             // this ensures that the move comes first
             move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
@@ -163,10 +163,10 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
             move_list.moves[i].score = history.move_value(move_list.moves[i], board.side_to_move);
 
             // check killer moves
-            const int killers_size = killers.size(ply);
+            const int killers_size = killers.size();
             for (int j = 0; j < killers_size; ++j)
             {
-                if (move_list.moves[i].info == killers.killers[ply][j].info)
+                if (move_list.moves[i] == killers.killers[j])
                 {
                     move_list.moves[i].score = MAX_KILLERS - j;
                 }

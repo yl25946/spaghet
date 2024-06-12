@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -29,9 +29,14 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->age = age;
     this->transposition_table = transposition_table;
     this->history = history;
+
+    for (int i = 0; i < search_stack.size(); ++i)
+    {
+        search_stack[i] = SearchStack(i - 4);
+    }
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), pv(MAX_PLY + 4)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -56,6 +61,11 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->optimum_stop_time = end_time;
     this->max_stop_time_duration = end_time - get_time();
     this->optimum_stop_time_duration = end_time - get_time();
+
+    for (int i = 0; i < search_stack.size(); ++i)
+    {
+        search_stack[i] = SearchStack(i - 4);
+    }
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
@@ -107,15 +117,15 @@ void Searcher::scale_time(int best_move_stability_factor)
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
 }
 
-int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node)
+int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *ss, bool in_pv_node)
 {
     // return evaluate(board);
 
     if (stopped)
         return 0;
 
-    if (ply > seldepth)
-        seldepth = ply;
+    if (ss->ply > seldepth)
+        seldepth = ss->ply;
 
     ++nodes;
     if (!(nodes & 4095))
@@ -132,13 +142,13 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta))
     {
-        return entry.usable_score(ply);
+        return entry.usable_score(ss->ply);
     }
 
     // creates a baseline
     int stand_pat = evaluate(board);
 
-    if (ply >= MAX_PLY - 1)
+    if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
 
     if (stand_pat >= beta)
@@ -159,7 +169,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, killers, -107, ply);
+    move_picker.score(board, transposition_table, history, ss->killers, -107);
 
     while (move_picker.has_next())
     {
@@ -183,7 +193,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search(copy, -beta, -alpha, ply + 1, in_pv_node);
+        int current_eval = -quiescence_search(copy, -beta, -alpha, ss + 1, in_pv_node);
 
         if (stopped)
             return 0;
@@ -219,21 +229,21 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, int ply, bool
         // failed to raise alpha, fail low
         bound_flag = BOUND::FAIL_LOW;
     }
-    transposition_table.insert(board, best_move, best_eval, 0, ply, age, bound_flag);
+    transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
 
     // TODO: add check moves
     return best_eval;
 }
 
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node, bool null_moved)
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool in_pv_node, bool null_moved)
 {
     ++nodes;
 
     if (stopped)
         return 0;
 
-    if (depth == 0 && ply > seldepth)
-        seldepth = ply;
+    if (depth == 0 && ss->ply > seldepth)
+        seldepth = ss->ply;
 
     if (!(nodes & 4095))
         if (get_time() >= max_stop_time)
@@ -242,12 +252,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             return 0;
         }
 
-    bool in_root = ply <= 0;
+    bool in_root = ss->ply <= 0;
 
     if (in_pv_node)
     {
-        pv[ply].clear();
-        pv[ply + 1].clear();
+        ss->pv.clear();
+        (ss + 1)->pv.clear();
     }
 
     // cut the search short if there's a draw
@@ -271,11 +281,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
-        return entry.usable_score(ply);
+        return entry.usable_score(ss->ply);
     }
 
     if (depth <= 0)
-        return quiescence_search(board, alpha, beta, ply, in_pv_node);
+        return quiescence_search(board, alpha, beta, ss, in_pv_node);
 
     int static_eval = evaluate(board);
 
@@ -284,7 +294,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         return static_eval;
 
     // bailout
-    if (ply >= MAX_PLY - 1)
+    if (ss->ply >= MAX_PLY - 1)
         return static_eval;
 
     // applies null move pruning
@@ -297,7 +307,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         // to help detect threefold in nmp
         game_history.push_back(copy.hash);
 
-        int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ply + 1, false, true);
+        int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1, false, true);
 
         if (stopped)
             return 0;
@@ -315,7 +325,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, killers, -107, ply);
+    move_picker.score(board, transposition_table, history, ss->killers, -107);
 
     const int original_alpha = alpha;
 
@@ -384,7 +394,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
 
-            current_eval = -negamax(copy, -beta, -alpha, new_depth, ply + 1, in_pv_node, false);
+            current_eval = -negamax(copy, -beta, -alpha, new_depth, ss + 1, in_pv_node, false);
 
             if (stopped)
                 return 0;
@@ -408,7 +418,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, new_depth, ply + 1, false, false);
+            current_eval = -negamax(copy, -alpha - 1, -alpha, new_depth, ss + 1, false, false);
 
             if (stopped)
                 return 0;
@@ -422,7 +432,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
             {
                 game_history.push_back(copy.hash);
 
-                current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ply + 1, false, false);
+                current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ss + 1, false, false);
 
                 if (stopped)
                     return 0;
@@ -435,7 +445,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 {
                     game_history.push_back(copy.hash);
 
-                    current_eval = -negamax(copy, -beta, -alpha, depth - 1, ply + 1, true, false);
+                    current_eval = -negamax(copy, -beta, -alpha, depth - 1, ss + 1, true, false);
 
                     if (stopped)
                         return 0;
@@ -471,9 +481,9 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                 // logic to update the pv when we have a new best_move
                 if (in_pv_node)
                 {
-                    pv[ply].clear();
-                    pv[ply].insert(best_move);
-                    pv[ply].copy_over(pv[ply + 1]);
+                    ss->pv.clear();
+                    ss->pv.insert(best_move);
+                    ss->pv.copy_over((ss + 1)->pv);
                 }
 
                 // fail high
@@ -486,7 +496,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
                         history.update(quiet_moves, curr_move, depth, board.side_to_move);
-                        killers.insert(curr_move, ply);
+                        ss->killers.insert(curr_move);
                     }
                     break;
                 }
@@ -496,7 +506,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
 
     // uncomment this if it doesn't work
     // write the best move down at the current depth
-    if (ply == 0)
+    if (ss->ply == 0)
         this->current_depth_best_move = best_move;
 
     if (move_picker.moves_seen() == 0)
@@ -504,7 +514,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         if (board.is_in_check())
         {
             // prioritize faster mates
-            return -MATE + ply;
+            return -MATE + ss->ply;
         }
         else
         {
@@ -526,7 +536,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, int ply, boo
         bound_flag = BOUND::FAIL_LOW;
     }
     if (best_eval != (-INF - 1))
-        transposition_table.insert(board, best_move, best_eval, depth, ply, age, bound_flag);
+        transposition_table.insert(board, best_move, best_eval, depth, ss->ply, age, bound_flag);
 
     return best_eval;
 }
@@ -591,7 +601,8 @@ void Searcher::search()
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
-            best_score = negamax(copy, alpha, beta, adjusted_depth, 0, true, false);
+            // we start at 4 beacuse of conthist
+            best_score = negamax(copy, alpha, beta, adjusted_depth, &search_stack[4], true, false);
 
             if (stopped)
                 break;
@@ -626,10 +637,10 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << search_stack[4].pv.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << pv[0].to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << search_stack[4].pv.to_string() << " "
                       << std::endl;
 
         if (get_time() > optimum_stop_time)

@@ -33,7 +33,7 @@ public:
 
     Move(uint8_t from, uint8_t to, uint8_t move_flag);
 
-    bool operator==(const Move &move)
+    bool operator==(const Move &move) const
     {
         return info == move.info;
     };
