@@ -15,13 +15,15 @@ class Killers;
 
 constexpr uint64_t check_count = 4096;
 
+constexpr bool PV = true;
+constexpr bool nonPV = false;
+
 // tracking the max depth across the engine
 extern int max_depth;
 
 class SearchStack
 {
 public:
-    bool in_pv_node = true;
     bool null_moved = false;
     int ply;
     Killers killers;
@@ -98,8 +100,10 @@ public:
 
     // returns true if board is in checkmate
     // bool is_checkmate(Board &board);
-    int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss, bool in_pv_node);
-    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool in_pv_node, bool null_moved);
+    template <bool inPV>
+    int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss);
+    template <bool inPV>
+    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool null_moved);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
