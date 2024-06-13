@@ -70,7 +70,7 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::array<SearchStack, MAX_PLY + 10> search_stack;
+    std::vector<SearchStack> search_stack;
 
     // used for tracking aspiration window size
     int average_score = -INF;

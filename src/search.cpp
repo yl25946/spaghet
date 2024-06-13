@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -36,7 +36,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     }
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
