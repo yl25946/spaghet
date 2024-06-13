@@ -71,5 +71,5 @@ public:
 
     bool has_next();
 
-    void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply);
+    void score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold);
 };

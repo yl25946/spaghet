@@ -30,15 +30,15 @@ public:
 class Killers
 {
 public:
-    Move killers[MAX_PLY][2];
+    Move killers[2];
 
-    uint8_t count[MAX_PLY];
+    uint8_t count = 0;
 
-    Killers();
+    Killers() {};
 
-    void insert(Move move, int ply);
+    void insert(Move move);
 
     // Move get_killer(int ply) const;;
 
-    size_t size(int ply) const;
+    size_t size() const;
 };

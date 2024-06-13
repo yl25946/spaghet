@@ -18,6 +18,19 @@ constexpr uint64_t check_count = 4096;
 // tracking the max depth across the engine
 extern int max_depth;
 
+class SearchStack
+{
+public:
+    bool in_pv_node = true;
+    bool null_moved = false;
+    int ply;
+    Killers killers;
+    MoveList pv;
+
+    SearchStack() {};
+    SearchStack(int ply) { this->ply = ply; };
+};
+
 class Searcher
 {
 public:
@@ -30,7 +43,6 @@ public:
     TranspositionTable &transposition_table;
 
     QuietHistory &history;
-    Killers killers;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
@@ -58,11 +70,13 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
+    std::array<SearchStack, MAX_PLY + 10> search_stack;
+
     // used for tracking aspiration window size
     int average_score = -INF;
     // bool increase_depth = true;
 
-    std::vector<MoveList> pv;
+    // std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
     uint64_t nodes;
@@ -84,8 +98,8 @@ public:
 
     // returns true if board is in checkmate
     // bool is_checkmate(Board &board);
-    int quiescence_search(Board &board, int alpha, int beta, int ply, bool in_pv_node);
-    int negamax(Board &board, int alpha, int beta, int depth, int ply, bool in_pv_node, bool null_moved);
+    int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss, bool in_pv_node);
+    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool in_pv_node, bool null_moved);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
