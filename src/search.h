@@ -101,7 +101,7 @@ public:
     template <bool inPV>
     int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss);
     template <bool inPV>
-    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool null_moved);
+    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
