@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), search_stack(search_stack)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -29,14 +29,9 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->age = age;
     this->transposition_table = transposition_table;
     this->history = history;
-
-    for (int i = 0; i < search_stack.size(); ++i)
-    {
-        search_stack[i] = SearchStack(i - 4);
-    }
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), search_stack(search_stack)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -61,11 +56,6 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->optimum_stop_time = end_time;
     this->max_stop_time_duration = end_time - get_time();
     this->optimum_stop_time_duration = end_time - get_time();
-
-    for (int i = 0; i < search_stack.size(); ++i)
-    {
-        search_stack[i] = SearchStack(i - 4);
-    }
 }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
@@ -170,7 +160,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, history, ss->killers, -107);
 
     while (move_picker.has_next())
     {
@@ -332,7 +322,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, history, ss->killers, -107);
 
     const int original_alpha = alpha;
 
@@ -502,6 +492,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                     if (is_quiet)
                     {
                         // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
+                        ss->conthist.update(board, quiet_moves, curr_move, depth);
                         history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         ss->killers.insert(curr_move);
                     }

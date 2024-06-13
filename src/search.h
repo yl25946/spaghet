@@ -8,6 +8,8 @@
 #include "transposition_table.h"
 #include "threads.h"
 #include "see.h"
+#include "movelist.h"
+#include "search_stack.h"
 // #include "history.h"
 
 class QuietHistory;
@@ -20,19 +22,6 @@ constexpr bool nonPV = false;
 
 // tracking the max depth across the engine
 extern int max_depth;
-
-class SearchStack
-{
-public:
-    bool in_pv_node = true;
-    bool null_moved = false;
-    int ply;
-    Killers killers;
-    MoveList pv;
-
-    SearchStack() {};
-    SearchStack(int ply) { this->ply = ply; };
-};
 
 class Searcher
 {
@@ -70,7 +59,7 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::vector<SearchStack> search_stack;
+    std::vector<SearchStack> &search_stack;
 
     // used for tracking aspiration window size
     int average_score = -INF;
@@ -85,10 +74,10 @@ public:
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
 
     // creates a hard time limit
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
+    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // bool SEE(const Board &board, Move move, int threshold);

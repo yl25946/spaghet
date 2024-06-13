@@ -83,7 +83,14 @@ int main(int argc, char *argv[])
                 QuietHistory history;
                 Time time("go depth 12");
 
-                Searcher searcher(board, moves, tt, history, 0);
+                std::vector<SearchStack> search_stack(MAX_PLY + 10);
+
+                for (int i = 0; i < search_stack.size(); ++i)
+                {
+                    search_stack[i] = SearchStack(i - 4);
+                }
+
+                Searcher searcher(board, moves, search_stack, tt, history, 0);
                 time.set_time(searcher);
 
                 searcher.search();
