@@ -109,7 +109,7 @@ bool Searcher::twofold(Board &board)
 void Searcher::scale_time(int best_move_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    const Move best_move = current_depth_best_move;
+    const Move best_move = search_stack[4].pv.moves[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
@@ -117,7 +117,8 @@ void Searcher::scale_time(int best_move_stability_factor)
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
 }
 
-int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *ss, bool in_pv_node)
+template <bool inPV>
+int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *ss)
 {
     // return evaluate(board);
 
@@ -140,7 +141,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta))
+    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta))
     {
         return entry.usable_score(ss->ply);
     }
@@ -193,7 +194,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search(copy, -beta, -alpha, ss + 1, in_pv_node);
+        int current_eval = -quiescence_search<inPV>(copy, -beta, -alpha, ss + 1);
 
         if (stopped)
             return 0;
@@ -235,7 +236,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
     return best_eval;
 }
 
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool in_pv_node, bool null_moved)
+template <bool inPV>
+int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss, bool null_moved)
 {
     ++nodes;
 
@@ -254,7 +256,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     bool in_root = ss->ply <= 0;
 
-    if (in_pv_node)
+    if (inPV)
     {
         ss->pv.clear();
         (ss + 1)->pv.clear();
@@ -272,25 +274,25 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         return 0;
     }
 
-    // bool in_pv_node = beta - alpha > 1;
+    // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!in_pv_node && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ss->ply);
     }
 
     if (depth <= 0)
-        return quiescence_search(board, alpha, beta, ss, in_pv_node);
+        return quiescence_search<inPV>(board, alpha, beta, ss);
 
     int static_eval = evaluate(board);
 
     // apply reverse futility pruning
-    if (!in_pv_node && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
+    if (!inPV && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
         return static_eval;
 
     // bailout
@@ -298,7 +300,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         return static_eval;
 
     // applies null move pruning
-    if (!null_moved && !in_pv_node && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
         Board copy = board;
@@ -307,7 +309,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         // to help detect threefold in nmp
         game_history.push_back(copy.hash);
 
-        int null_move_score = -negamax(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1, false, true);
+        int null_move_score = -negamax<nonPV>(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1, true);
 
         if (stopped)
             return 0;
@@ -394,7 +396,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
 
-            current_eval = -negamax(copy, -beta, -alpha, new_depth, ss + 1, in_pv_node, false);
+            current_eval = -negamax<inPV>(copy, -beta, -alpha, new_depth, ss + 1, false);
 
             if (stopped)
                 return 0;
@@ -418,7 +420,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax(copy, -alpha - 1, -alpha, new_depth, ss + 1, false, false);
+            current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, new_depth, ss + 1, false);
 
             if (stopped)
                 return 0;
@@ -432,7 +434,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             {
                 game_history.push_back(copy.hash);
 
-                current_eval = -negamax(copy, -alpha - 1, -alpha, depth - 1, ss + 1, false, false);
+                current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, depth - 1, ss + 1, false);
 
                 if (stopped)
                     return 0;
@@ -441,11 +443,11 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
                 // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
                 // so we'll assume that this node is the pv move, and then do a full window search.
-                if (current_eval > alpha && in_pv_node)
+                if (current_eval > alpha && inPV)
                 {
                     game_history.push_back(copy.hash);
 
-                    current_eval = -negamax(copy, -beta, -alpha, depth - 1, ss + 1, true, false);
+                    current_eval = -negamax<PV>(copy, -beta, -alpha, depth - 1, ss + 1, false);
 
                     if (stopped)
                         return 0;
@@ -479,7 +481,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                 best_move = curr_move;
 
                 // logic to update the pv when we have a new best_move
-                if (in_pv_node)
+                if (inPV)
                 {
                     ss->pv.clear();
                     ss->pv.insert(best_move);
@@ -506,8 +508,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     // uncomment this if it doesn't work
     // write the best move down at the current depth
-    if (ss->ply == 0)
-        this->current_depth_best_move = best_move;
 
     if (move_picker.moves_seen() == 0)
     {
@@ -602,7 +602,7 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax(copy, alpha, beta, adjusted_depth, &search_stack[4], true, false);
+            best_score = negamax<PV>(copy, alpha, beta, adjusted_depth, &search_stack[4], false);
 
             if (stopped)
                 break;
@@ -628,7 +628,7 @@ void Searcher::search()
         if (stopped)
             break;
 
-        best_move = this->current_depth_best_move;
+        best_move = search_stack[4].pv.moves[0];
 
         // clears the pv before starting the new search
         // for (int i = 0; i < MAX_PLY; ++i)
