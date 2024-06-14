@@ -343,8 +343,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     const int futility_margin = 150 + 100 * depth;
 
-    int nodes_before_search = nodes;
-
     while (move_picker.has_next())
     {
         Board copy = board;
@@ -380,6 +378,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                 continue;
             }
         }
+
+        const uint64_t nodes_before_search = nodes;
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
@@ -468,7 +468,6 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         if (in_root)
         {
             nodes_spent_table[curr_move.from_to()] += nodes - nodes_before_search;
-            nodes_before_search = nodes;
         }
 
         if (stopped)
