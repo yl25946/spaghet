@@ -576,7 +576,7 @@ void Searcher::search()
     Board board = thread_data.search_stack[4].board;
 
     // this->start_time = get_time();
-    this->nodes = 0;
+    nodes = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
     MoveList move_list;

@@ -67,7 +67,7 @@ public:
     // std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
-    uint64_t nodes;
+    uint64_t nodes = 0;
     // uint64_t total_nodes = 0;
 
     std::array<uint64_t, 64 * 64> nodes_spent_table;
