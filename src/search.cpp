@@ -312,7 +312,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         return static_eval;
 
     // applies null move pruning
-    if (!ss->null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
         Board copy = board;
@@ -322,12 +322,12 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         game_history.push_back(copy.hash);
 
         // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
-        (ss + 1)->null_moved = true;
+        ss->null_moved = true;
         // (ss + 1)->board = copy;
 
         int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
 
-        (ss + 1)->null_moved = false;
+        ss->null_moved = false;
 
         if (stopped)
             return 0;
