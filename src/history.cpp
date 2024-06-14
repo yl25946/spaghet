@@ -60,27 +60,35 @@ ContinuationHistory::ContinuationHistory()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            table[i][j] = 0;
+            for (int k = 0; i < 13; ++i)
+                for (int l = 0; j < 64; ++j)
+                    table[i][j][k][l] = 0;
 }
 
 void ContinuationHistory::clear()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            table[i][j] = 0;
+            for (int k = 0; i < 13; ++i)
+                for (int l = 0; j < 64; ++j)
+                    table[i][j][k][l] = 0;
 }
 
 void ContinuationHistory::update()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            table[i][j] /= 4;
+            for (int k = 0; i < 13; ++i)
+                for (int l = 0; j < 64; ++j)
+                    table[i][j][k][l] /= 4;
 }
 
-void ContinuationHistory::update(const Board &board, Move move, int depth, bool good)
+void ContinuationHistory::update(const Board &board, Move move, const Board &previous_board, Move previous_move, int depth, bool good)
 {
     uint8_t piece = board.mailbox[move.from_square()];
     uint8_t to_square = move.to_square();
+    uint8_t previous_piece = previous_board.mailbox[previous_move.from_square()];
+    uint8_t previous_to_square = previous_move.to_square();
 
     // const int64_t updated_value = table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
 
@@ -89,23 +97,23 @@ void ContinuationHistory::update(const Board &board, Move move, int depth, bool 
     const int delta = good ? depth * depth : -depth * depth;
 
     // formula taken from ethereal
-    table[piece][to_square] += delta - (table[piece][to_square] * abs(delta) / MAX_HISTORY);
+    table[piece][to_square][previous_piece][previous_to_square] += delta - (table[piece][to_square][previous_piece][previous_to_square] * abs(delta) / MAX_HISTORY);
 }
 
-void ContinuationHistory::update(const Board &board, MoveList &move_list, Move best_move, int depth)
+void ContinuationHistory::update(const Board &board, MoveList &move_list, Move best_move, const Board &previous_board, Move previous_move, int depth)
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
         if (move_list.moves[i].info == best_move.info)
-            update(board, move_list.moves[i], depth, true);
+            update(board, move_list.moves[i], previous_board, previous_move, depth, true);
         else
-            update(board, move_list.moves[i], depth, false);
+            update(board, move_list.moves[i], previous_board, previous_move, depth, false);
     }
 }
 
-int64_t ContinuationHistory::move_value(const Board &board, Move move)
+int64_t ContinuationHistory::move_value(const Board &board, Move move, const Board &previous_board, Move previous_move)
 {
-    return table[board.mailbox[move.from_square()]][move.to_square()];
+    return table[board.mailbox[move.from_square()]][move.to_square()][previous_board.mailbox[previous_move.from_square()]][previous_move.to_square()];
 }
 
 void Killers::insert(Move move)

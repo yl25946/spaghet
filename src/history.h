@@ -11,7 +11,7 @@ class MoveList;
 class QuietHistory
 {
 public:
-    int64_t butterfly_table[2][64][64];
+    int16_t butterfly_table[2][64][64];
 
     QuietHistory();
 
@@ -32,7 +32,7 @@ public:
 class ContinuationHistory
 {
 public:
-    int64_t table[13][64];
+    int16_t table[13][64][13][64];
 
     ContinuationHistory();
 
@@ -42,9 +42,9 @@ public:
     void update();
 
     // board should be the original board where the move has not been made
-    void update(const Board &board, Move move, int depth, bool good);
-    void update(const Board &board, MoveList &move_list, Move best_move, int depth);
-    int64_t move_value(const Board &board, Move move);
+    void update(const Board &board, Move move, const Board &previous_board, Move previous_move, int depth, bool good);
+    void update(const Board &board, MoveList &move_list, Move best_move, const Board &previous_board, Move previous_move, int depth);
+    int64_t move_value(const Board &board, Move move, const Board &previous_board, Move previous_move);
 };
 
 class Killers

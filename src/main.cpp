@@ -81,16 +81,15 @@ int main(int argc, char *argv[])
                 Board board(fen);
                 TranspositionTable tt(16);
                 QuietHistory history;
-                Time time("go depth 12");
+                ContinuationHistory conthist;
+                Time time("go depth 14");
 
-                std::vector<SearchStack> search_stack(MAX_PLY + 10);
+                std::vector<SearchStack> search_stack;
 
-                for (int i = 0; i < search_stack.size(); ++i)
-                {
-                    search_stack[i] = SearchStack(i - 4);
-                }
+                for (int i = 0; i < MAX_PLY + 10; ++i)
+                    search_stack.emplace_back(i - 4);
 
-                Searcher searcher(board, moves, search_stack, tt, history, 0);
+                Searcher searcher(board, moves, search_stack, tt, history, conthist, 0);
                 time.set_time(searcher);
 
                 searcher.search();

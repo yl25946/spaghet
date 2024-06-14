@@ -36,6 +36,8 @@ public:
 
     QuietHistory &history;
 
+    ContinuationHistory &conthist;
+
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
 
@@ -74,10 +76,10 @@ public:
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age);
 
     // creates a hard time limit
-    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
+    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // bool SEE(const Board &board, Move move, int threshold);
@@ -88,9 +90,11 @@ public:
     // returns true if board is in checkmate
     // bool is_checkmate(Board &board);
     template <bool inPV>
-    int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss);
+    int quiescence_search(int alpha, int beta, SearchStack *ss);
     template <bool inPV>
-    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss);
+    int negamax(int alpha, int beta, int depth, SearchStack *ss);
+
+    void update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth);
 
     // checks if there's a threefold draw
     // returns true if there is a draw

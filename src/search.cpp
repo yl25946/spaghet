@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), search_stack(search_stack)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age) : board(board), transposition_table(transposition_table), history(history), conthist(conthist), search_stack(search_stack)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -25,13 +25,14 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<Searc
 
     nodes_spent_table.fill(0);
 
-    this->board = board;
+    search_stack[4].board = board;
+
     this->age = age;
     this->transposition_table = transposition_table;
     this->history = history;
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), search_stack(search_stack)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), conthist(conthist), search_stack(search_stack)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -45,6 +46,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<Searc
         //     board.print();
         game_history.push_back(board.hash);
     }
+
+    search_stack[4].board = board;
 
     nodes_spent_table.fill(0);
 
@@ -107,8 +110,21 @@ void Searcher::scale_time(int best_move_stability_factor)
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
 }
 
+void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth)
+{
+    int ply = ss->ply;
+
+    // updates followup move history
+    if (ply >= 2 || !(ss - 2)->null_moved)
+        conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
+
+    // updates counter move history
+    if (ply >= 1 || !(ss - 1)->null_moved)
+        conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 1)->board, (ss - 1)->move_played, depth);
+}
+
 template <bool inPV>
-int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *ss)
+int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 {
     // return evaluate(board);
 
@@ -125,6 +141,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
             stopped = true;
             return 0;
         }
+
+    Board &board = ss->board;
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
@@ -160,7 +178,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, ss, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, history, conthist, ss->killers, -107);
 
     while (move_picker.has_next())
     {
@@ -184,7 +202,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search<inPV>(copy, -beta, -alpha, ss + 1);
+        (ss + 1)->board = copy;
+        (ss + 1)->move_played = curr_move;
+
+        int current_eval = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
         if (stopped)
             return 0;
@@ -227,7 +248,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 }
 
 template <bool inPV>
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss)
+int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 {
     ++nodes;
 
@@ -245,6 +266,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         }
 
     bool in_root = ss->ply <= 0;
+
+    Board &board = ss->board;
 
     if (inPV)
     {
@@ -277,7 +300,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
     }
 
     if (depth <= 0)
-        return quiescence_search<inPV>(board, alpha, beta, ss);
+        return quiescence_search<inPV>(alpha, beta, ss);
 
     int static_eval = evaluate(board);
 
@@ -302,7 +325,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
         (ss + 1)->null_moved = true;
 
-        int null_move_score = -negamax<nonPV>(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
+        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
 
         (ss + 1)->null_moved = false;
 
@@ -322,7 +345,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, ss, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, history, conthist, ss->killers, -107);
 
     const int original_alpha = alpha;
 
@@ -371,6 +394,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             }
         }
 
+        // now that we haven't pruned anything, we can update the search stack
+        (ss + 1)->board = copy;
+        (ss + 1)->move_played = curr_move;
+
         if (is_quiet)
             quiet_moves.insert(curr_move);
 
@@ -391,7 +418,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
 
-            current_eval = -negamax<inPV>(copy, -beta, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
@@ -415,7 +442,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
@@ -429,7 +456,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             {
                 game_history.push_back(copy.hash);
 
-                current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, depth - 1, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -442,7 +469,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                 {
                     game_history.push_back(copy.hash);
 
-                    current_eval = -negamax<PV>(copy, -beta, -alpha, depth - 1, ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
 
                     if (stopped)
                         return 0;
@@ -491,8 +518,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                     // we update the history table if it's not a capture
                     if (is_quiet)
                     {
-                        // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-                        ss->conthist.update(board, quiet_moves, curr_move, depth);
+                        update_conthist(ss, quiet_moves, curr_move, depth);
                         history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         ss->killers.insert(curr_move);
                     }
@@ -548,6 +574,8 @@ void Searcher::search()
     int beta = INF;
     int search_again_counter = 0;
 
+    Board board = search_stack[4].board;
+
     // this->start_time = get_time();
     this->nodes = 0;
 
@@ -592,13 +620,12 @@ void Searcher::search()
 
         while (true)
         {
-            Board copy = board;
 
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(copy, alpha, beta, adjusted_depth, &search_stack[4]);
+            best_score = negamax<PV>(alpha, beta, adjusted_depth, &search_stack[4]);
 
             if (stopped)
                 break;

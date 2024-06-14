@@ -7,12 +7,14 @@
 class SearchStack
 {
 public:
-    bool in_pv_node = true;
     bool null_moved = false;
     int ply;
     Killers killers;
-    ContinuationHistory conthist;
+    // std::unique_ptr<ContinuationHistory> conthist = std::make_unique<ContinuationHistory>();
     MoveList pv;
+
+    Board board;
+    Move move_played;
 
     SearchStack() {};
     SearchStack(int ply) { this->ply = ply; };

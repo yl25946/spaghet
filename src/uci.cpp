@@ -97,16 +97,15 @@ void UCI_loop()
     UciOptions info;
     std::vector<Move> move_list;
     TranspositionTable transposition_table(info.hash_size);
+    ContinuationHistory conthist;
     QuietHistory history;
-    std::vector<SearchStack> search_stack(MAX_PLY + 10);
+    std::vector<SearchStack> search_stack;
     Threads threads(info);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
 
-    for (int i = 0; i < search_stack.size(); ++i)
-    {
-        search_stack[i] = SearchStack(i - 4);
-    }
+    for (int i = 0; i < MAX_PLY + 10; i++)
+        search_stack.emplace_back(i - 4);
 
     std::cout
         << "id name Spaghet Pesto 1.0\n"
@@ -166,41 +165,33 @@ void UCI_loop()
             history.update();
 
             // update the conthist quantities in the persistent search stack
-            for (int i = 0; i < search_stack.size(); ++i)
-            {
-                search_stack[i].conthist.update();
-            }
+            // for (int i = 0; i < search_stack.size(); ++i)
+            // {
+            //     search_stack[i]->conthist.update();
+            // }
 
             // now that we've called go, we can increase the age
             ++info.age;
 
+            Searcher searcher(board, move_list, search_stack, transposition_table, history, conthist, info.age);
+
             // implements the go infinite command
             if (!line.compare(0, 11, "go infinite"))
             {
+                Time time("go depth 255");
 
-                max_depth = 255;
-
-                Searcher searcher(board, move_list, search_stack, transposition_table, history, info.age, UINT64_MAX);
-
-                // account for the start_time
-                searcher.start_time = get_time();
-
-                threads.insert(searcher);
-
-                threads.go();
+                time.set_time(searcher);
             }
             else
             {
                 Time time(line);
 
-                Searcher searcher(board, move_list, search_stack, transposition_table, history, info.age);
-
                 time.set_time(searcher);
-
-                threads.insert(searcher);
-
-                threads.go();
             }
+
+            threads.insert(searcher);
+
+            threads.go();
         }
         else if (!line.compare(0, 4, "stop"))
         {

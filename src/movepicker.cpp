@@ -13,7 +13,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold)
+void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -111,9 +111,16 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
             // std::cout << history.move_value(moves[i]) << "\n";
             move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
-            move_list.moves[i].score += (ss - 1)->conthist.move_value(board, move_list.moves[i]);
-            move_list.moves[i].score += (ss - 2)->conthist.move_value(board, move_list.moves[i]);
-            move_list.moves[i].score += (ss - 4)->conthist.move_value(board, move_list.moves[i]) / 2;
+            if (ss->ply > 2)
+            {
+                move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+                move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
+            }
+            else if (ss->ply == 1)
+            {
+                move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+            }
+            // move_list.moves[i].score += (ss - 4)->conthist->move_value(board, move_list.moves[i]) / 2;
         }
     }
 }
