@@ -202,7 +202,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             break;
 
         (ss + 1)->board = copy;
-        (ss + 1)->move_played = curr_move;
+        (ss)->move_played = curr_move;
 
         int current_eval = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
@@ -395,7 +395,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         // now that we haven't pruned anything, we can update the search stack
         (ss + 1)->board = copy;
-        (ss + 1)->move_played = curr_move;
+        (ss)->move_played = curr_move;
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
