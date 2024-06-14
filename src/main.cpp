@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
                 TranspositionTable tt(16);
                 QuietHistory history;
                 ContinuationHistory conthist;
+                ThreadData single_thread_data;
                 Time time("go depth 14");
 
                 std::vector<SearchStack> search_stack;
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
                 for (int i = 0; i < MAX_PLY + 10; ++i)
                     search_stack.emplace_back(i - 4);
 
-                Searcher searcher(board, moves, search_stack, tt, history, conthist, 0);
+                Searcher searcher(board, moves, tt, single_thread_data, 0);
                 time.set_time(searcher);
 
                 searcher.search();

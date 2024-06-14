@@ -6,7 +6,7 @@
 #include "movelist.h"
 // #include "movepicker.h"
 
-class MoveList;
+// class MoveList;
 
 class QuietHistory
 {

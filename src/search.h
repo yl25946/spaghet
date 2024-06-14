@@ -10,6 +10,7 @@
 #include "see.h"
 #include "movelist.h"
 #include "search_stack.h"
+#include "thread_data.h"
 // #include "history.h"
 
 class QuietHistory;
@@ -34,9 +35,7 @@ public:
 
     TranspositionTable &transposition_table;
 
-    QuietHistory &history;
-
-    ContinuationHistory &conthist;
+    ThreadData &thread_data;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
@@ -61,8 +60,6 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::vector<SearchStack> &search_stack;
-
     // used for tracking aspiration window size
     int average_score = -INF;
     // bool increase_depth = true;
@@ -76,10 +73,10 @@ public:
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, uint32_t age);
 
     // creates a hard time limit
-    Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time);
+    // Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // bool SEE(const Board &board, Move move, int threshold);

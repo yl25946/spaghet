@@ -97,15 +97,10 @@ void UCI_loop()
     UciOptions info;
     std::vector<Move> move_list;
     TranspositionTable transposition_table(info.hash_size);
-    ContinuationHistory conthist;
-    QuietHistory history;
-    std::vector<SearchStack> search_stack;
+    std::vector<ThreadData> thread_data(1);
     Threads threads(info);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
-
-    for (int i = 0; i < MAX_PLY + 10; i++)
-        search_stack.emplace_back(i - 4);
 
     std::cout
         << "id name Spaghet Pesto 1.0\n"
@@ -162,7 +157,8 @@ void UCI_loop()
             // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
             threads.terminate();
             // update history before searching to prevent race conditions
-            history.update();
+            for (int i = 0; i < thread_data.size(); ++i)
+                thread_data[i].main_history.update();
 
             // update the conthist quantities in the persistent search stack
             // for (int i = 0; i < search_stack.size(); ++i)
@@ -173,23 +169,26 @@ void UCI_loop()
             // now that we've called go, we can increase the age
             ++info.age;
 
-            Searcher searcher(board, move_list, search_stack, transposition_table, history, conthist, info.age);
-
-            // implements the go infinite command
-            if (!line.compare(0, 11, "go infinite"))
+            for (int i = 0; i < thread_data.size(); ++i)
             {
-                Time time("go depth 255");
+                Searcher searcher(board, move_list, transposition_table, thread_data[i], info.age);
 
-                time.set_time(searcher);
+                // implements the go infinite command
+                if (!line.compare(0, 11, "go infinite"))
+                {
+                    Time time("go depth 255");
+
+                    time.set_time(searcher);
+                }
+                else
+                {
+                    Time time(line);
+
+                    time.set_time(searcher);
+                }
+
+                threads.insert(searcher);
             }
-            else
-            {
-                Time time(line);
-
-                time.set_time(searcher);
-            }
-
-            threads.insert(searcher);
 
             threads.go();
         }
@@ -231,7 +230,8 @@ void UCI_loop()
             threads.terminate();
             info.reset();
             transposition_table = TranspositionTable(info.hash_size);
-            history.clear();
+            thread_data.clear();
+            thread_data.resize(1);
         }
         else if (!line.compare(0, 3, "uci"))
         {
