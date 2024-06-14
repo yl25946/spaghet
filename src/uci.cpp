@@ -116,13 +116,11 @@ void UCI_loop()
 
         // int64_t min = 0;
         // int64_t max = 0;
-        // for (int i = 0; i < 2; ++i)
-        // {
+        // for (int i = 0; i < 13; ++i)
         //     for (int j = 0; j < 64; ++j)
-        //     {
-        //         for (int k = 0; k < 64; ++k)
-        //         {
-        //             std::cout << thread_data[0].main_history.butterfly_table[i][j][k] << " ";
+        //         for (int k = 0; k < 13; ++k)
+        //             for (int l = 0; l < 64; ++l)
+        //                 std::cout << thread_data[0].conthist.table[i][j][k][l] << " ";
         //             // min = std::min(min, history.butterfly_table[i][j][k]);
         //             // max = std::max(max, history.butterfly_table[i][j][k]);
         //         }

@@ -60,8 +60,8 @@ ContinuationHistory::ContinuationHistory()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            for (int k = 0; i < 13; ++i)
-                for (int l = 0; j < 64; ++j)
+            for (int k = 0; k < 13; ++k)
+                for (int l = 0; l < 64; ++l)
                     table[i][j][k][l] = 0;
 }
 
@@ -69,8 +69,8 @@ void ContinuationHistory::clear()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            for (int k = 0; i < 13; ++i)
-                for (int l = 0; j < 64; ++j)
+            for (int k = 0; k < 13; ++k)
+                for (int l = 0; l < 64; ++l)
                     table[i][j][k][l] = 0;
 }
 
@@ -78,8 +78,8 @@ void ContinuationHistory::update()
 {
     for (int i = 0; i < 13; ++i)
         for (int j = 0; j < 64; ++j)
-            for (int k = 0; i < 13; ++i)
-                for (int l = 0; j < 64; ++j)
+            for (int k = 0; k < 13; ++k)
+                for (int l = 0; l < 64; ++l)
                     table[i][j][k][l] /= 4;
 }
 
