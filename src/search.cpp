@@ -323,6 +323,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
         (ss + 1)->null_moved = true;
+        // (ss + 1)->board = copy;
 
         int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
 
