@@ -111,7 +111,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
             // std::cout << history.move_value(moves[i]) << "\n";
             move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
-            if (ss->ply > 2)
+            if (ss->ply >= 2)
             {
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);

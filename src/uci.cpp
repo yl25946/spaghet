@@ -122,9 +122,9 @@ void UCI_loop()
         //     {
         //         for (int k = 0; k < 64; ++k)
         //         {
-        //             // std::cout << history.butterfly_table[i][j][k] << " ";
-        //             min = std::min(min, history.butterfly_table[i][j][k]);
-        //             max = std::max(max, history.butterfly_table[i][j][k]);
+        //             std::cout << thread_data[0].main_history.butterfly_table[i][j][k] << " ";
+        //             // min = std::min(min, history.butterfly_table[i][j][k]);
+        //             // max = std::max(max, history.butterfly_table[i][j][k]);
         //         }
         //     }
         // }
