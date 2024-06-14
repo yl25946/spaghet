@@ -98,16 +98,6 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         // not a capture, use history table
         else
         {
-            // check killer moves
-            const int killers_size = killers.size();
-            for (int j = 0; j < killers_size; ++j)
-            {
-                if (move_list.moves[i] == killers.killers[j])
-                {
-                    move_list.moves[i].score = MAX_KILLERS - j;
-                    continue;
-                }
-            }
 
             // std::cout << history.move_value(moves[i]) << "\n";
             move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
@@ -121,6 +111,16 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             // adds counter move history bonus
             if (ply >= 1 && !(ss - 1)->null_moved)
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+
+            // check killer moves
+            const int killers_size = killers.size();
+            for (int j = 0; j < killers_size; ++j)
+            {
+                if (move_list.moves[i] == killers.killers[j])
+                {
+                    move_list.moves[i].score = MAX_KILLERS - j;
+                }
+            }
 
             // move_list.moves[i].score += (ss - 4)->conthist->move_value(board, move_list.moves[i]) / 2;
         }
