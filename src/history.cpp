@@ -94,7 +94,7 @@ void ContinuationHistory::update(const Board &board, Move move, const Board &pre
 
     // table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
-    const int delta = good ? depth * depth : -depth * depth;
+    const int delta = good ? 170 * depth : -450 * depth;
 
     // formula taken from ethereal
     table[piece][to_square][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[piece][to_square][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
