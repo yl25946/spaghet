@@ -37,7 +37,7 @@ void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
     const int delta = good ? depth * depth : -depth * depth;
 
     // formula taken from ethereal
-    butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
+    butterfly_table[side_to_move][from_square][to_square] += delta - (static_cast<int64_t>(butterfly_table[side_to_move][from_square][to_square]) * abs(delta) / MAX_HISTORY);
 }
 
 void QuietHistory::update(MoveList &move_list, Move best_move, int depth, uint8_t side_to_move)
@@ -97,7 +97,7 @@ void ContinuationHistory::update(const Board &board, Move move, const Board &pre
     const int delta = good ? depth * depth : -depth * depth;
 
     // formula taken from ethereal
-    table[piece][to_square][previous_piece][previous_to_square] += delta - (table[piece][to_square][previous_piece][previous_to_square] * abs(delta) / MAX_HISTORY);
+    table[piece][to_square][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[piece][to_square][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
 }
 
 void ContinuationHistory::update(const Board &board, MoveList &move_list, Move best_move, const Board &previous_board, Move previous_move, int depth)
