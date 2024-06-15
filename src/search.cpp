@@ -113,9 +113,9 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 {
     int ply = ss->ply;
 
-    // updates followup move history
-    if (ply >= 2 && !(ss - 2)->null_moved)
-        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
+    // // updates followup move history
+    // if (ply >= 2 && !(ss - 2)->null_moved)
+    //     thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
 
     // updates counter move history
     if (ply >= 1 && !(ss - 1)->null_moved)
@@ -518,7 +518,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     // we update the history table if it's not a capture
                     if (is_quiet)
                     {
-                        // update_conthist(ss, quiet_moves, curr_move, depth);
+                        update_conthist(ss, quiet_moves, curr_move, depth);
                         thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         ss->killers.insert(curr_move);
                     }
