@@ -97,7 +97,7 @@ void UCI_loop()
     UciOptions info;
     std::vector<Move> move_list;
     TranspositionTable transposition_table(info.hash_size);
-    QuietHistory history;
+    std::vector<ThreadData> thread_data(1);
     Threads threads(info);
     // dummy variable, should almost never be used other than in bench
     // Searcher searcher(board, move_list, UINT64_MAX);
@@ -116,15 +116,13 @@ void UCI_loop()
 
         // int64_t min = 0;
         // int64_t max = 0;
-        // for (int i = 0; i < 2; ++i)
-        // {
+        // for (int i = 0; i < 13; ++i)
         //     for (int j = 0; j < 64; ++j)
-        //     {
-        //         for (int k = 0; k < 64; ++k)
-        //         {
-        //             // std::cout << history.butterfly_table[i][j][k] << " ";
-        //             min = std::min(min, history.butterfly_table[i][j][k]);
-        //             max = std::max(max, history.butterfly_table[i][j][k]);
+        //         for (int k = 0; k < 13; ++k)
+        //             for (int l = 0; l < 64; ++l)
+        //                 std::cout << thread_data[0].conthist.table[i][j][k][l] << " ";
+        //             // min = std::min(min, history.butterfly_table[i][j][k]);
+        //             // max = std::max(max, history.butterfly_table[i][j][k]);
         //         }
         //     }
         // }
@@ -157,37 +155,34 @@ void UCI_loop()
             // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
             threads.terminate();
             // update history before searching to prevent race conditions
-            // history.update();
+            // for (int i = 0; i < thread_data.size(); ++i)
+            //     thread_data[i].main_history.update();
+
             // now that we've called go, we can increase the age
             ++info.age;
 
-            // implements the go infinite command
-            if (!line.compare(0, 11, "go infinite"))
+            for (int i = 0; i < thread_data.size(); ++i)
             {
+                Searcher searcher(board, move_list, transposition_table, thread_data[i], info.age);
 
-                max_depth = 255;
+                // implements the go infinite command
+                if (!line.compare(0, 11, "go infinite"))
+                {
+                    Time time("go depth 255");
 
-                Searcher searcher(board, move_list, transposition_table, history, info.age, UINT64_MAX);
+                    time.set_time(searcher);
+                }
+                else
+                {
+                    Time time(line);
 
-                // account for the start_time
-                searcher.start_time = get_time();
+                    time.set_time(searcher);
+                }
 
                 threads.insert(searcher);
-
-                threads.go();
             }
-            else
-            {
-                Time time(line);
 
-                Searcher searcher(board, move_list, transposition_table, history, info.age);
-
-                time.set_time(searcher);
-
-                threads.insert(searcher);
-
-                threads.go();
-            }
+            threads.go();
         }
         else if (!line.compare(0, 4, "stop"))
         {
@@ -227,7 +222,8 @@ void UCI_loop()
             threads.terminate();
             info.reset();
             transposition_table = TranspositionTable(info.hash_size);
-            history.clear();
+            thread_data.clear();
+            thread_data.resize(1);
         }
         else if (!line.compare(0, 3, "uci"))
         {

@@ -8,7 +8,7 @@ int max_depth = 255;
 //     this->end_time = UINT64_MAX;
 // }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
+Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, uint32_t age) : board(board), transposition_table(transposition_table), thread_data(thread_data)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -25,48 +25,40 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     nodes_spent_table.fill(0);
 
-    this->board = board;
+    thread_data.search_stack[4].board = board;
+
     this->age = age;
     this->transposition_table = transposition_table;
-    this->history = history;
-
-    for (int i = 0; i < search_stack.size(); ++i)
-    {
-        search_stack[i] = SearchStack(i - 4);
-    }
 }
 
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), search_stack(MAX_PLY + 10)
-{
-    // reserves enough space so we don't have to resize
-    game_history.reserve(300 + MAX_PLY);
+// Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), conthist(conthist), search_stack(search_stack)
+// {
+//     // reserves enough space so we don't have to resize
+//     game_history.reserve(300 + MAX_PLY);
 
-    game_history.push_back(board.hash);
+//     game_history.push_back(board.hash);
 
-    for (Move m : move_list)
-    {
-        board.make_move(m);
-        // if (count_bits(board.bitboard(WHITE_KING)) == 2)
-        //     board.print();
-        game_history.push_back(board.hash);
-    }
+//     for (Move m : move_list)
+//     {
+//         board.make_move(m);
+//         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
+//         //     board.print();
+//         game_history.push_back(board.hash);
+//     }
 
-    nodes_spent_table.fill(0);
+//     search_stack[4].board = board;
 
-    this->board = board;
-    this->age = age;
-    this->transposition_table = transposition_table;
-    this->history = history;
-    this->max_stop_time = end_time;
-    this->optimum_stop_time = end_time;
-    this->max_stop_time_duration = end_time - get_time();
-    this->optimum_stop_time_duration = end_time - get_time();
+//     nodes_spent_table.fill(0);
 
-    for (int i = 0; i < search_stack.size(); ++i)
-    {
-        search_stack[i] = SearchStack(i - 4);
-    }
-}
+//     this->board = board;
+//     this->age = age;
+//     this->transposition_table = transposition_table;
+//     this->history = history;
+//     this->max_stop_time = end_time;
+//     this->optimum_stop_time = end_time;
+//     this->max_stop_time_duration = end_time - get_time();
+//     this->optimum_stop_time_duration = end_time - get_time();
+// }
 // Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
 //     : board(board)
 // {
@@ -109,7 +101,7 @@ bool Searcher::twofold(Board &board)
 void Searcher::scale_time(int best_move_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    const Move best_move = search_stack[4].pv.moves[0];
+    const Move best_move = thread_data.search_stack[4].pv.moves[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
@@ -117,8 +109,21 @@ void Searcher::scale_time(int best_move_stability_factor)
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
 }
 
+void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth)
+{
+    int ply = ss->ply;
+
+    // // updates followup move history
+    // if (ply >= 2 && !(ss - 2)->null_moved)
+    //     thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
+
+    // updates counter move history
+    if (ply >= 1 && !(ss - 1)->null_moved)
+        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 1)->board, (ss - 1)->move_played, depth);
+}
+
 template <bool inPV>
-int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *ss)
+int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 {
     // return evaluate(board);
 
@@ -135,6 +140,8 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
             stopped = true;
             return 0;
         }
+
+    Board &board = ss->board;
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
@@ -170,7 +177,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.conthist, ss->killers, -107);
 
     while (move_picker.has_next())
     {
@@ -194,7 +201,10 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
         if (curr_move.score < 0)
             break;
 
-        int current_eval = -quiescence_search<inPV>(copy, -beta, -alpha, ss + 1);
+        (ss + 1)->board = copy;
+        (ss)->move_played = curr_move;
+
+        int current_eval = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
         if (stopped)
             return 0;
@@ -237,7 +247,7 @@ int Searcher::quiescence_search(Board &board, int alpha, int beta, SearchStack *
 }
 
 template <bool inPV>
-int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss)
+int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 {
     ++nodes;
 
@@ -255,6 +265,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         }
 
     bool in_root = ss->ply <= 0;
+
+    Board &board = ss->board;
 
     if (inPV)
     {
@@ -287,7 +299,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
     }
 
     if (depth <= 0)
-        return quiescence_search<inPV>(board, alpha, beta, ss);
+        return quiescence_search<inPV>(alpha, beta, ss);
 
     int static_eval = evaluate(board);
 
@@ -300,7 +312,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         return static_eval;
 
     // applies null move pruning
-    if (!ss->null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
         Board copy = board;
@@ -310,11 +322,12 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
         game_history.push_back(copy.hash);
 
         // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
-        (ss + 1)->null_moved = true;
+        ss->null_moved = true;
+        (ss + 1)->board = copy;
 
-        int null_move_score = -negamax<nonPV>(copy, -beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
+        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
 
-        (ss + 1)->null_moved = false;
+        ss->null_moved = false;
 
         if (stopped)
             return 0;
@@ -332,7 +345,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, transposition_table, history, ss->killers, -107);
+    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.conthist, ss->killers, -107);
 
     const int original_alpha = alpha;
 
@@ -381,6 +394,10 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             }
         }
 
+        // now that we haven't pruned anything, we can update the search stack
+        (ss + 1)->board = copy;
+        (ss)->move_played = curr_move;
+
         if (is_quiet)
             quiet_moves.insert(curr_move);
 
@@ -401,7 +418,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             // we can check for threefold repetition later, updates the state though
             game_history.push_back(copy.hash);
 
-            current_eval = -negamax<inPV>(copy, -beta, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
@@ -425,7 +442,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             game_history.push_back(copy.hash);
 
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
@@ -439,7 +456,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
             {
                 game_history.push_back(copy.hash);
 
-                current_eval = -negamax<nonPV>(copy, -alpha - 1, -alpha, depth - 1, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -452,7 +469,7 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                 {
                     game_history.push_back(copy.hash);
 
-                    current_eval = -negamax<PV>(copy, -beta, -alpha, depth - 1, ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
 
                     if (stopped)
                         return 0;
@@ -501,8 +518,8 @@ int Searcher::negamax(Board &board, int alpha, int beta, int depth, SearchStack 
                     // we update the history table if it's not a capture
                     if (is_quiet)
                     {
-                        // std::cout << board.fen() << " " << curr_move.to_string() << "\n";
-                        history.update(quiet_moves, curr_move, depth, board.side_to_move);
+                        update_conthist(ss, quiet_moves, curr_move, depth);
+                        thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         ss->killers.insert(curr_move);
                     }
                     break;
@@ -557,8 +574,10 @@ void Searcher::search()
     int beta = INF;
     int search_again_counter = 0;
 
+    Board board = thread_data.search_stack[4].board;
+
     // this->start_time = get_time();
-    this->nodes = 0;
+    nodes = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
     MoveList move_list;
@@ -601,13 +620,12 @@ void Searcher::search()
 
         while (true)
         {
-            Board copy = board;
 
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(copy, alpha, beta, adjusted_depth, &search_stack[4]);
+            best_score = negamax<PV>(alpha, beta, adjusted_depth, &thread_data.search_stack[4]);
 
             if (stopped)
                 break;
@@ -633,7 +651,7 @@ void Searcher::search()
         if (stopped)
             break;
 
-        best_move = search_stack[4].pv.moves[0];
+        best_move = thread_data.search_stack[4].pv.moves[0];
 
         // clears the pv before starting the new search
         // for (int i = 0; i < MAX_PLY; ++i)
@@ -642,10 +660,10 @@ void Searcher::search()
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
         if (get_time() > optimum_stop_time)

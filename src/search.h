@@ -8,6 +8,9 @@
 #include "transposition_table.h"
 #include "threads.h"
 #include "see.h"
+#include "movelist.h"
+#include "search_stack.h"
+#include "thread_data.h"
 // #include "history.h"
 
 class QuietHistory;
@@ -21,19 +24,6 @@ constexpr bool nonPV = false;
 // tracking the max depth across the engine
 extern int max_depth;
 
-class SearchStack
-{
-public:
-    bool in_pv_node = true;
-    bool null_moved = false;
-    int ply;
-    Killers killers;
-    MoveList pv;
-
-    SearchStack() {};
-    SearchStack(int ply) { this->ply = ply; };
-};
-
 class Searcher
 {
 public:
@@ -45,7 +35,7 @@ public:
 
     TranspositionTable &transposition_table;
 
-    QuietHistory &history;
+    ThreadData &thread_data;
 
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
@@ -70,8 +60,6 @@ public:
     // use for tracking seldepth
     int seldepth = 0;
 
-    std::vector<SearchStack> search_stack;
-
     // used for tracking aspiration window size
     int average_score = -INF;
     // bool increase_depth = true;
@@ -79,16 +67,16 @@ public:
     // std::vector<MoveList> pv;
 
     // represents the number of nodes for a depths search
-    uint64_t nodes;
+    uint64_t nodes = 0;
     // uint64_t total_nodes = 0;
 
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 
     // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age);
+    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, uint32_t age);
 
     // creates a hard time limit
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, QuietHistory &history, uint32_t age, uint64_t end_time);
+    // Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time);
     // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
 
     // bool SEE(const Board &board, Move move, int threshold);
@@ -99,9 +87,11 @@ public:
     // returns true if board is in checkmate
     // bool is_checkmate(Board &board);
     template <bool inPV>
-    int quiescence_search(Board &board, int alpha, int beta, SearchStack *ss);
+    int quiescence_search(int alpha, int beta, SearchStack *ss);
     template <bool inPV>
-    int negamax(Board &board, int alpha, int beta, int depth, SearchStack *ss);
+    int negamax(int alpha, int beta, int depth, SearchStack *ss);
+
+    void update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
