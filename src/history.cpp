@@ -34,7 +34,7 @@ void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
 
     // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
-    const int delta = good ? depth * depth : -depth * depth;
+    const int delta = good ? 170 * depth : -450 * depth;
 
     // formula taken from ethereal
     butterfly_table[side_to_move][from_square][to_square] += delta - (butterfly_table[side_to_move][from_square][to_square] * abs(delta) / MAX_HISTORY);
