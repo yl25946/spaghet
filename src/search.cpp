@@ -518,7 +518,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     // we update the history table if it's not a capture
                     if (is_quiet)
                     {
-                        update_conthist(ss, quiet_moves, curr_move, depth);
+                        // update_conthist(ss, quiet_moves, curr_move, depth);
                         thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         ss->killers.insert(curr_move);
                     }
