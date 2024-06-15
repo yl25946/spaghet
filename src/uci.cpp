@@ -155,14 +155,8 @@ void UCI_loop()
             // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
             threads.terminate();
             // update history before searching to prevent race conditions
-            for (int i = 0; i < thread_data.size(); ++i)
-                thread_data[i].main_history.update();
-
-            // update the conthist quantities in the persistent search stack
-            // for (int i = 0; i < search_stack.size(); ++i)
-            // {
-            //     search_stack[i]->conthist.update();
-            // }
+            // for (int i = 0; i < thread_data.size(); ++i)
+            //     thread_data[i].main_history.update();
 
             // now that we've called go, we can increase the age
             ++info.age;
