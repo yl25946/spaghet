@@ -157,7 +157,7 @@ void UCI_loop()
             // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
             threads.terminate();
             // update history before searching to prevent race conditions
-            // history.update();
+            history.update();
             // now that we've called go, we can increase the age
             ++info.age;
 
