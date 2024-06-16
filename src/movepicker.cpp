@@ -13,10 +13,12 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold)
+void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Countermove &countermove, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
+    bool has_counter_move = (ss - 1)->null_moved;
+    Move counter_move = countermove.counter_move((ss - 1)->move_played, board.side_to_move);
     bool has_tt_move = false;
 
     if (tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE)
@@ -98,7 +100,6 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         // not a capture, use history table
         else
         {
-
             // std::cout << history.move_value(moves[i]) << "\n";
             move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
 
@@ -111,6 +112,10 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             // adds counter move history bonus
             if (ply >= 1 && !(ss - 1)->null_moved)
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+
+            // there is a possibility that the countermove and killers match, by doing it before, there's a chance that we can override it with killers
+            if (has_counter_move && move_list.moves[i] == counter_move)
+                move_list.moves[i].score = MAX_COUNTERMOVE;
 
             // check killer moves
             const int killers_size = killers.size();
