@@ -118,15 +118,13 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
 
 void Killers::insert(Move move)
 {
-    if (count >= 2)
-    {
-        std::swap(killers[0], killers[1]);
-        killers[0] = move;
 
-        return;
-    }
+    std::swap(killers[0], killers[1]);
+    killers[0] = move;
 
-    killers[count++] = move;
+    count = std::max(count + 1, 2);
+
+    return;
 }
 
 size_t Killers::size() const
