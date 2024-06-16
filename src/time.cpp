@@ -104,11 +104,11 @@ void Time::set_time(Searcher &searcher)
         max_time_bound = 0.76 * black_time;
     }
 
-    const uint64_t optimum_time = std::max<uint64_t>(std::min<uint64_t>(0.86 * base_time, max_time_bound) - MOVE_OVERHEAD, 10);
-    const uint64_t max_time = std::max<uint64_t>(std::min<uint64_t>(3.04 * base_time, max_time_bound) - MOVE_OVERHEAD, 10);
+    const uint64_t optimum_time = std::min<uint64_t>(0.86 * base_time, max_time_bound);
+    const uint64_t max_time = std::min<uint64_t>(3.04 * base_time, max_time_bound);
 
-    searcher.optimum_stop_time = searcher.start_time + optimum_time;
-    searcher.optimum_stop_time_duration = optimum_time;
-    searcher.max_stop_time = searcher.start_time + max_time;
-    searcher.max_stop_time_duration = max_time;
+    searcher.optimum_stop_time = get_time() + optimum_time - MOVE_OVERHEAD;
+    searcher.optimum_stop_time_duration = optimum_time - MOVE_OVERHEAD;
+    searcher.max_stop_time = get_time() + max_time - MOVE_OVERHEAD;
+    searcher.max_stop_time_duration = max_time - MOVE_OVERHEAD;
 }
