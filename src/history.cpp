@@ -118,6 +118,9 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
 
 void Killers::insert(Move move)
 {
+    // don't want to insert multiple of the same moves into killers
+    if (move == killers[0])
+        return;
 
     std::swap(killers[0], killers[1]);
     killers[0] = move;
