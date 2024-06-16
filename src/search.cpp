@@ -25,6 +25,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     nodes_spent_table.fill(0);
 
+    this->board = board;
+
     thread_data.search_stack[4].board = board;
 
     this->age = age;
