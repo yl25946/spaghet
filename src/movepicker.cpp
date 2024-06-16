@@ -17,7 +17,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
-    bool has_counter_move = (ss - 1)->null_moved;
+    bool has_counter_move = !(ss - 1)->null_moved;
     Move counter_move = countermove.counter_move((ss - 1)->move_played, board.side_to_move);
     bool has_tt_move = false;
 
