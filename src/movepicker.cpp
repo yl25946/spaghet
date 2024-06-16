@@ -17,7 +17,6 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
-    bool has_counter_move = !(ss - 1)->null_moved;
     Move counter_move = countermove.counter_move((ss - 1)->move_played, board.side_to_move);
     bool has_tt_move = false;
 
@@ -114,7 +113,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // there is a possibility that the countermove and killers match, by doing it before, there's a chance that we can override it with killers
-            if (has_counter_move && move_list.moves[i] == counter_move)
+            if (move_list.moves[i] == counter_move)
                 move_list.moves[i].score = MAX_COUNTERMOVE;
 
             // check killer moves

@@ -321,12 +321,13 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // to help detect threefold in nmp
         game_history.push_back(copy.hash);
 
-        // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
         ss->null_moved = true;
+        ss->move_played = Move(a8, a8, 0);
         (ss + 1)->board = copy;
 
         int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
 
+        // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
         ss->null_moved = false;
 
         if (stopped)
@@ -523,8 +524,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                         ss->killers.insert(curr_move);
 
                         // only update if the previous move wasn't a null move
-                        if (!(ss - 1)->null_moved)
-                            thread_data.countermove.update(curr_move, (ss - 1)->move_played, board.side_to_move);
+                        thread_data.countermove.update(curr_move, (ss - 1)->move_played, board.side_to_move);
                     }
                     break;
                 }
