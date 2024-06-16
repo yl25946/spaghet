@@ -76,6 +76,7 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = 1 << 20;
+constexpr int64_t MAX_COUNTERMOVE = 1 << 19;
 
 // SEE values
 constexpr int SEEValue[7] = {

@@ -9,6 +9,7 @@ public:
     std::vector<SearchStack> search_stack;
     QuietHistory main_history;
     ContinuationHistory conthist;
+    Countermove countermove;
 
     ThreadData()
     {

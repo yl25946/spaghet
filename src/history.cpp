@@ -56,6 +56,32 @@ int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];
 }
 
+Countermove::Countermove()
+{
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 64; ++j)
+            for (int k = 0; k < 64; ++k)
+                butterfly_table[i][j][k] = Move(a8, a8, 0);
+}
+
+void Countermove::clear()
+{
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 64; ++j)
+            for (int k = 0; k < 64; ++k)
+                butterfly_table[i][j][k] = Move(a8, a8, 0);
+}
+
+void Countermove::update(Move move, Move previous_move, uint8_t side_to_move)
+{
+    butterfly_table[side_to_move][previous_move.from_square()][previous_move.to_square()] = move;
+}
+
+Move Countermove::counter_move(Move previous_move, uint8_t side_to_move)
+{
+    return butterfly_table[side_to_move][previous_move.from_square()][previous_move.to_square()];
+}
+
 ContinuationHistory::ContinuationHistory()
 {
     for (int i = 0; i < 13; ++i)

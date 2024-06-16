@@ -29,6 +29,22 @@ public:
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 
+class Countermove
+{
+public:
+    Move butterfly_table[2][64][64];
+
+    Countermove();
+
+    void clear();
+
+    // side_to_move is based on the side that is playing the move
+
+    // inserts a move into the butterfly tables
+    void update(Move move, Move previous_move, uint8_t side_to_move);
+    Move counter_move(Move previous_move, uint8_t side_to_move);
+};
+
 class ContinuationHistory
 {
 public:
