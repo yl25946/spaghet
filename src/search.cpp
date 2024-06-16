@@ -665,9 +665,6 @@ void Searcher::search()
             std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
-        if (get_time() > optimum_stop_time)
-            break;
-
         if (best_move == previous_best_move)
         {
             best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
@@ -682,6 +679,9 @@ void Searcher::search()
         {
             scale_time(best_move_stability_factor);
         }
+
+        if (get_time() > optimum_stop_time)
+            break;
 
         average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
     }
