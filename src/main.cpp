@@ -18,8 +18,7 @@ int main(int argc, char *argv[])
         // std::cout << "|" << argv[1] << "|";
         if (!strcmp(argv[1], "bench"))
         {
-            max_depth = 12;
-            uint64_t nodes;
+            uint64_t nodes = 0;
             uint64_t start_time = get_time();
 
             // vector of empty moves because we don't have moves
@@ -80,10 +79,10 @@ int main(int argc, char *argv[])
             {
                 Board board(fen);
                 TranspositionTable tt(16);
-                QuietHistory history;
+                ThreadData single_thread_data;
                 Time time("go depth 12");
 
-                Searcher searcher(board, moves, tt, history, 0);
+                Searcher searcher(board, moves, tt, single_thread_data, 0);
                 time.set_time(searcher);
 
                 searcher.search();

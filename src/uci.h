@@ -8,6 +8,7 @@
 #include "time.h"
 #include "perft.h"
 #include "threads.h"
+#include "search_stack.h"
 
 class Threads;
 

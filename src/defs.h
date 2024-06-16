@@ -17,6 +17,7 @@
 #include <thread>
 #include <exception>
 #include <sstream>
+#include <memory>
 
 // #include "utils.h"
 // #include "attacks.h"
