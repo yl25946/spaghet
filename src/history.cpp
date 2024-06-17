@@ -125,7 +125,7 @@ void Killers::insert(Move move)
     std::swap(killers[0], killers[1]);
     killers[0] = move;
 
-    count = std::max(count + 1, 2);
+    count = std::min(count + 1, 2);
 
     return;
 }

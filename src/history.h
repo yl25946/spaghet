@@ -54,7 +54,7 @@ public:
 
     uint8_t count = 0;
 
-    Killers() {};
+    Killers() { killers[0] = Move(a8, a8, 0), killers[1] = Move(a8, a8, 0); };
 
     void insert(Move move);
 
