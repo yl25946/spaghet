@@ -122,15 +122,6 @@ void Killers::insert(Move move)
     if (move == killers[0])
         return;
 
-    std::swap(killers[0], killers[1]);
+    killers[1] = killers[0];
     killers[0] = move;
-
-    count = std::min(count + 1, 2);
-
-    return;
-}
-
-size_t Killers::size() const
-{
-    return count;
 }
