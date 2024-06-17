@@ -120,6 +120,9 @@ void Killers::insert(Move move)
 {
     if (count >= 2)
     {
+        if (killers[0] == move)
+            return;
+
         std::swap(killers[0], killers[1]);
         killers[1] = move;
 
