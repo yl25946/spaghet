@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     std::cout << "\n\n\n";
 
     // initialize psqt
-    nnue.init("random stuff");
+    NNUE::init("random stuff");
     // init_pesto_tables();
 
     // for (int i = 0; i < INPUT_WEIGHTS; ++i)
