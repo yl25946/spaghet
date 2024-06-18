@@ -4,6 +4,8 @@
 // uint16_t piece_value[6] = {
 //     100, 300, 350, 500, 900, 0};
 
+NNUE nnue = NNUE();
+
 int piece_count_evaluation(Board &board)
 {
     int eval = 0;
@@ -870,5 +872,5 @@ int pesto_eval(Board &board)
 
 int evaluate(Board &board)
 {
-    return pesto_eval(board);
+    return nnue.eval(board);
 }

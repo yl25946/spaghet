@@ -46,8 +46,11 @@ extern std::string repetitions;
 #define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
+#define flip(square) (square ^ 56)
+
 #define colored_to_uncolored(piece) (piece >> 1)
 #define uncolored_to_colored(piece, color) (piece << 1 | color)
+#define uncolored_to_nnue(piece, color) (piece + (color == WHITE ? 0 : 6));
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;

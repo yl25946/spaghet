@@ -2,10 +2,13 @@
 
 #include "defs.h"
 #include "board.h"
+#include "nnue.h"
 
 // for debugging purposes
 extern int *eg_pesto_table[6];
 extern int *mg_pesto_table[6];
+
+extern NNUE nnue;
 
 /**
  * Creates the psqt for pesto
