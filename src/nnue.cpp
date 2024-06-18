@@ -21,7 +21,12 @@ const unsigned int gEVALSize = 1;
 
 Network net;
 
-int32_t screlu(int16_t value)
+inline int uncolored_to_nnue(int piece, int color)
+{
+    return (piece + (color == WHITE ? 0 : 6));
+}
+
+inline int32_t screlu(int16_t value)
 {
     const int32_t clipped = std::clamp(static_cast<int32_t>(value), 0, L1Q);
     return clipped * clipped;
@@ -72,7 +77,7 @@ void NNUE::init(const char *file)
 
 int NNUE::eval(const Board &board)
 {
-    std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
+    std::array<std::array<int32_t, HIDDEN_SIZE>, 2> accumulator;
 
     // copies over all the biases
 
@@ -80,10 +85,7 @@ int NNUE::eval(const Board &board)
         accumulator[0][i] = net.feature_bias[i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-    {
         accumulator[1][i] = net.feature_bias[i];
-        // std::cout << accumulator[0][i] << " " << accumulator[1][i] << " ";
-    }
 
     for (int color = 0; color < 2; ++color)
     {
@@ -92,15 +94,19 @@ int NNUE::eval(const Board &board)
             uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
             while (bitboard)
             {
-                int white_square = lsb(bitboard);
-                int black_square = flip(white_square);
+                // nnue uses a8 = 0, while we want a1 = 0, so we flip the white square
+                int black_square = lsb(bitboard);
+                int white_square = flip(black_square);
                 int nnue_white_piece = uncolored_to_nnue(piece, color);
 
-                // std::cout << nnue_white_piece << " " << square_to_coordinate[white_square] << " ";
                 int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
 
                 int nnue_white_input_index = 64 * nnue_white_piece + white_square;
                 int nnue_black_input_index = 64 * nnue_black_piece + black_square;
+
+                // std::cout << color << " " << piece << "\n";
+
+                // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
 
                 // updates all the pieces in the accumulators
                 for (int i = 0; i < HIDDEN_SIZE; ++i)
@@ -113,6 +119,11 @@ int NNUE::eval(const Board &board)
             }
         }
     }
+
+    // for (int i = 0; i < HIDDEN_SIZE; ++i)
+    // {
+    //     std::cout << accumulator[0][i] << " " << accumulator[1][i] << " ";
+    // }
 
     int eval = 0;
     // feed everything forward to get the final value
