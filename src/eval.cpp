@@ -868,7 +868,7 @@ int pesto_eval(Board &board)
     return actual_score;
 }
 
-int evaluate(Board &board)
+int evaluate(const Board &board, const Accumulator &accumulator)
 {
-    return NNUE::eval(board);
+    return NNUE::eval(accumulator, board.side_to_move);
 }

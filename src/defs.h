@@ -44,7 +44,7 @@ inline void set_bit(uint64_t &bitboard, uint8_t square)
 }
 inline uint8_t get_bit(uint64_t bitboard, uint8_t square)
 {
-    (bitboard & (1ULL << (square)));
+    return (bitboard & (1ULL << (square)));
 }
 inline void remove_bit(uint64_t &bitboard, uint8_t square)
 {

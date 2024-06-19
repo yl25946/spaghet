@@ -16,7 +16,24 @@ class Accumulator
 public:
     std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
 
+    Accumulator() {};
     Accumulator(const Board &board);
+    std::array<int16_t, HIDDEN_SIZE> &operator[](size_t i)
+    {
+        return accumulator[i];
+    }
+
+    const std::array<int16_t, HIDDEN_SIZE> &operator[](size_t i) const
+    {
+        return accumulator[i];
+    }
+
+    void make_move(const Board &board, Move move);
+
+    // automatically converts a colored piece to a nnue piece
+    void add(uint8_t piece, uint8_t square);
+    // automatically converts a colored piece to a nnue piece
+    void remove(uint8_t piece, uint8_t square);
 };
 
 struct Network
@@ -36,6 +53,7 @@ public:
 
     static void init(const char *file);
     static int eval(const Board &board);
+    static int eval(const Accumulator &accumulator, uint8_t side_to_move);
     // void add(NNUE::accumulator &board_accumulator, const int piece, const int to);
     // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);
     // void addSub(NNUE::accumulator &board_accumulator, NNUEIndices add, NNUEIndices sub);
