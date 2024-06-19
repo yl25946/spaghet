@@ -1,4 +1,4 @@
-NETWORK_NAME = 64.bin
+NETWORK_NAME = 1024.bin
 _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 _ROOT       := $(_THIS)
 EVALFILE     = $(NETWORK_NAME)
