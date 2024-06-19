@@ -113,8 +113,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // check killer moves
-            const int killers_size = killers.size();
-            for (int j = 0; j < killers_size; ++j)
+            for (int j = 0; j < killers.size(); ++j)
             {
                 if (move_list.moves[i] == killers.killers[j])
                 {

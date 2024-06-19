@@ -52,13 +52,11 @@ class Killers
 public:
     Move killers[2];
 
-    uint8_t count = 0;
-
-    Killers() {};
+    Killers() { killers[0] = Move(a8, a8, 0), killers[1] = Move(a8, a8, 0); };
 
     void insert(Move move);
 
     // Move get_killer(int ply) const;;
 
-    size_t size() const;
+    size_t size() const { return 2; };
 };
