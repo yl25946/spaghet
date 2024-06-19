@@ -536,7 +536,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                         ss->killers.insert(curr_move);
 
                         // only update if the previous move wasn't a null move
-                        thread_data.countermove.update(curr_move, (ss - 1)->move_played, board.side_to_move);
+                        if (!in_root)
+                            thread_data.countermove.update(curr_move, (ss - 1)->move_played, board.side_to_move);
                     }
                     break;
                 }
