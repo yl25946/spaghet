@@ -1,7 +1,7 @@
-# NETWORK_NAME = nn.net
+NETWORK_NAME = 64.bin
 _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 _ROOT       := $(_THIS)
-# EVALFILE     = $(NETWORK_NAME)
+EVALFILE     = $(NETWORK_NAME)
 CXX         := g++
 CLEAN       := rm -rf
 NOOP		:=:
