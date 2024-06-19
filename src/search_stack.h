@@ -14,7 +14,7 @@ public:
     MoveList pv;
 
     Board board;
-    Move move_played;
+    Move move_played = Move(a8, a8, 0);
 
     SearchStack() {};
     SearchStack(int ply) { this->ply = ply; };
