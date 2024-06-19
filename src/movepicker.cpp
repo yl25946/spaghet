@@ -117,8 +117,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                 move_list.moves[i].score = MAX_COUNTERMOVE;
 
             // check killer moves
-            const int killers_size = killers.size();
-            for (int j = 0; j < killers_size; ++j)
+            for (int j = 0; j < killers.size(); ++j)
             {
                 if (move_list.moves[i] == killers.killers[j])
                 {
