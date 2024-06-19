@@ -17,6 +17,7 @@
 #include <thread>
 #include <exception>
 #include <sstream>
+#include <memory>
 
 // #include "utils.h"
 // #include "attacks.h"
@@ -37,16 +38,42 @@ extern std::string cmk_position;
 extern std::string repetitions;
 
 // bit macros
-#define set_bit(bitboard, square) ((bitboard) |= (1ULL << (square)))
-#define get_bit(bitboard, square) ((bitboard) & (1ULL << (square)))
-#define remove_bit(bitboard, square) ((bitboard) &= ~(1ULL << (square)))
-#define count_bits(bitboard) (__builtin_popcountll(bitboard))
+inline void set_bit(uint64_t &bitboard, uint8_t square)
+{
+    bitboard |= (1ULL << (square));
+}
+inline uint8_t get_bit(uint64_t bitboard, uint8_t square)
+{
+    return (bitboard & (1ULL << (square)));
+}
+inline void remove_bit(uint64_t &bitboard, uint8_t square)
+{
+    bitboard &= ~(1ULL << (square));
+}
+inline uint8_t count_bits(uint64_t bitboard)
+{
+    return __builtin_popcountll(bitboard);
+}
 // Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
-#define lsb(bitboard) (__builtin_ffsll(bitboard) - 1)
+inline uint8_t lsb(uint64_t bitboard)
+{
+    return __builtin_ffsll(bitboard) - 1;
+}
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
-#define colored_to_uncolored(piece) (piece >> 1)
-#define uncolored_to_colored(piece, color) (piece << 1 | color)
+inline uint8_t flip(uint8_t square)
+{
+    return square ^ 56;
+}
+
+inline uint8_t colored_to_uncolored(uint8_t piece)
+{
+    return piece >> 1;
+}
+inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
+{
+    return piece << 1 | color;
+}
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;

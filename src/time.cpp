@@ -65,8 +65,11 @@ Time::Time(const std::string &go_command)
 // time controls yoinked from Alexandria
 void Time::set_time(Searcher &searcher)
 {
+    searcher.start_time = get_time();
+
     if (has_depth)
     {
+<<<<<<< HEAD
         searcher.optimum_stop_time = UINT64_MAX;
         searcher.max_stop_time = UINT64_MAX;
     }
@@ -75,6 +78,24 @@ void Time::set_time(Searcher &searcher)
     {
         searcher.optimum_stop_time = move_time - MOVE_OVERHEAD;
         searcher.max_stop_time = move_time - MOVE_OVERHEAD;
+=======
+        searcher.optimum_stop_time_duration = UINT64_MAX;
+        searcher.max_stop_time_duration = UINT64_MAX;
+        searcher.optimum_stop_time = UINT64_MAX;
+        searcher.max_stop_time = UINT64_MAX;
+
+        return;
+    }
+
+    if (move_time)
+    {
+        searcher.optimum_stop_time_duration = move_time - MOVE_OVERHEAD;
+        searcher.max_stop_time_duration = move_time - MOVE_OVERHEAD;
+        searcher.optimum_stop_time = get_time() + move_time - MOVE_OVERHEAD;
+        searcher.max_stop_time = get_time() + move_time - MOVE_OVERHEAD;
+
+        return;
+>>>>>>> main
     }
 
     searcher.time_set = true;
@@ -94,8 +115,11 @@ void Time::set_time(Searcher &searcher)
         max_time_bound = 0.76 * black_time;
     }
 
+<<<<<<< HEAD
     searcher.start_time = get_time();
 
+=======
+>>>>>>> main
     const uint64_t optimum_time = std::min<uint64_t>(0.86 * base_time, max_time_bound);
     const uint64_t max_time = std::min<uint64_t>(3.04 * base_time, max_time_bound);
 

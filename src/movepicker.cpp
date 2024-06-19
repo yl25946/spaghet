@@ -1,66 +1,5 @@
 #include "movepicker.h"
 
-void MoveList::insert(Move move)
-{
-    moves[count++] = OrderedMove(move);
-}
-
-void MoveList::insert(uint8_t from, uint8_t to, uint8_t move_flag)
-{
-    moves[count++] = OrderedMove(from, to, move_flag);
-}
-
-void MoveList::insert(uint8_t from, uint8_t to, uint8_t move_flag, uint16_t value)
-{
-    moves[count++] = OrderedMove(from, to, move_flag, value);
-}
-
-uint8_t MoveList::size() const
-{
-    return count;
-}
-
-std::string MoveList::to_string()
-{
-    std::string movelist_string = moves[0].to_string();
-
-    for (int i = 1; i < size(); ++i)
-    {
-        movelist_string += " " + moves[i].to_string();
-    }
-
-    return movelist_string;
-}
-
-std::string MoveList::reverse_to_string()
-{
-    std::string movelist_string = moves[count - 1].to_string();
-
-    for (int i = count - 2; i >= 0; --i)
-    {
-        movelist_string += " " + moves[i].to_string();
-    }
-
-    return movelist_string;
-}
-
-void MoveList::print()
-{
-    for (int i = 0; i < count; ++i)
-    {
-        moves[i].print();
-        std::cout << "\n";
-    }
-};
-
-void MoveList::copy_over(MoveList &move_list)
-{
-    for (int i = 0; i < move_list.size(); ++i)
-    {
-        insert(move_list.moves[i]);
-    }
-}
-
 MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
 {
     // this->move_list = move_list;
@@ -74,7 +13,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, TranspositionTable &transposition_table, QuietHistory &history, Killers &killers, int threshold, int ply)
+void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -95,7 +34,7 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
         // make sure we don't get any weird values floating around in value of the orderedmove
         move_list.moves[i].score = 0;
 
-        if (has_tt_move && tt_move.info == current_move.info)
+        if (has_tt_move && tt_move == current_move)
         {
             // this ensures that the move comes first
             move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
@@ -159,18 +98,30 @@ void MovePicker::score(const Board &board, TranspositionTable &transposition_tab
         // not a capture, use history table
         else
         {
+
             // std::cout << history.move_value(moves[i]) << "\n";
-            move_list.moves[i].score = history.move_value(move_list.moves[i], board.side_to_move);
+            move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
+
+            int ply = ss->ply;
+
+            // // adds followup move history bonus
+            // if (ply >= 2 && !(ss - 2)->null_moved)
+            //     move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
+
+            // adds counter move history bonus
+            if (ply >= 1 && !(ss - 1)->null_moved)
+                move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // check killer moves
-            const int killers_size = killers.size(ply);
-            for (int j = 0; j < killers_size; ++j)
+            for (int j = 0; j < killers.size(); ++j)
             {
-                if (move_list.moves[i].info == killers.killers[ply][j].info)
+                if (move_list.moves[i] == killers.killers[j])
                 {
                     move_list.moves[i].score = MAX_KILLERS - j;
                 }
             }
+
+            // move_list.moves[i].score += (ss - 4)->conthist->move_value(board, move_list.moves[i]) / 2;
         }
     }
 }

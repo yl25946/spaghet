@@ -842,6 +842,19 @@ int pesto_eval(Board &board)
     /* tapered eval */
     int mgScore = mg[side_to_move] - mg[OTHER(side_to_move)];
     int egScore = eg[side_to_move] - eg[OTHER(side_to_move)];
+
+    // gives a small bonus if we have two bishops and gives a bonus to the opponent if they have two bishops
+    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move))) == 2)
+    {
+        mgScore += 25;
+        egScore += 50;
+    }
+    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move ^ 1))) == 2)
+    {
+        mgScore -= 25;
+        egScore -= 50;
+    }
+
     int mgPhase = gamePhase;
     if (mgPhase > 24)
         mgPhase = 24; /* in case of early promotion */
@@ -855,7 +868,7 @@ int pesto_eval(Board &board)
     return actual_score;
 }
 
-int evaluate(Board &board)
+int evaluate(const Board &board, const Accumulator &accumulator)
 {
-    return pesto_eval(board);
+    return NNUE::eval(accumulator, board.side_to_move);
 }
