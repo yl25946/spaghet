@@ -114,7 +114,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                 move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // there is a possibility that the countermove and killers match, by doing it before, there's a chance that we can override it with killers
-            if (!in_root && move_list.moves[i] == counter_move)
+            if (!in_root && !(ss - 1)->null_moved && move_list.moves[i] == counter_move)
                 move_list.moves[i].score = MAX_COUNTERMOVE;
 
             // check killer moves
