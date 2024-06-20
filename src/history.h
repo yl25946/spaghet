@@ -29,6 +29,19 @@ public:
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 
+class CaptureHistory
+{
+public:
+    int16_t table[12][64][6];
+
+    CaptureHistory();
+
+    void clear();
+
+    void update(const Board &board, MoveList &move_list, Move fail_high_move, int depth);
+    void update(const Board &board, Move move, int depth, bool good);
+};
+
 class ContinuationHistory
 {
 public:
