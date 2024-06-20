@@ -25,6 +25,8 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     nodes_spent_table.fill(0);
 
+    this->board = board;
+
     thread_data.search_stack[4].board = board;
     thread_data.accumulators[0] = Accumulator(board);
 
@@ -104,7 +106,8 @@ void Searcher::scale_time(int best_move_stability_factor)
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
     const Move best_move = thread_data.search_stack[4].pv.moves[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
-    const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
+    // const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
+    const double node_scaling_factor = 1.0;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
     // scal9e the time based on how many nodes we spent ond how the best move changed
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
@@ -364,8 +367,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     const int futility_margin = 150 + 100 * depth;
 
-    int nodes_before_search = nodes;
-
     while (move_picker.has_next())
     {
         Board copy = board;
@@ -402,6 +403,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             }
         }
 
+        const uint64_t nodes_before_search = nodes;
+
         // now that we haven't pruned anything, we can update the search stack
         (ss + 1)->board = copy;
         (ss)->move_played = curr_move;
@@ -409,6 +412,9 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // we can update the accumulators now
         thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
         thread_data.accumulators[ss->ply + 1].make_move(board, curr_move);
+
+        // we can update threefold
+        game_history.push_back(copy.hash);
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
@@ -427,16 +433,11 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // don't do pvs on the first node
         if (move_picker.moves_seen() == 0)
         {
-            // we can check for threefold repetition later, updates the state though
-            game_history.push_back(copy.hash);
 
             current_eval = -negamax<inPV>(-beta, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
-
-            // stopped searching that line, so we can get rid of the hash
-            game_history.pop_back();
         }
         else
         {
@@ -449,55 +450,42 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 else
                     new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
-
-            // we can check for threefold repetition later, updates the state though
-            game_history.push_back(copy.hash);
-
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
 
-            // stopped searching that line, so we can get rid of the hash
-            game_history.pop_back();
-
             // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
             // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
             if (current_eval > alpha)
             {
-                game_history.push_back(copy.hash);
-
                 current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
 
                 if (stopped)
                     return 0;
 
-                game_history.pop_back();
-
                 // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && inPV)
                 {
-                    game_history.push_back(copy.hash);
 
                     current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
 
                     if (stopped)
                         return 0;
-
-                    // stopped searching that line, so we can get rid of the hash
-                    game_history.pop_back();
                 }
             }
         }
 
         move_picker.update_moves_seen();
 
+        // stopped searching that line, so we can get rid of the hash
+        game_history.pop_back();
+
         if (in_root)
         {
             nodes_spent_table[curr_move.from_to()] += nodes - nodes_before_search;
-            nodes_before_search = nodes;
         }
 
         if (stopped)
