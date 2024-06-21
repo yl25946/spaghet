@@ -419,7 +419,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
-        else if (curr_move.is_capture())
+        else
             noises.insert(curr_move);
 
         int new_depth = depth - 1;
