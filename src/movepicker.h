@@ -46,5 +46,5 @@ public:
 
     bool has_next();
 
-    void score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold);
+    void score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, CaptureHistory capthist, ContinuationHistory &conthist, Killers &killers, int threshold);
 };
