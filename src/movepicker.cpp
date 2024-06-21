@@ -90,9 +90,9 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN] + PROMOTION_BONUS;
                 else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
             }
 
             move_list.moves[i].score += captured_piece_value + promotion_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
