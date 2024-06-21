@@ -72,7 +72,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score = 15 * piece_value[PIECES::WHITE_PAWN] - piece_value[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score += 15 * piece_value[PIECES::WHITE_PAWN] - piece_value[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
