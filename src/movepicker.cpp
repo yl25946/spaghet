@@ -72,7 +72,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score += 15 * piece_value[PIECES::WHITE_PAWN] - piece_value[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score += 150 * piece_value[PIECES::WHITE_PAWN] - piece_value[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -96,7 +96,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                     promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
             }
 
-            move_list.moves[i].score += 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list.moves[i].score += 150 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             // we give a promotion bonus if the promotion is "meaningful"
             // if (promotion_piece_value != 0)
