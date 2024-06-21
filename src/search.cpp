@@ -384,10 +384,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         {
             // applies late move pruning
             if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth)
-            {
-                move_picker.skip_quiets();
-                continue;
-            }
+                break;
 
             // applies pvs see pruning
             const int see_threshold = is_quiet ? -80 * depth : -30 * depth * depth;
