@@ -94,8 +94,8 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             move_list.moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             // we give a promotion bonus if the promotion is "meaningful"
-            if (promotion_piece_value != 0)
-                move_list.moves[i].score += PROMOTION_BONUS;
+            // if (promotion_piece_value != 0)
+            //     move_list.moves[i].score += PROMOTION_BONUS;
 
             if (move_list.moves[i].is_capture())
                 move_list.moves[i].score += capthist.move_value(board, move_list.moves[i]);
