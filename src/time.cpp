@@ -81,8 +81,8 @@ void Time::set_time(Searcher &searcher)
     {
         searcher.optimum_stop_time_duration = move_time - MOVE_OVERHEAD;
         searcher.max_stop_time_duration = move_time - MOVE_OVERHEAD;
-        searcher.optimum_stop_time = get_time() + move_time - MOVE_OVERHEAD;
-        searcher.max_stop_time = get_time() + move_time - MOVE_OVERHEAD;
+        searcher.optimum_stop_time = searcher.start_time + move_time - MOVE_OVERHEAD;
+        searcher.max_stop_time = searcher.start_time + move_time - MOVE_OVERHEAD;
 
         return;
     }
