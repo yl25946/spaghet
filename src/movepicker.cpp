@@ -72,16 +72,15 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score += 1500 * piece_value[PIECES::WHITE_PAWN] - piece_value[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score += mvv_values[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
             uint8_t source_square = current_move.from_square();
             uint8_t target_square = current_move.to_square();
 
-            // use mvv-lva to find the move value
-            int attacking_piece_value = piece_value[board.mailbox[source_square]];
-            int captured_piece_value = piece_value[board.mailbox[target_square]];
+            // use mvvto find the move value
+            int captured_piece_value = mvv_values[board.mailbox[source_square]];
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
@@ -91,12 +90,12 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
-                    promotion_piece_value = piece_value[PIECES::WHITE_QUEEN];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN];
                 else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
-                    promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT];
             }
 
-            move_list.moves[i].score += 1500 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list.moves[i].score += captured_piece_value + promotion_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             // we give a promotion bonus if the promotion is "meaningful"
             // if (promotion_piece_value != 0)

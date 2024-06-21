@@ -289,8 +289,22 @@ constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
 extern std::map<char, uint8_t> char_pieces;
 
 // used for mvv vla, takes in a colored piece value
-constexpr uint16_t piece_value[13] = {
-    100, 100, 300, 300, 350, 350, 500, 500, 900, 900, 0, 0, 0};
+// tuned values from clarty
+constexpr uint16_t mvv_values[13] = {
+    91,
+    91,
+    401,
+    401,
+    502,
+    502,
+    736,
+    763,
+    1192,
+    1192,
+    0,
+    0,
+    0,
+};
 
 // sides to move (colors)
 enum COLOR
