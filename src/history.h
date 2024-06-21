@@ -33,7 +33,7 @@ class CaptureHistory
 {
 public:
     // [capturing piece][to][captured piece (uncolored)]
-    int16_t table[12][64][6];
+    int16_t table[12][64][7];
 
     CaptureHistory();
 

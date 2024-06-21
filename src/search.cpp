@@ -351,7 +351,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     MoveList move_list;
     MoveList quiet_moves;
-    MoveList captures;
+    MoveList noises;
 
     generate_moves(board, move_list);
 
@@ -419,8 +419,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
-        if (curr_move.is_capture())
-            captures.insert(curr_move);
+        else
+            noises.insert(curr_move);
 
         int new_depth = depth - 1;
         int extension = 0;
@@ -527,7 +527,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     }
 
                     // we update capthists regardless if it's a quiet or a noisy
-                    thread_data.capthist.update(board, captures, curr_move, depth);
+                    thread_data.capthist.update(board, noises, curr_move, depth);
 
                     break;
                 }

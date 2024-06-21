@@ -63,13 +63,10 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         // }
         if (!move_list.moves[i].is_quiet())
         {
-            // apply capthist bonus if it's a capture (don't do anything if  it's a promo)
-            if (move_list.moves[i].is_capture())
-            {
-                move_list.moves[i].score += capthist.move_value(board, move_list.moves[i]);
-                // if (capthist.move_value(board, move_list.moves[i]) > 0)
-                //     std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
-            }
+
+            move_list.moves[i].score += capthist.move_value(board, move_list.moves[i]);
+            // if (capthist.move_value(board, move_list.moves[i]) > 0)
+            //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
 
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
