@@ -527,7 +527,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     }
 
                     // we update capthists regardless if it's a quiet or a noisy
-                    thread_data.capthist.update(board, move_list, curr_move, depth);
+                    thread_data.capthist.update(board, captures, curr_move, depth);
 
                     break;
                 }

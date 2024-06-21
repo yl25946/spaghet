@@ -86,8 +86,9 @@ void CaptureHistory::update(const Board &board, MoveList &move_list, Move failed
 int64_t CaptureHistory::move_value(const Board &board, Move move)
 {
     uint8_t to = move.to_square();
+    uint8_t uncolored_captured_piece = move.move_flag() == MOVE_FLAG::EN_PASSANT_CAPTURE ? BITBOARD_PIECES::PAWN : colored_to_uncolored(board.mailbox[to]);
 
-    return table[board.mailbox[move.from_square()]][to][colored_to_uncolored(board.mailbox[to])];
+    return table[board.mailbox[move.from_square()]][to][uncolored_captured_piece];
 }
 
 void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
@@ -95,7 +96,7 @@ void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
     uint8_t from_square = move.from_square();
     uint8_t to_square = move.to_square();
     uint8_t capturing_piece = board.mailbox[from_square];
-    uint8_t uncolored_capture_piece = colored_to_uncolored(board.mailbox[to_square]);
+    uint8_t uncolored_captured_piece = move.move_flag() == MOVE_FLAG::EN_PASSANT_CAPTURE ? BITBOARD_PIECES::PAWN : colored_to_uncolored(board.mailbox[to_square]);
 
     // const int64_t updated_value = butterfly_table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
 
@@ -104,7 +105,7 @@ void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
     const int delta = good ? 170 * depth : -450 * depth;
 
     // formula taken from ethereal
-    table[capturing_piece][to_square][uncolored_capture_piece] += delta - (static_cast<int64_t>(table[capturing_piece][to_square][uncolored_capture_piece]) * abs(delta) / MAX_HISTORY);
+    table[capturing_piece][to_square][uncolored_captured_piece] += delta - (static_cast<int64_t>(table[capturing_piece][to_square][uncolored_captured_piece]) * abs(delta) / MAX_HISTORY);
 }
 
 ContinuationHistory::ContinuationHistory()
