@@ -13,7 +13,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold)
+void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, CaptureHistory &capthist, ContinuationHistory &conthist, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
@@ -63,20 +63,24 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         // }
         if (!move_list.moves[i].is_quiet())
         {
+
+            move_list.moves[i].score += capthist.move_value(board, move_list.moves[i]);
+            // if (capthist.move_value(board, move_list.moves[i]) > 0)
+            //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
+
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score = 1400 + (SEE(board, move_list.moves[i], -107) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score += mvv_values[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
             uint8_t source_square = current_move.from_square();
             uint8_t target_square = current_move.to_square();
 
-            // use mvv-lva to find the move value
-            int attacking_piece_value = piece_value[board.mailbox[source_square]];
-            int captured_piece_value = piece_value[board.mailbox[target_square]];
+            // use mvvto find the move value
+            int captured_piece_value = mvv_values[board.mailbox[source_square]];
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
@@ -86,12 +90,16 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
-                    promotion_piece_value = piece_value[PIECES::WHITE_QUEEN];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN] + PROMOTION_BONUS;
                 else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
-                    promotion_piece_value = piece_value[PIECES::WHITE_KNIGHT];
+                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
             }
 
-            move_list.moves[i].score = 15 * (captured_piece_value + promotion_piece_value) + attacking_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list.moves[i].score += captured_piece_value + promotion_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+
+            // we give a promotion bonus if the promotion is "meaningful"
+            // if (promotion_piece_value != 0)
+            //     move_list.moves[i].score += PROMOTION_BONUS;
 
             continue;
         }

@@ -46,6 +46,7 @@ public:
     bool is_quiet() const;
     bool is_castle() const;
     bool is_promotion() const;
+    bool is_capture() const;
     // NOT ERROR CHECKED!
     // returns an uncolored pieec
     uint8_t promotion_piece() const;
