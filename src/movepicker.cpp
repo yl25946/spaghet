@@ -13,7 +13,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, CaptureHistory capthist, ContinuationHistory &conthist, Killers &killers, int threshold)
+void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, CaptureHistory &capthist, ContinuationHistory &conthist, Killers &killers, int threshold)
 {
     TT_Entry &tt_entry = transposition_table.probe(board);
     Move tt_move;
