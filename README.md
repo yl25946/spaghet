@@ -54,13 +54,9 @@ Started from piece counting and standard negamax
 https://spaghet.pythonanywhere.com/
 
 # TODO:
-- simplification with a "skip_quiets" boolean flag, set that as true when enter lmp, and just skip quiets without doing lmp again
-- Add check evasion to qSearch
+- Find a way to allow QS SEE pruning with check evasion
 - Add promotions in qSearch
-- Add board.is_in_check() and copy.is_in_check() for late move pruning
-- Create a search stack instead of 15 million flags
 - Write legality check before making a move (usually gains 0-10 elo)
-- Speed up multithreading using conditional
 
 # Special Thanks
 - The entirety of Stockfish Discord

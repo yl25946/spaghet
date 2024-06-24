@@ -172,7 +172,11 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     int best_eval = stand_pat;
     // int capture_moves = 0;
     MoveList move_list;
-    generate_capture_moves(board, move_list);
+    bool in_check = board.is_in_check();
+    if (in_check)
+        generate_moves(board, move_list);
+    else
+        generate_capture_moves(board, move_list);
 
     // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
     Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
@@ -202,7 +206,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         // qsearch SEE pruning
         // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
         // since everything after it will also not pass the SEE threshold
-        if (curr_move.score < 0)
+        // let's just temporarily not deal with quiet moves, which is when we'd be in check
+        // TODO: find a way to get this working
+        if (!in_check && curr_move.score < 0)
             break;
 
         (ss + 1)->board = copy;
