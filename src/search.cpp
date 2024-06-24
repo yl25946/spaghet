@@ -197,6 +197,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         if (!copy.was_legal())
             continue;
 
+        move_picker.update_moves_seen();
+
         // do we need to check for checkmate in qsearch?
         // if (is_checkmate(copy))
         // {
@@ -240,6 +242,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             }
         }
     }
+
+    if (in_check && move_picker.moves_seen() == 0)
+        return -MATE + ss->ply;
 
     // add to TT
     uint8_t bound_flag = BOUND::EXACT;
