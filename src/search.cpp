@@ -298,10 +298,11 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
+    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!inPV && has_tt_entry && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ss->ply);
     }
@@ -348,6 +349,10 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         if (null_move_score >= beta)
             return null_move_score;
     }
+
+    // Internal Iterative Reduction: Move ordering is expected to be worse since there is no TT move, so we can save time by searching this position now
+    if (inPV && depth >= 4 && !has_tt_entry)
+        --depth;
 
     MoveList move_list;
     MoveList quiet_moves;
