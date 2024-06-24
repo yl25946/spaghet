@@ -61,6 +61,11 @@ bool Move::is_promotion() const
     return move_flag() & PROMOTION;
 }
 
+bool Move::is_capture() const
+{
+    return move_flag() & MOVE_FLAG::CAPTURES;
+}
+
 uint8_t Move::promotion_piece() const
 {
     return move_flag() % 4 + 1;

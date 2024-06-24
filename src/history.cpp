@@ -82,6 +82,58 @@ Move Countermove::counter_move(Move previous_move, uint8_t side_to_move)
     return butterfly_table[side_to_move][previous_move.from_square()][previous_move.to_square()];
 }
 
+CaptureHistory::CaptureHistory()
+{
+    for (int i = 0; i < 12; ++i)
+        for (int j = 0; j < 64; ++j)
+            for (int k = 0; k < 7; ++k)
+                table[i][j][k] = 0;
+}
+
+void CaptureHistory::clear()
+{
+    for (int i = 0; i < 12; ++i)
+        for (int j = 0; j < 64; ++j)
+            for (int k = 0; k < 7; ++k)
+                table[i][j][k] = 0;
+}
+
+void CaptureHistory::update(const Board &board, MoveList &move_list, Move failed_high_move, int depth)
+{
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        if (move_list.moves[i].info == failed_high_move.info)
+            update(board, move_list.moves[i], depth, true);
+        else
+            update(board, move_list.moves[i], depth, false);
+    }
+}
+
+int64_t CaptureHistory::move_value(const Board &board, Move move)
+{
+    uint8_t to = move.to_square();
+    uint8_t uncolored_captured_piece = colored_to_uncolored(board.mailbox[to]);
+
+    return table[board.mailbox[move.from_square()]][to][uncolored_captured_piece];
+}
+
+void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
+{
+    uint8_t from_square = move.from_square();
+    uint8_t to_square = move.to_square();
+    uint8_t capturing_piece = board.mailbox[from_square];
+    uint8_t uncolored_captured_piece = colored_to_uncolored(board.mailbox[to_square]);
+
+    // const int64_t updated_value = butterfly_table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
+
+    // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
+
+    const int delta = good ? 170 * depth : -450 * depth;
+
+    // formula taken from ethereal
+    table[capturing_piece][to_square][uncolored_captured_piece] += delta - (static_cast<int64_t>(table[capturing_piece][to_square][uncolored_captured_piece]) * abs(delta) / MAX_HISTORY);
+}
+
 ContinuationHistory::ContinuationHistory()
 {
     for (int i = 0; i < 13; ++i)

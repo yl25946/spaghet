@@ -9,8 +9,8 @@ int piece_count_evaluation(Board &board)
     int eval = 0;
     for (uint8_t piece = PAWN; piece <= QUEEN; ++piece)
     {
-        eval += piece_value[piece] * count_bits(board.bitboard(2 * piece + board.side_to_move));
-        eval -= piece_value[piece] * count_bits(board.bitboard(2 * piece + (board.side_to_move ^ 1)));
+        eval += mvv_values[piece] * count_bits(board.bitboard(2 * piece + board.side_to_move));
+        eval -= mvv_values[piece] * count_bits(board.bitboard(2 * piece + (board.side_to_move ^ 1)));
     }
 
     return eval;

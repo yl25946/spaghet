@@ -181,8 +181,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.conthist, thread_data.countermove, ss->killers, -107);
 
+    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.capthist, thread_data.conthist, thread_data.countermove, ss->killers, -107);
     while (move_picker.has_next())
     {
         Board copy = board;
@@ -352,12 +352,14 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     MoveList move_list;
     MoveList quiet_moves;
+    MoveList noises;
 
     generate_moves(board, move_list);
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.conthist, thread_data.countermove, ss->killers, -107);
+
+    move_picker.score(board, ss, transposition_table, thread_data.main_history, thread_data.capthist, thread_data.conthist, thread_data.countermove, ss->killers, -107);
 
     const int original_alpha = alpha;
 
@@ -419,6 +421,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
+        else if (!curr_move.is_promotion())
+            noises.insert(curr_move);
 
         int new_depth = depth - 1;
         int extension = 0;
@@ -527,6 +531,10 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                         if (!in_root)
                             thread_data.countermove.update(curr_move, (ss - 1)->move_played, board.side_to_move);
                     }
+
+                    // we update capthists regardless if it's a quiet or a noisy
+                    thread_data.capthist.update(board, noises, curr_move, depth);
+
                     break;
                 }
             }
