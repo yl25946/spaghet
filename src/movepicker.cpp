@@ -13,13 +13,13 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, CaptureHistory &capthist, ContinuationHistory &conthist, Killers &killers, int threshold)
+void MovePicker::score(SearchStack *ss, ThreadData &thread_data, TranspositionTable &transposition_table, int threshold)
 {
-    TT_Entry &tt_entry = transposition_table.probe(board);
+    TT_Entry &tt_entry = transposition_table.probe(ss->board);
     Move tt_move;
     bool has_tt_move = false;
 
-    if (tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE)
+    if (tt_entry.hash == ss->board.hash && tt_entry.flag() != BOUND::NONE)
     {
         tt_move = tt_entry.best_move;
         has_tt_move = true;
@@ -64,7 +64,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         if (!move_list.moves[i].is_quiet())
         {
 
-            move_list.moves[i].score += capthist.move_value(board, move_list.moves[i]);
+            move_list.moves[i].score += thread_data.capthist.move_value(ss->board, move_list.moves[i]);
             // if (capthist.move_value(board, move_list.moves[i]) > 0)
             //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
 
@@ -72,7 +72,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                move_list.moves[i].score += mvv_values[PIECES::WHITE_PAWN] + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_list.moves[i].score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -80,7 +80,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
             uint8_t target_square = current_move.to_square();
 
             // use mvvto find the move value
-            int captured_piece_value = mvv_values[board.mailbox[source_square]];
+            int captured_piece_value = mvv_values[ss->board.mailbox[source_square]];
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
@@ -95,7 +95,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
                     promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
             }
 
-            move_list.moves[i].score += captured_piece_value + promotion_piece_value + (SEE(board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_list.moves[i].score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             // we give a promotion bonus if the promotion is "meaningful"
             // if (promotion_piece_value != 0)
@@ -108,7 +108,7 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
         {
 
             // std::cout << history.move_value(moves[i]) << "\n";
-            move_list.moves[i].score += history.move_value(move_list.moves[i], board.side_to_move);
+            move_list.moves[i].score += thread_data.main_history.move_value(move_list.moves[i], ss->board.side_to_move);
 
             int ply = ss->ply;
 
@@ -118,12 +118,12 @@ void MovePicker::score(const Board &board, SearchStack *ss, TranspositionTable &
 
             // adds counter move history bonus
             if (ply >= 1 && !(ss - 1)->null_moved)
-                move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+                move_list.moves[i].score += thread_data.conthist.move_value(ss->board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // check killer moves
-            for (int j = 0; j < killers.size(); ++j)
+            for (int j = 0; j < ss->killers.size(); ++j)
             {
-                if (move_list.moves[i] == killers.killers[j])
+                if (move_list.moves[i] == ss->killers.killers[j])
                 {
                     move_list.moves[i].score = MAX_KILLERS - j;
                 }
