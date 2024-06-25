@@ -352,6 +352,10 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             return null_move_score;
     }
 
+    // Internal Iterative Reduction: Move ordering is expected to be worse since there is no TT move, so we can save time by searching this position now
+    if (inPV && depth >= 4 && !has_tt_move)
+        --depth;
+
     MoveList move_list;
     MoveList quiet_moves;
     MoveList noises;
