@@ -46,8 +46,7 @@ public:
     bool is_quiet() const;
     bool is_castle() const;
     bool is_promotion() const;
-    bool is_capture() const;
-    // NOT ERROR CHECKED!
+    bool is_capture() const; // NOT ERROR CHECKED!
     // returns an uncolored pieec
     uint8_t promotion_piece() const;
 
@@ -57,6 +56,8 @@ public:
     std::string to_string() const;
     void print() const;
 };
+
+const Move NO_MOVE = Move(a8, a8, 0);
 
 class OrderedMove : public Move
 {

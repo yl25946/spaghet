@@ -7,7 +7,7 @@ TT_Entry::TT_Entry()
     hash = 0;
     score = 0;
     depth = 0;
-    best_move = Move(0, 0, 0);
+    best_move = NO_MOVE;
     flag_and_age = BOUND::NONE;
 }
 
@@ -107,7 +107,28 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     uint64_t hash_location = board.hash % hashtable.size();
 
     // TODO: ADD BETTER TT REPLACEMENT ALGO
-    hashtable[hash_location] = TT_Entry(board, best_move, best_score, depth, ply, age, flag);
+    hashtable[hash_location].hash = board.hash;
+    hashtable[hash_location].best_move = best_move;
+    hashtable[hash_location].score = best_score;
+    hashtable[hash_location].depth = depth;
+    // treat mate scores so that they're relative to the position instead of the root
+    if (best_score >= MAX_MATE_SCORE)
+    {
+        // the mate is relative to the root, we have to add the ply to account for the additional depth searched
+        hashtable[hash_location].score = best_score + ply;
+    }
+    else if (best_score <= MIN_MATE_SCORE)
+    {
+        // same idea as above
+        hashtable[hash_location].score = best_score - ply;
+    }
+    else
+    {
+        hashtable[hash_location].score = best_score;
+    }
+
+    hashtable[hash_location].flag_and_age &= 0b11111100;
+    hashtable[hash_location].flag_and_age |= flag;
 }
 
 // bool TranspositionTable::contains(const Board &board)

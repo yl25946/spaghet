@@ -175,7 +175,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     generate_capture_moves(board, move_list);
 
     // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
-    Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
+    Move best_move = NO_MOVE;
 
     const int original_alpha = alpha;
 
@@ -298,11 +298,11 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
-    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
+    bool has_tt_move = entry.flag() != BOUND::NONE && entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && has_tt_entry && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
     {
         return entry.usable_score(ss->ply);
     }
@@ -351,7 +351,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     }
 
     // Internal Iterative Reduction: Move ordering is expected to be worse since there is no TT move, so we can save time by searching this position now
-    if (inPV && depth >= 4 && !has_tt_entry)
+    if (inPV && depth >= 4 && !has_tt_move)
         --depth;
 
     MoveList move_list;
@@ -368,7 +368,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // get pvs here
     int best_eval = -INF - 1;
-    Move best_move;
+    Move best_move = NO_MOVE;
     bool is_quiet;
 
     const int futility_margin = 150 + 100 * depth;
