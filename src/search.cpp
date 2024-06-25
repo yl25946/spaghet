@@ -426,13 +426,20 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             noises.insert(curr_move);
 
         int new_depth = depth - 1;
-        int extension = 0;
+        int extensions = 0;
 
         // extensions
         if (copy.is_in_check())
-            extension += 1;
+            extensions += 1;
 
-        new_depth += extension;
+        // Singular Extensions: If a TT move exists and its score is accurate enough
+        // (close enough in depth), we perform a reduced-depth search with the TT
+        // move excluded to see if any other moves can beat it.
+        if (!in_root && depth >= 8 && move == tt_move && !stack->exclude_tt_move)
+        {
+                }
+
+        new_depth += extensions;
 
         int current_eval;
 
