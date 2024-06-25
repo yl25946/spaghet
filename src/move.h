@@ -38,6 +38,11 @@ public:
         return info == move.info;
     };
 
+    bool operator!=(const Move &move) const
+    {
+        return info != move.info;
+    }
+
     uint8_t from_square() const;
     uint8_t to_square() const;
     uint16_t from_to() const;

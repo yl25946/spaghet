@@ -108,9 +108,12 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 
     // TODO: ADD BETTER TT REPLACEMENT ALGO
     hashtable[hash_location].hash = board.hash;
-    hashtable[hash_location].best_move = best_move;
     hashtable[hash_location].score = best_score;
     hashtable[hash_location].depth = depth;
+
+    if (best_move != NO_MOVE)
+        hashtable[hash_location].best_move = best_move;
+
     // treat mate scores so that they're relative to the position instead of the root
     if (best_score >= MAX_MATE_SCORE)
     {
