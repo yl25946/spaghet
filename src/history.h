@@ -67,7 +67,7 @@ class Killers
 public:
     Move killers[2];
 
-    Killers() { killers[0] = Move(a8, a8, 0), killers[1] = Move(a8, a8, 0); };
+    Killers() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
 
     void insert(Move move);
 

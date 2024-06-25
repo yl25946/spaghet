@@ -175,7 +175,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     generate_capture_moves(board, move_list);
 
     // creates a "garbage" move so that when we read from the TT we don't accidentally order a random move first during scoring
-    Move best_move(a8, a8, MOVE_FLAG::QUIET_MOVE);
+    Move best_move = NO_MOVE;
 
     const int original_alpha = alpha;
 
@@ -236,18 +236,14 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // add to TT
-    uint8_t bound_flag = BOUND::EXACT;
+    uint8_t bound_flag = BOUND::FAIL_LOW;
 
     if (alpha >= beta)
     {
         // beta cutoff, fail high
         bound_flag = BOUND::FAIL_HIGH;
     }
-    else if (alpha <= original_alpha)
-    {
-        // failed to raise alpha, fail low
-        bound_flag = BOUND::FAIL_LOW;
-    }
+
     transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
 
     // TODO: add check moves
@@ -298,6 +294,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
+    bool has_tt_move = entry.flag() != BOUND::NONE && entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -363,7 +360,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // get pvs here
     int best_eval = -INF - 1;
-    Move best_move;
+    Move best_move = NO_MOVE;
     bool is_quiet;
 
     const int futility_margin = 150 + 100 * depth;
@@ -498,7 +495,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         if (current_eval > best_eval)
         {
             best_eval = current_eval;
-            best_move = curr_move;
 
             if (current_eval > alpha)
             {
