@@ -36,8 +36,8 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t de
     // std::cout << this->score << "\n";
 
     // basically mod 64
-    uint8_t modular_move_counter = age & 63;
-    this->flag_and_age = (modular_move_counter << 2) | flag;
+    uint8_t modular_age = age & 63;
+    this->flag_and_age = (modular_age << 2) | flag;
 }
 
 uint8_t TT_Entry::flag() const
@@ -127,8 +127,8 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
         hashtable[hash_location].score = best_score;
     }
 
-    hashtable[hash_location].flag_and_age &= 0b11111100;
-    hashtable[hash_location].flag_and_age |= flag;
+    uint8_t modular_age = age & 63;
+    hashtable[hash_location].flag_and_age = (modular_age << 2) | flag;
 }
 
 // bool TranspositionTable::contains(const Board &board)
