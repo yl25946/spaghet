@@ -111,7 +111,8 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     hashtable[hash_location].score = best_score;
     hashtable[hash_location].depth = depth;
 
-    if (best_move != NO_MOVE)
+    // only time we will not have a tt move is with a fail low
+    if (flag != BOUND::FAIL_LOW)
         hashtable[hash_location].best_move = best_move;
 
     // treat mate scores so that they're relative to the position instead of the root

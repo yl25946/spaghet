@@ -236,18 +236,14 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // add to TT
-    uint8_t bound_flag = BOUND::EXACT;
+    uint8_t bound_flag = BOUND::FAIL_LOW;
 
     if (alpha >= beta)
     {
         // beta cutoff, fail high
         bound_flag = BOUND::FAIL_HIGH;
     }
-    else if (alpha <= original_alpha)
-    {
-        // failed to raise alpha, fail low
-        bound_flag = BOUND::FAIL_LOW;
-    }
+
     transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
 
     // TODO: add check moves
@@ -499,7 +495,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         if (current_eval > best_eval)
         {
             best_eval = current_eval;
-            best_move = curr_move;
 
             if (current_eval > alpha)
             {
