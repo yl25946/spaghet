@@ -150,6 +150,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
 
+    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
+    Move tt_move = entry.best_move;
+
     // tt cutoff
     // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
     if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta))
@@ -181,7 +184,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, transposition_table, -107);
+    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
 
     while (move_picker.has_next())
     {
@@ -294,6 +297,9 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // we check if the TT has seen this before
     TT_Entry &entry = transposition_table.probe(board);
+
+    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
+    Move tt_move = entry.best_move;
     bool has_tt_move = entry.flag() != BOUND::NONE && entry.best_move != NO_MOVE;
 
     // tt cutoff
@@ -354,7 +360,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, transposition_table, -107);
+    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
 
     const int original_alpha = alpha;
 
