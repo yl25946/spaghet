@@ -47,5 +47,5 @@ public:
 
     bool has_next();
 
-    void score(SearchStack *ss, ThreadData &thread_data, TranspositionTable &transposition_table, int threshold);
+    void score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold);
 };

@@ -13,17 +13,8 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(SearchStack *ss, ThreadData &thread_data, TranspositionTable &transposition_table, int threshold)
+void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold)
 {
-    TT_Entry &tt_entry = transposition_table.probe(ss->board);
-    Move tt_move;
-    bool has_tt_move = false;
-
-    if (tt_entry.hash == ss->board.hash && tt_entry.flag() != BOUND::NONE)
-    {
-        tt_move = tt_entry.best_move;
-        has_tt_move = true;
-    }
 
     // just compare the info because they are different objects
     for (int i = 0; i < move_list.size(); ++i)
