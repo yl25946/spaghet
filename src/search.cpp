@@ -462,7 +462,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 ss->exclude_tt_move = false;
 
                 if (stopped)
-                    return;
+                    return 0;
 
                 game_history.pop_back();
 
