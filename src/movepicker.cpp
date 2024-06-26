@@ -15,7 +15,6 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
 
 void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold)
 {
-
     // just compare the info because they are different objects
     for (int i = 0; i < move_list.size(); ++i)
     {
@@ -25,20 +24,19 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         // make sure we don't get any weird values floating around in value of the orderedmove
         move_list.moves[i].score = 0;
 
-        if (tt_move == current_move)
+        if (ss->exclude_tt_move && ss->tt_move == move_list.moves[i])
         {
-            if (ss->exclude_tt_move)
-            {
-                --moves_remaining;
-                quiet_moves -= move_list.moves[i].is_quiet();
-                move_list.remove(i);
-                --i;
-                continue;
-            }
+            --moves_remaining;
+            quiet_moves -= move_list.moves[i].is_quiet();
+            move_list.remove(i);
+            --i;
+            continue;
+        }
 
-            if (has_tt_move)
-                // this ensures that the move comes first
-                move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
+        if (has_tt_move && tt_move == current_move)
+        {
+
+            move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions

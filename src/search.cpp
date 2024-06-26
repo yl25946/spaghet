@@ -318,7 +318,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     int static_eval = evaluate(board, thread_data.accumulators[ss->ply]);
 
     // apply reverse futility pruning
-    if (!inPV && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
+    if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
         return static_eval;
 
     // bailout
@@ -326,7 +326,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         return static_eval;
 
     // applies null move pruning
-    if (!(ss - 1)->null_moved && !inPV && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
 
         Board copy = board;
