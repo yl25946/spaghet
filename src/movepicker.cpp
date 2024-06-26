@@ -32,6 +32,8 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                 --moves_remaining;
                 quiet_moves -= move_list.moves[i].is_quiet();
                 move_list.remove(i);
+                --i;
+                continue;
             }
 
             if (has_tt_move)
