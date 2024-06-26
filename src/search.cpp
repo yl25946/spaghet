@@ -282,7 +282,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     {
         ss->pv.clear();
         (ss + 1)->pv.clear();
-        (ss + 2)->pv.clear();
     }
 
     // cut the search short if there's a draw
@@ -443,35 +442,35 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
         // move excluded to see if any other moves can beat it.
-        if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
-        {
-            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
+        // if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
+        // {
+        //     const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
 
-            if (is_accurate_tt_score)
-            {
-                const int reduced_depth = (depth - 1) / 2;
-                const int new_beta = tt_entry.score - depth * 2;
+        //     if (is_accurate_tt_score)
+        //     {
+        //         const int reduced_depth = (depth - 1) / 2;
+        //         const int new_beta = tt_entry.score - depth * 2;
 
-                ss->exclude_tt_move = true;
-                ss->tt_move = tt_move;
+        //         ss->exclude_tt_move = true;
+        //         ss->tt_move = tt_move;
 
-                game_history.push_back(copy.hash);
+        //         game_history.push_back(copy.hash);
 
-                const int tt_move_excluded_score = negamax<nonPV>(new_beta - 1, new_beta, reduced_depth, ss);
+        //         const int tt_move_excluded_score = negamax<nonPV>(new_beta - 1, new_beta, reduced_depth, ss);
 
-                ss->exclude_tt_move = false;
+        //         ss->exclude_tt_move = false;
 
-                if (stopped)
-                    return 0;
+        //         if (stopped)
+        //             return 0;
 
-                game_history.pop_back();
+        //         game_history.pop_back();
 
-                // No move was able to beat the TT entries score, so we extend the TT
-                // move's search
-                if (tt_move_excluded_score < new_beta)
-                    ++extensions;
-            }
-        }
+        //         // No move was able to beat the TT entries score, so we extend the TT
+        //         // move's search
+        //         if (tt_move_excluded_score < new_beta)
+        //             ++extensions;
+        //     }
+        // }
 
         new_depth += extensions;
 
