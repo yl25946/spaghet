@@ -148,16 +148,16 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     Board &board = ss->board;
 
     // we check if the TT has seen this before
-    TT_Entry &entry = transposition_table.probe(board);
+    TT_Entry &tt_entry = transposition_table.probe(board);
 
-    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
-    Move tt_move = entry.best_move;
+    bool has_tt_entry = tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    Move tt_move = tt_entry.best_move;
 
     // tt cutoff
-    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta))
+    // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    if (!inPV && !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.can_use_score(alpha, beta))
     {
-        return entry.usable_score(ss->ply);
+        return tt_entry.usable_score(ss->ply);
     }
 
     // creates a baseline
@@ -238,16 +238,19 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         }
     }
 
-    // add to TT
-    uint8_t bound_flag = BOUND::FAIL_LOW;
-
-    if (alpha >= beta)
+    // add to TT if we're not in SE
+    if (!ss->exclude_tt_move)
     {
-        // beta cutoff, fail high
-        bound_flag = BOUND::FAIL_HIGH;
-    }
+        uint8_t bound_flag = BOUND::FAIL_LOW;
 
-    transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
+        if (alpha >= beta)
+        {
+            // beta cutoff, fail high
+            bound_flag = BOUND::FAIL_HIGH;
+        }
+
+        transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
+    }
 
     // TODO: add check moves
     return best_eval;
@@ -296,17 +299,17 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
-    TT_Entry &entry = transposition_table.probe(board);
+    TT_Entry &tt_entry = transposition_table.probe(board);
 
-    bool has_tt_entry = entry.hash == board.hash && entry.flag() != BOUND::NONE;
-    Move tt_move = entry.best_move;
-    bool has_tt_move = entry.flag() != BOUND::NONE && entry.best_move != NO_MOVE;
+    bool has_tt_entry = tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    Move tt_move = tt_entry.best_move;
+    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
-    // if the entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && entry.hash == board.hash && entry.can_use_score(alpha, beta) && entry.depth >= depth)
+    // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
+    if (!inPV && !ss->exclude_tt_move && board.hash == board.hash && tt_entry.can_use_score(alpha, beta) && tt_entry.depth >= depth)
     {
-        return entry.usable_score(ss->ply);
+        return tt_entry.usable_score(ss->ply);
     }
 
     if (depth <= 0)
@@ -435,9 +438,32 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
         // move excluded to see if any other moves can beat it.
-        if (!in_root && depth >= 8 && move == tt_move && !stack->exclude_tt_move)
+        if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
         {
-                }
+            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
+
+            if (is_accurate_tt_score)
+            {
+                const int reduced_depth = (depth - 1) / 2;
+                const int new_beta = tt_entry.score - depth * 2;
+
+                ss->exclude_tt_move = true;
+                ss->tt_move = tt_move;
+
+                game_history.push_back(copy.hash);
+
+                const int tt_move_excluded_score = negamax<nonPV>(new_beta - 1, new_beta, reduced_depth, ss);
+
+                ss->exclude_tt_move = false;
+
+                game_history.pop_back();
+
+                // No move was able to beat the TT entries score, so we extend the TT
+                // move's search
+                if (tt_move_excluded_score < new_beta)
+                    ++extensions;
+            }
+        }
 
         new_depth += extensions;
 

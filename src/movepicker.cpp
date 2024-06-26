@@ -25,10 +25,18 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         // make sure we don't get any weird values floating around in value of the orderedmove
         move_list.moves[i].score = 0;
 
-        if (has_tt_move && tt_move == current_move)
+        if (tt_move == current_move)
         {
-            // this ensures that the move comes first
-            move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
+            if (ss->exclude_tt_move)
+            {
+                --moves_remaining;
+                quiet_moves -= move_list.moves[i].is_quiet();
+                move_list.remove(i);
+            }
+
+            if (has_tt_move)
+                // this ensures that the move comes first
+                move_list.moves[i].score = MAX_MOVE_ORDERING_SCORE;
             continue;
         }
         // if it is a promotion, forcibly makes queen promotions captures, queen promotions, knight promotion captures, knight promotions

@@ -106,9 +106,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Board board(start_position);
+    // Board board("8/5k2/8/8/P7/8/8/7K b - - 0 1");
     // std::cout
-    //     << evaluate(board);
+    //     << NNUE::eval(board);
 
     UCI_loop();
 
