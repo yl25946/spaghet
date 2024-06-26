@@ -587,20 +587,23 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     }
 
     // add to TT
-    uint8_t bound_flag = BOUND::EXACT;
+    if (!ss->exclude_tt_move)
+    {
+        uint8_t bound_flag = BOUND::EXACT;
 
-    if (alpha >= beta)
-    {
-        // beta cutoff, fail high
-        bound_flag = BOUND::FAIL_HIGH;
+        if (alpha >= beta)
+        {
+            // beta cutoff, fail high
+            bound_flag = BOUND::FAIL_HIGH;
+        }
+        else if (alpha <= original_alpha)
+        {
+            // failed to raise alpha, fail low
+            bound_flag = BOUND::FAIL_LOW;
+        }
+        if (best_eval != (-INF - 1))
+            transposition_table.insert(board, best_move, best_eval, depth, ss->ply, age, bound_flag);
     }
-    else if (alpha <= original_alpha)
-    {
-        // failed to raise alpha, fail low
-        bound_flag = BOUND::FAIL_LOW;
-    }
-    if (best_eval != (-INF - 1))
-        transposition_table.insert(board, best_move, best_eval, depth, ss->ply, age, bound_flag);
 
     return best_eval;
 }
