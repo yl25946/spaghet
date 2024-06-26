@@ -282,6 +282,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     {
         ss->pv.clear();
         (ss + 1)->pv.clear();
+        (ss + 2)->pv.clear();
     }
 
     // cut the search short if there's a draw
@@ -459,6 +460,9 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 const int tt_move_excluded_score = negamax<nonPV>(new_beta - 1, new_beta, reduced_depth, ss);
 
                 ss->exclude_tt_move = false;
+
+                if (stopped)
+                    return;
 
                 game_history.pop_back();
 
