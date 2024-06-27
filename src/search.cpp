@@ -379,9 +379,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         Board copy = board;
         Move curr_move = move_picker.next_move();
 
-        if (ss->exclude_tt_move && curr_move == ss->tt_move)
-            continue;
-
         copy.make_move(curr_move);
 
         if (!copy.was_legal())

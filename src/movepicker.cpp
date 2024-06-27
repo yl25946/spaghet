@@ -22,6 +22,15 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         Move current_move = move_list.moves[i];
         uint8_t move_flag = current_move.move_flag();
 
+        if (ss->exclude_tt_move && ss->tt_move == move_list.moves[i])
+        {
+            --moves_remaining;
+            quiet_moves -= move_list.moves[i].is_quiet();
+            move_list.remove(i);
+            --i;
+            continue;
+        }
+
         // make sure we don't get any weird values floating around in value of the orderedmove
         move_list.moves[i].score = 0;
 
