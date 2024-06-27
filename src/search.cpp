@@ -282,6 +282,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     {
         ss->pv.clear();
         (ss + 1)->pv.clear();
+        (ss + 2)->pv.clear();
     }
 
     // cut the search short if there's a draw
@@ -449,13 +450,13 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             if (is_accurate_tt_score)
             {
                 const int reduced_depth = (depth - 1) / 2;
-                const int new_beta = tt_entry.score - depth * 2;
+                const int singular_beta = tt_entry.score - depth * 2;
 
                 ss->exclude_tt_move = true;
                 ss->tt_move = tt_move;
 
-                const int tt_move_excluded_score = negamax<nonPV>(new_beta - 1, new_beta, reduced_depth, ss);
-                // const int tt_move_excluded_score = INF;
+                const int singular_score = negamax<nonPV>(singular_beta - 1, singular_beta, reduced_depth, ss);
+                // const int singular_score = INF;
 
                 ss->exclude_tt_move = false;
 
@@ -464,7 +465,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
                 // No move was able to beat the TT entries score, so we extend the TT
                 // move's search
-                if (tt_move_excluded_score < new_beta)
+                if (singular_score < singular_beta)
                     ++extensions;
             }
         }
