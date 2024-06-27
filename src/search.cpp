@@ -307,9 +307,12 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.can_use_score(alpha, beta) && tt_entry.depth >= depth)
+    if (!inPV && !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.depth >= depth)
     {
-        return tt_entry.usable_score(ss->ply);
+        if (tt_entry.can_use_score(alpha, beta))
+            return tt_entry.usable_score(ss->ply);
+        else
+            --depth;
     }
 
     if (depth <= 0)
