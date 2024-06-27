@@ -282,7 +282,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
     {
         ss->pv.clear();
         (ss + 1)->pv.clear();
-        (ss + 2)->pv.clear();
     }
 
     // cut the search short if there's a draw
@@ -417,17 +416,6 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
         const uint64_t nodes_before_search = nodes;
 
-        // now that we haven't pruned anything, we can update the search stack
-        (ss + 1)->board = copy;
-        (ss)->move_played = curr_move;
-
-        // we can update the accumulators now
-        thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
-        thread_data.accumulators[ss->ply + 1].make_move(board, curr_move);
-
-        // we can update threefold
-        game_history.push_back(copy.hash);
-
         if (is_quiet)
             quiet_moves.insert(curr_move);
         else if (!curr_move.is_promotion())
@@ -471,6 +459,17 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         }
 
         new_depth += extensions;
+
+        // now that we haven't pruned anything, we can update the search stack
+        (ss + 1)->board = copy;
+        (ss)->move_played = curr_move;
+
+        // we can update the accumulators now
+        thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
+        thread_data.accumulators[ss->ply + 1].make_move(board, curr_move);
+
+        // we can update threefold
+        game_history.push_back(copy.hash);
 
         int current_eval;
 
