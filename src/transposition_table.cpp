@@ -108,7 +108,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 
     TT_Entry &tt_entry = hashtable[hash_location];
 
-    if (age - 4 <= tt_entry.age() && depth < tt_entry.depth && tt_entry.flag() == BOUND::EXACT)
+    if (depth < tt_entry.depth && tt_entry.flag() == BOUND::EXACT)
         return;
 
     // TODO: ADD BETTER TT REPLACEMENT ALGO
