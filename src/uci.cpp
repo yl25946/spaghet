@@ -156,10 +156,7 @@ void UCI_loop()
             threads.terminate();
             // update history before searching to prevent race conditions
             // for (int i = 0; i < thread_data.size(); ++i)
-            //     thread_data[i].main_history.update();
-
-            // now that we've called go, we can increase the age
-            ++info.age;
+            //     thread_data[i].main_history.update()
 
             for (int i = 0; i < thread_data.size(); ++i)
             {
@@ -183,6 +180,9 @@ void UCI_loop()
             }
 
             threads.go();
+
+            // now that we've called go, we can increase the age
+            ++info.age;
         }
         else if (!line.compare(0, 4, "stop"))
         {
