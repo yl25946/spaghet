@@ -5,6 +5,7 @@
 #include "transposition_table.h"
 #include "history.h"
 #include "see.h"
+#include "thread_data.h"
 #include "movelist.h"
 #include "search_stack.h"
 
@@ -46,5 +47,5 @@ public:
 
     bool has_next();
 
-    void score(const Board &board, SearchStack *ss, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, Killers &killers, int threshold);
+    void score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold);
 };
