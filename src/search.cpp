@@ -465,7 +465,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // Negative Extensions: 
                 // if we are in a cutnode but the tt is not assumed to fail high 
                 else if (cutnode)
-                    extensions = -2;
+                    extensions -= 2;
             }
         }
 
