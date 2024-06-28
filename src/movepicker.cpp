@@ -108,7 +108,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             //     move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
 
             // adds counter move history bonus
-            if (ply >= 1 && !(ss - 1)->null_moved)
+            if (ply >= 1 && !(ss - 1)->null_moved && (ss - 1)->move_played.is_quiet())
                 move_list.moves[i].score += thread_data.conthist.move_value(ss->board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
 
             // check killer moves

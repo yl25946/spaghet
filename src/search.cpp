@@ -122,7 +122,7 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
     //     thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
 
     // updates counter move history
-    if (ply >= 1 && !(ss - 1)->null_moved)
+    if (ply >= 1 && !(ss - 1)->null_moved && (ss - 1)->move_played.is_quiet())
         thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 1)->board, (ss - 1)->move_played, depth);
 }
 
