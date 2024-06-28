@@ -414,7 +414,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             }
 
             // applies main history pruning
-            if (is_quiet && thread_data.main_history.move_value(curr_move, board.side_to_move) < -4000 * depth)
+            if (!in_root && !inPV && is_quiet && thread_data.main_history.move_value(curr_move, board.side_to_move) < -4000 * depth)
                 continue;
         }
 
