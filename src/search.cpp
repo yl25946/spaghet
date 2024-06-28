@@ -412,6 +412,10 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 move_picker.skip_quiets();
                 continue;
             }
+
+            // applies main history pruning
+            if (is_quiet && thread_data.main_history.move_value(curr_move, board.side_to_move) < -4000 * depth)
+                continue;
         }
 
         const uint64_t nodes_before_search = nodes;
