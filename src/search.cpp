@@ -456,10 +456,15 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 if (singular_score < singular_beta)
                     ++extensions;
 
-                // Multicut: Since the sigular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
+                // Multicut: Since the signular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
                 // is larger than beta, we can cutoff
                 else if (singular_beta >= beta)
                     return singular_beta;
+
+                // Negative Extensions: if there is a fail high without TT move but singular beta is not high enough for the seacrh to fail high,
+                // it's better to seacrh other moves
+                else if(tt_entry.score >= beta)
+                    extensions -= 3;
             }
         }
 
