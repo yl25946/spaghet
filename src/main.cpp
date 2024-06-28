@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
                 Board board(fen);
                 TranspositionTable tt(16);
                 ThreadData single_thread_data;
-                Time time("go depth 12");
+                Time time("go depth 11");
 
                 Searcher searcher(board, moves, tt, single_thread_data, 0);
                 time.set_time(searcher);
