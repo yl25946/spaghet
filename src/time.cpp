@@ -60,12 +60,34 @@ Time::Time(const std::string &go_command)
         end_line = go_command.find(" ", go_pt);
         move_time = stoi(go_command.substr(go_pt, end_line - go_pt));
     }
+
+    go_pt = go_command.find("nodes");
+    if (go_pt != std::string::npos)
+    {
+        go_pt += 6;
+        end_line = go_command.find(" ", go_pt);
+        nodes = stoi(go_command.substr(go_pt, end_line - go_pt));
+        has_nodes = true;
+    }
 }
 
 // time controls yoinked from Alexandria
 void Time::set_time(Searcher &searcher)
 {
     searcher.start_time = get_time();
+
+    if (has_nodes)
+    {
+        searcher.max_nodes = nodes;
+        searcher.nodes_set = true;
+
+        searcher.optimum_stop_time_duration = UINT64_MAX;
+        searcher.max_stop_time_duration = UINT64_MAX;
+        searcher.optimum_stop_time = UINT64_MAX;
+        searcher.max_stop_time = UINT64_MAX;
+
+        return;
+    }
 
     if (has_depth)
     {
