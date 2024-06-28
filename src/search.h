@@ -53,6 +53,7 @@ public:
 
     // if we're playing on btime, wtime, binc, winc commands
     bool time_set = false;
+    bool nodes_set = false;
 
     // current deth for iterative deepening
     int curr_depth = 0;
@@ -68,7 +69,7 @@ public:
 
     // represents the number of nodes for a depths search
     uint64_t nodes = 0;
-    // uint64_t total_nodes = 0;
+    uint64_t max_nodes = UINT64_MAX;
 
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 

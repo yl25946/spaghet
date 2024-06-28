@@ -720,6 +720,9 @@ void Searcher::search()
             std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
+        if (nodes > max_nodes)
+            break;
+
         if (best_move == previous_best_move)
         {
             best_move_stability_factor = std::min(best_move_stability_factor + 1, 4);
@@ -729,6 +732,8 @@ void Searcher::search()
             best_move_stability_factor = 0;
             previous_best_move = best_move;
         }
+
+        // std::cout << "previous best move: " << previous_best_move.to_string() << "\n";
 
         if (root_depth > 7 && time_set)
         {
@@ -742,5 +747,10 @@ void Searcher::search()
     }
 
     // printf("bestmove %s\n", best_move.to_string().c_str());
-    std::cout << "bestmove " << best_move.to_string() << " " << std::endl;
+
+    if (nodes_set)
+        std::cout << "bestmove " << previous_best_move.to_string() << " " << std::endl;
+    else
+        std::cout
+            << "bestmove " << best_move.to_string() << " " << std::endl;
 }
