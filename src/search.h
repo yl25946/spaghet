@@ -90,7 +90,7 @@ public:
     template <bool inPV>
     int quiescence_search(int alpha, int beta, SearchStack *ss);
     template <bool inPV>
-    int negamax(int alpha, int beta, int depth, SearchStack *ss);
+    int negamax(int alpha, int beta, int depth, bool cutnode,  SearchStack *ss);
 
     void update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth);
 
