@@ -870,5 +870,5 @@ int pesto_eval(Board &board)
 
 int evaluate(const Board &board, const Accumulator &accumulator)
 {
-    return NNUE::eval(accumulator, board.side_to_move);
+    return NNUE::eval(board, accumulator);
 }

@@ -187,10 +187,23 @@ inline int32_t screlu(int16_t value)
     return clipped * clipped;
 }
 
+inline int32_t calculate_bucket(const Board &board)
+{
+    int active_neurons = 0;
+
+    for (int i = 0; i < 6; ++i)
+        active_neurons += count_bits(board.pieces[i]);
+
+    return (active_neurons - 2) / BUCKET_DIVISOR;
+}
+
 void NNUE::init(const char *file)
 {
     // open the nn file
     FILE *nn = fopen(file, "rb");
+
+    // this format will be [stm][hl neuron][bucket]
+    int16_t untransposed_output_weights[2][HIDDEN_SIZE][OUTPUT_BUCKETS];
 
     // if it's not invalid read the config values from it
     if (nn)
@@ -202,8 +215,8 @@ void NNUE::init(const char *file)
 
         read += fread(net.feature_weights, sizeof(int16_t), INPUT_WEIGHTS * HIDDEN_SIZE, nn);
         read += fread(net.feature_bias, sizeof(int16_t), HIDDEN_SIZE, nn);
-        read += fread(net.output_weights, sizeof(int16_t), HIDDEN_SIZE * 2, nn);
-        read += fread(&net.output_bias, sizeof(int16_t), 1, nn);
+        read += fread(untransposed_output_weights, sizeof(int16_t), HIDDEN_SIZE * 2 * OUTPUT_BUCKETS, nn);
+        read += fread(net.output_bias, sizeof(int16_t), OUTPUT_BUCKETS, nn);
 
         if (read != objectsExpected)
         {
@@ -223,16 +236,39 @@ void NNUE::init(const char *file)
         memoryIndex += INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t);
         std::memcpy(net.feature_bias, &gEVALData[memoryIndex], HIDDEN_SIZE * sizeof(int16_t));
         memoryIndex += HIDDEN_SIZE * sizeof(int16_t);
-
-        std::memcpy(net.output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * sizeof(int16_t) * 2);
-        memoryIndex += HIDDEN_SIZE * sizeof(int16_t) * 2;
-        std::memcpy(&net.output_bias, &gEVALData[memoryIndex], 1 * sizeof(int16_t));
+        std::memcpy(untransposed_output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2);
+        memoryIndex += HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2;
+        std::memcpy(net.output_bias, &gEVALData[memoryIndex], OUTPUT_BUCKETS * sizeof(int16_t));
     }
+
+    for (int stm = 0; stm < 2; ++stm)
+        for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
+            for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
+                net.output_weights[bucket][stm][weight] = untransposed_output_weights[stm][weight][bucket];
+
+    // for (int stm = 0; stm < 2; ++stm)
+    //     for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
+    //         for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
+    //         {
+    //             const int srcIdx = stm * weight * OUTPUT_BUCKETS + bucket;
+    //             const int dstIdx = bucket * 2 * HIDDEN_SIZE + stm * weight;
+
+    //             if (dstIdx / (HIDDEN_SIZE * OUTPUT_BUCKETS) >= 2 || (dstIdx % (HIDDEN_SIZE * OUTPUT_BUCKETS)) / HIDDEN_SIZE >= OUTPUT_BUCKETS || dstIdx % HIDDEN_SIZE >= HIDDEN_SIZE)
+    //                 std::cout << "error";
+
+    //             net.output_weights[bucket][stm][weight] = untransposed_output_weights[srcIdx];
+    //         }
+
+    // std::memcpy(net.output_weights, transposedL1Weights, HIDDEN_SIZE * sizeof(int16_t) * 2 * OUTPUT_BUCKETS);
 }
 
 int NNUE::eval(const Board &board)
 {
     std::array<std::array<int32_t, HIDDEN_SIZE>, 2> accumulator;
+
+    const int bucket = calculate_bucket(board);
+
+    std::cout << bucket << " ";
 
     // copies over all the biases
 
@@ -283,30 +319,32 @@ int NNUE::eval(const Board &board)
     int eval = 0;
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[0][i];
+        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[bucket][0][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[1][i];
+        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
 
     eval /= L1Q;
-    eval += net.output_bias;
+    eval += net.output_bias[bucket];
     eval = (eval * SCALE) / (L1Q * OutputQ);
 
     return eval;
 }
 
-int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
+int NNUE::eval(const Board &board, const Accumulator &accumulator)
 {
+    const int bucket = calculate_bucket(board);
+
     int eval = 0;
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[side_to_move][i]) * net.output_weights[0][i];
+        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[bucket][0][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[side_to_move ^ 1][i]) * net.output_weights[1][i];
+        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
 
     eval /= L1Q;
-    eval += net.output_bias;
+    eval += net.output_bias[bucket];
     eval = (eval * SCALE) / (L1Q * OutputQ);
 
     return eval;
