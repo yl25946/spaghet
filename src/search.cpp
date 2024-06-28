@@ -455,8 +455,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 // move's search
                 if (singular_score < singular_beta)
                     // Top tier engines often double extend
-                    extensions += 1 + inPV;
-                    
+                    extensions += 2 - inPV;
+
                 // Multicut: Since the sigular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
                 // is larger than beta, we can cutoff
                 else if (singular_beta >= beta)
