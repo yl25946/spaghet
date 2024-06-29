@@ -491,10 +491,16 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
 
+            if (stopped)
+                return 0;
+
             // Do a full depth search if LMR search fails high
             if (current_eval > alpha)
             {
                 current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
+
+                if (stopped)
+                    return 0;
             }
         }
         // Principle Variation Search: Assume that the move with the highest score is the principle variaton, and everything else we
@@ -502,10 +508,16 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         else if (!inPV || move_picker.moves_seen() > 0)
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
 
+        if (stopped)
+            return 0;
+
         // PV Search, we only search this if we are in a PV and it's our first move or a move has failed high
         if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
         {
             current_eval = -negamax<PV>(-beta, -alpha, new_depth, ss + 1);
+
+            if (stopped)
+                return 0;
         }
 
         move_picker.update_moves_seen();
