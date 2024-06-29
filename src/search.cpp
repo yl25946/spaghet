@@ -497,9 +497,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         {
             int reduction = 0;
 
-            if(cutnode)
-                reduction += 1;
-
             // applies the late move reduction
             if (move_picker.moves_seen() > 1)
             {
@@ -520,7 +517,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             if (current_eval > alpha)
             {
                 // we'd like this search to raise alpha, which means we want this seach to not fail high
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1 ,!cutnode, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth,!cutnode, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -529,7 +526,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // so we'll assume that this node is the pv move, and then do a full window search.
                 if (current_eval > alpha && inPV)
                 {
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false,  ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, new_depth, false,  ss + 1);
 
                     if (stopped)
                         return 0;
