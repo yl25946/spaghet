@@ -476,7 +476,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // we can update threefold
         game_history.push_back(copy.hash);
 
-        int current_eval;
+        int reduction = 0;
+        int current_eval = INF + 1;
 
         // don't do pvs on the first node
         if (move_picker.moves_seen() == 0)
@@ -493,13 +494,14 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             if (move_picker.moves_seen() > 1)
             {
                 if (is_quiet)
-                    new_depth -= lmr_reduction_quiet(depth, move_picker.moves_seen());
+                    reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
                 // noisy move
                 else
-                    new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+                    reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+
+                // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
             }
-            // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
 
             if (stopped)
                 return 0;
