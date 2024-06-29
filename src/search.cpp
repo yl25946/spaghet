@@ -461,9 +461,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 else if (singular_beta >= beta)
                     return singular_beta;
 
-
-                // Negative Extensions: 
-                // if we are in a cutnode but the tt is not assumed to fail high 
+                // Negative Extensions:
+                // if we are in a cutnode but the tt is not assumed to fail high
                 else if (cutnode)
                     extensions -= 2;
             }
@@ -482,58 +481,36 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // we can update threefold
         game_history.push_back(copy.hash);
 
-        int current_eval;
+        int current_eval = -INF;
 
-        // don't do pvs on the first node
-        if (move_picker.moves_seen() == 0)
+        int reduction = 0;
+
+        // applies the late move reduction
+        if (move_picker.moves_seen() > 1)
         {
+            if (is_quiet)
+                reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
+            // noisy move
+            else
+                reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
 
-            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, false,  ss + 1);
-
-            if (stopped)
-                return 0;
-        }
-        else
-        {
-            // applies the late move reduction
-            if (move_picker.moves_seen() > 1)
-            {
-                if (is_quiet)
-                    new_depth -= lmr_reduction_quiet(depth, move_picker.moves_seen());
-                // noisy move
-                else
-                    new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
-            }
-            // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, true,  ss + 1);
-
-            if (stopped)
-                return 0;
-
-            // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
-            // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
-            if (current_eval > alpha)
-            {
-                // we'd like this search to raise alpha, which means we want this seach to not fail high
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1,!cutnode, ss + 1);
-
-                if (stopped)
-                    return 0;
-
-                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
-                // so we'll assume that this node is the pv move, and then do a full window search.
-                if (current_eval > alpha && inPV)
-                {
-
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false,  ss + 1);
-
-                    if (stopped)
-                        return 0;
-                }
-            }
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, !cutnode, ss + 1);
         }
 
-        move_picker.update_moves_seen();
+        else if (!inPV || move_picker.moves_seen() > 0)
+        {
+            // we'd like this search to raise alpha, which means we want this seach to not fail high
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, !cutnode, ss + 1);
+        }
+
+        // we only need to do a full window seacrh if we're in a PV and it's the first move or one of our previous seacrhes failed high
+        if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
+            current_eval = -negamax<PV>(-alpha, -beta, new_depth, false);
+
+        // we do a full window search either on the first move or
+        if (current_eval > alpha() && (move_picker.moves_seen))
+
+            move_picker.update_moves_seen();
 
         // stopped searching that line, so we can get rid of the hash
         game_history.pop_back();
@@ -686,7 +663,7 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(alpha, beta, adjusted_depth, false,  &thread_data.search_stack[4]);
+            best_score = negamax<PV>(alpha, beta, adjusted_depth, false, &thread_data.search_stack[4]);
 
             if (stopped)
                 break;
