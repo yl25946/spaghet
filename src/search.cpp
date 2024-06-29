@@ -502,7 +502,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
             // the ideas is that we should easily be able to fail low/high earlier if we have a noisy move
             if(!tt_move.is_quiet())
-                reductions -= 1;
+                reduction += 1;
 
             // applies the late move reduction
             if (move_picker.moves_seen() > 1)
