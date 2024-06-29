@@ -525,7 +525,15 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 if (current_eval > alpha && inPV)
                 {
 
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false,  ss + 1);
+                    int negascout = -negamax<PV>(-beta, -current_eval, depth - 1, false,  ss + 1);
+
+                    if (stopped)
+                        return 0;
+
+                    if(negascout <= current_eval)
+                        current_eval = -negamax<PV>(-negascout, -alpha, depth - 1, false, ss + 1);
+                    else
+                        current_eval = negascout;
 
                     if (stopped)
                         return 0;
