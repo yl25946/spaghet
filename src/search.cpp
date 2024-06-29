@@ -257,7 +257,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 }
 
 template <bool inPV>
-int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
+int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack *ss)
 {
     ++nodes;
 
@@ -342,7 +342,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // since we didn't make a move, we can just copy the accumulators over
         thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
 
-        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, ss + 1);
+        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, !cutnode, ss + 1);
 
         ss->null_moved = false;
 
@@ -443,7 +443,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 ss->exclude_tt_move = true;
                 ss->tt_move = tt_move;
 
-                const int singular_score = negamax<nonPV>(singular_beta - 1, singular_beta, reduced_depth, ss);
+                const int singular_score = negamax<nonPV>(singular_beta - 1, singular_beta, reduced_depth, cutnode, ss);
                 // const int singular_score = INF;
 
                 ss->exclude_tt_move = false;
@@ -461,10 +461,15 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 else if (singular_beta >= beta)
                     return singular_beta;
 
+
                 // Negative Extensions: if there is a fail high without TT move but singular beta is not high enough for the seacrh to fail high,
                 // it's better to seacrh other moves
                 else if(tt_entry.score >= beta)
                     extensions -= 3;
+
+                // if we are in a cutnode but the tt is not assumed to fail high 
+                else if (cutnode)
+                    extensions -= 2;
             }
         }
 
@@ -487,7 +492,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         if (move_picker.moves_seen() == 0)
         {
 
-            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, false,  ss + 1);
 
             if (stopped)
                 return 0;
@@ -504,7 +509,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, true,  ss + 1);
 
             if (stopped)
                 return 0;
@@ -513,7 +518,8 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
             if (current_eval > alpha)
             {
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
+                // we'd like this search to raise alpha, which means we want this seach to not fail high
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1,!cutnode, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -523,7 +529,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 if (current_eval > alpha && inPV)
                 {
 
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false,  ss + 1);
 
                     if (stopped)
                         return 0;
@@ -684,7 +690,7 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(alpha, beta, adjusted_depth, &thread_data.search_stack[4]);
+            best_score = negamax<PV>(alpha, beta, adjusted_depth, false,  &thread_data.search_stack[4]);
 
             if (stopped)
                 break;
