@@ -498,7 +498,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                     reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
                 // noisy move
                 else
-                    new_depth += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+                    reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
