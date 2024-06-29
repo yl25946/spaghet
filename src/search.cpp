@@ -489,17 +489,19 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         }
         else
         {
+            int reduction = 0;
+
             // applies the late move reduction
             if (move_picker.moves_seen() > 1)
             {
                 if (is_quiet)
-                    new_depth -= lmr_reduction_quiet(depth, move_picker.moves_seen());
+                    reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
                 // noisy move
                 else
-                    new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+                    new_depth += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
 
             if (stopped)
                 return 0;
@@ -508,7 +510,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
             if (current_eval > alpha)
             {
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -518,7 +520,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 if (current_eval > alpha && inPV)
                 {
 
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, new_depth, ss + 1);
 
                     if (stopped)
                         return 0;
