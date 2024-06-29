@@ -505,12 +505,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         // we only need to do a full window seacrh if we're in a PV and it's the first move or one of our previous seacrhes failed high
         if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
-            current_eval = -negamax<PV>(-alpha, -beta, new_depth, false);
+            current_eval = -negamax<PV>(-beta, -alpha, new_depth, false, ss + 1);
 
-        // we do a full window search either on the first move or
-        if (current_eval > alpha() && (move_picker.moves_seen))
-
-            move_picker.update_moves_seen();
+        move_picker.update_moves_seen();
 
         // stopped searching that line, so we can get rid of the hash
         game_history.pop_back();
