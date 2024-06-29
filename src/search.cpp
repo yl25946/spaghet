@@ -461,9 +461,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 else if (singular_beta >= beta)
                     return singular_beta;
 
-
-                // Negative Extensions: 
-                // if we are in a cutnode but the tt is not assumed to fail high 
+                // Negative Extensions:
+                // if we are in a cutnode but the tt is not assumed to fail high
                 else if (cutnode)
                     extensions -= 2;
             }
@@ -488,7 +487,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (move_picker.moves_seen() == 0)
         {
 
-            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, false,  ss + 1);
+            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, false, ss + 1);
 
             if (stopped)
                 return 0;
@@ -505,7 +504,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     new_depth -= lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
             }
             // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, true,  ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
 
             if (stopped)
                 return 0;
@@ -515,7 +514,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             if (current_eval > alpha)
             {
                 // we'd like this search to raise alpha, which means we want this seach to not fail high
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1,!cutnode, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, !cutnode, ss + 1);
 
                 if (stopped)
                     return 0;
@@ -525,7 +524,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 if (current_eval > alpha && inPV)
                 {
 
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false,  ss + 1);
+                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, false, ss + 1);
 
                     if (stopped)
                         return 0;
@@ -686,7 +685,7 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(alpha, beta, adjusted_depth, false,  &thread_data.search_stack[4]);
+            best_score = negamax<PV>(alpha, beta, adjusted_depth, false, &thread_data.search_stack[4]);
 
             if (stopped)
                 break;
