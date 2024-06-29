@@ -103,9 +103,10 @@ void UCI_loop()
     // Searcher searcher(board, move_list, UINT64_MAX);
 
     std::cout
-        << "id name Spaghet Pesto 1.0\n"
+        << "id name Spaghet MariNNara 1.0\n"
         << "id author Li Ying\n"
         << "option name Hash type spin default 16 min 1 max 1024\n"
+        << "option name Threads type spin default 1 min 1 max 1\n"
         << "uciok" << std::endl;
 
     // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
@@ -213,7 +214,7 @@ void UCI_loop()
             // std::cout << info.hash_size << "\n";
             transposition_table.resize(info.hash_size);
         }
-        else if (!line.compare(0, 14, "option Threads"))
+        else if (!line.compare(0, 28, "setoption name Threads value"))
         {
             // no op because no multithreading
         }
@@ -227,9 +228,10 @@ void UCI_loop()
         }
         else if (!line.compare(0, 3, "uci"))
         {
-            std::cout << "id name Spaghet Pesto 1.0\n"
+            std::cout << "id name Spaghet MariNNara 1.0\n"
                       << "id author Li Ying\n"
                       << "option name Hash type spin default 16 min 1 max 1024\n"
+                      << "option name Threads type spin default 1 min 1 max 1\n"
                       << "uciok" << std::endl;
         }
         else if (!line.compare(0, 4, "quit"))

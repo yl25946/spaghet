@@ -14,7 +14,10 @@ public:
     int64_t white_increment = 0;
     int64_t black_increment = 0;
 
+    uint64_t nodes = 0;
+
     bool has_depth = false;
+    bool has_nodes = false;
 
     uint64_t move_time = 0;
 
