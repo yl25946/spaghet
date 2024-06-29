@@ -505,7 +505,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         // PV Search, we only search this if we are in a PV and it's our first move or a move has failed high
         if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
         {
-            current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
+            current_eval = -negamax<PV>(-beta, -alpha, new_depth, ss + 1);
         }
 
         move_picker.update_moves_seen();
