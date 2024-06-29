@@ -500,8 +500,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         {
             int reduction = 0;
 
-            if(cutnode)
-                reduction += 1;
+            // the ideas is that we should easily be able to fail low/high later i
+            if(!tt_move.is_quiet())
+                reductions -= 1;
 
             // applies the late move reduction
             if (move_picker.moves_seen() > 1)
