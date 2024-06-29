@@ -500,7 +500,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         {
             int reduction = 0;
 
-            // the ideas is that we should easily be able to fail low/high later i
+            // the ideas is that we should easily be able to fail low/high earlier if we have a noisy move
             if(!tt_move.is_quiet())
                 reductions -= 1;
 
