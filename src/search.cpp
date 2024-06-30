@@ -477,7 +477,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         game_history.push_back(copy.hash);
 
         int reduction = 0;
-        int current_eval = INF + 1;
+        int current_eval;
 
         // don't do pvs on the first node
         if (move_picker.moves_seen() == 0)
@@ -508,7 +508,7 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
 
             // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
             // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
-            if (current_eval > alpha)
+            if (current_eval > alpha || move_picker.moves_seen() == 1)
             {
                 current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
 
