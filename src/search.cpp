@@ -460,6 +460,11 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
                 // is larger than beta, we can cutoff
                 else if (singular_beta >= beta)
                     return singular_beta;
+
+                // Negative Extensions: if there is a fail high without TT move but singular beta is not high enough for the seacrh to fail high,
+                // it's better to seacrh other moves
+                else if (tt_entry.score >= beta)
+                    extensions -= 3;
             }
         }
 
