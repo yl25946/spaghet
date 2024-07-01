@@ -492,7 +492,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             reduction += 1;
 
         if (!tt_move.is_quiet())
-            reduction += 2;
+            reduction += 1;
 
         // Late Move Reduction: we've ordered the move in order of importance. We reduce the
         // the depths of later moves because they are less important
