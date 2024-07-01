@@ -484,53 +484,35 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
         int reduction = 0;
         int current_eval = INF + 1;
 
-        // don't do pvs on the first node
-        if (move_picker.moves_seen() == 0)
+        // Late Move Reduction: we've ordered the move in order of importance. We reduce the
+        // the depths of later moves because they are less important
+        if (move_picker.moves_seen() > 1)
         {
+            if (is_quiet)
+                reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
+            // noisy move
+            else
+                reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
 
-            current_eval = -negamax<inPV>(-beta, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
 
-            if (stopped)
-                return 0;
-        }
-        else
-        {
-            // applies the late move reduction
-            if (move_picker.moves_seen() > 1)
-            {
-                if (is_quiet)
-                    reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
-                // noisy move
-                else
-                    reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
-
-                // null windows search, basically checking if if returns alpha or alpha + 1 to indicate if there's a better move
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, ss + 1);
-            }
-
-            if (stopped)
-                return 0;
-
-            // if this node raises alpha that means that we should investigate a bit more with a full length search, but still null-window
-            // if this one fails high, using PVS we assume that it is a PV-node, so we re-search with a full window
+            // if the search fails high we do a full depth research
             if (current_eval > alpha)
             {
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
-
-                if (stopped)
-                    return 0;
-
-                // pvs implementation, if we don 't have a fail low from that search, that means that our previous move wasn't our best move,
-                // so we'll assume that this node is the pv move, and then do a full window search.
-                if (current_eval > alpha && inPV)
-                {
-
-                    current_eval = -negamax<PV>(-beta, -alpha, depth - 1, ss + 1);
-
-                    if (stopped)
-                        return 0;
-                }
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
             }
+        }
+
+        // full depth search
+        else if (!inPV || move_picker.moves_seen() > 0)
+        {
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
+        }
+
+        // if we are in a PV node, we do a full window search on the first move or a fail high
+        if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
+        {
+            current_eval = -negamax<PV>(-beta, -alpha, new_depth, ss + 1);
         }
 
         move_picker.update_moves_seen();
