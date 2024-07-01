@@ -499,14 +499,14 @@ int Searcher::negamax(int alpha, int beta, int depth, SearchStack *ss)
             // if the search fails high we do a full depth research
             if (current_eval > alpha)
             {
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
             }
         }
 
         // full depth search
         else if (!inPV || move_picker.moves_seen() > 0)
         {
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, ss + 1);
+            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, ss + 1);
         }
 
         // if we are in a PV node, we do a full window search on the first move or a fail high
