@@ -467,8 +467,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     extensions -= 2;
 
                 // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
-                else if (cutnode)
-                    extensions -= 2;
+                // else if (cutnode)
+                //     extensions -= 2;
             }
         }
 
@@ -487,6 +487,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         int reduction = 0;
         int current_eval;
+
+        if (cutnode)
+            reduction += 1;
 
         // Late Move Reduction: we've ordered the move in order of importance. We reduce the
         // the depths of later moves because they are less important
