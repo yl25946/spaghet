@@ -499,6 +499,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
 
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, true, ss + 1);
+
+            // if the search fails high we do a full depth research
+            if (current_eval > alpha)
+            {
+                current_eval = -negamax<nonPV>(-alpha - 1, alpha, new_depth, !cutnode, ss + 1);
+            }
         }
 
         // full depth search
