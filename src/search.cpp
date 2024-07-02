@@ -29,6 +29,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     thread_data.search_stack[4].board = board;
     thread_data.accumulators[0] = Accumulator(board);
+    thread_data.search_stack[4].updated_accumulator = true;
 
     this->age = age;
     this->transposition_table = transposition_table;
@@ -161,7 +162,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators[ss->ply]);
+    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators, ss);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -315,7 +316,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth <= 0)
         return quiescence_search<inPV>(alpha, beta, ss);
 
-    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators[ss->ply]);
+    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
 
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)

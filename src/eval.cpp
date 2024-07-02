@@ -868,7 +868,31 @@ int pesto_eval(Board &board)
     return actual_score;
 }
 
-int evaluate(const Board &board, const Accumulator &accumulator)
+int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
-    return NNUE::eval(accumulator, board.side_to_move);
+    int counter = 0;
+    SearchStack *ss_copy = ss;
+
+    // we keep going until we have a clean, updated accumulator
+    while (!ss_copy->updated_accumulator)
+    {
+        ++counter;
+        --ss_copy;
+    }
+
+    int starting = ss_copy->ply;
+    const int ending = ss->ply;
+
+    for (; starting < ending; ++starting, ++ss_copy)
+    {
+        accumulators[starting + 1] = accumulators[starting];
+        (ss + 1)->updated_accumulator = true;
+
+        if (ss_copy->null_moved)
+            continue;
+
+        accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+    }
+
+    return NNUE::eval(accumulators[ending], board.side_to_move);
 }
