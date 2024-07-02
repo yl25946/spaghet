@@ -886,7 +886,7 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
     for (; starting < ending; ++starting, ++ss_copy)
     {
         accumulators[starting + 1] = accumulators[starting];
-        (ss + 1)->updated_accumulator = true;
+        (ss_copy + 1)->updated_accumulator = true;
 
         if (ss_copy->null_moved)
             continue;
