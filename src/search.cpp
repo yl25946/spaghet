@@ -326,6 +326,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // applies null move pruning
     if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
     {
+        int r = depth / 3 + 4;
 
         Board copy = board;
         copy.make_null_move();
@@ -338,7 +339,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         (ss + 1)->board = copy;
         (ss + 1)->updated_accumulator = false;
 
-        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, !cutnode, ss + 1);
+        int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - r, !cutnode, ss + 1);
 
         ss->null_moved = false;
 
