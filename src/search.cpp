@@ -161,7 +161,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    int stand_pat = evaluate(board, thread_data.accumulators[ss->ply]);
+    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators[ss->ply]);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -249,7 +249,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             bound_flag = BOUND::FAIL_HIGH;
         }
 
-        transposition_table.insert(board, best_move, best_eval, 0, ss->ply, age, bound_flag);
+        transposition_table.insert(board, best_move, best_eval, stand_pat, 0, ss->ply, age, bound_flag);
     }
 
     // TODO: add check moves
@@ -315,7 +315,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth <= 0)
         return quiescence_search<inPV>(alpha, beta, ss);
 
-    int static_eval = evaluate(board, thread_data.accumulators[ss->ply]);
+    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators[ss->ply]);
 
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
@@ -607,7 +607,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             bound_flag = BOUND::FAIL_LOW;
         }
         if (best_eval != (-INF - 1))
-            transposition_table.insert(board, best_move, best_eval, depth, ss->ply, age, bound_flag);
+            transposition_table.insert(board, best_move, best_eval, static_eval, depth, ss->ply, age, bound_flag);
     }
 
     return best_eval;
