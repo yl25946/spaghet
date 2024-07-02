@@ -17,10 +17,11 @@ public:
     uint8_t depth;
     // least 2 significant bits is the flag, and the rest stores the age, or the number of times we've called "go"
     uint8_t flag_and_age;
+    int16_t static_eval;
 
     // dummy tt entry that allows us to find the size of the TT
     TT_Entry();
-    TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
+    TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
     uint8_t flag() const;
     // moded to 64
     uint8_t age() const;
@@ -40,7 +41,7 @@ public:
     TranspositionTable(uint64_t size);
     // clears the transposition table
     void resize(uint64_t size);
-    void insert(const Board &board, Move best_move, int16_t best_score, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
+    void insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
     void clear();
     // prints out permille what percent of the hashtable is full
     int hash_full();

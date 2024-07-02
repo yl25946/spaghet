@@ -11,10 +11,11 @@ TT_Entry::TT_Entry()
     flag_and_age = BOUND::NONE;
 }
 
-TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
+TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
 {
     this->hash = board.hash;
     this->best_move = best_move;
+    this->static_eval = static_eval;
     this->depth = depth;
 
     // treat mate scores so that they're relative to the position instead of the root
@@ -102,13 +103,14 @@ void TranspositionTable::resize(uint64_t size)
     hashtable.resize(tt_entry_count, TT_Entry());
 }
 
-void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
+void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
 {
     uint64_t hash_location = board.hash % hashtable.size();
 
     // TODO: ADD BETTER TT REPLACEMENT ALGO
     hashtable[hash_location].hash = board.hash;
     hashtable[hash_location].score = best_score;
+    hashtable[hash_location].static_eval = static_eval;
     hashtable[hash_location].depth = depth;
 
     // only time we will not have a tt move is with a fail low
