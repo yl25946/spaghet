@@ -9,9 +9,10 @@ class SearchStack
 public:
     bool null_moved = false;
     bool exclude_tt_move = false;
+    // used for lazy updates,
+    bool updated_accumulator = false;
     int ply;
     Killers killers;
-    // std::unique_ptr<ContinuationHistory> conthist = std::make_unique<ContinuationHistory>();
     MoveList pv;
 
     Board board;

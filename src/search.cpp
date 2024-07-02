@@ -29,6 +29,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
 
     thread_data.search_stack[4].board = board;
     thread_data.accumulators[0] = Accumulator(board);
+    thread_data.search_stack[4].updated_accumulator = true;
 
     this->age = age;
     this->transposition_table = transposition_table;
@@ -161,7 +162,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators[ss->ply]);
+    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators, ss);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -209,11 +210,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             break;
 
         (ss + 1)->board = copy;
+        (ss + 1)->updated_accumulator = false;
         (ss)->move_played = curr_move;
-
-        // we can update the accumulators now
-        thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
-        thread_data.accumulators[ss->ply + 1].make_move(board, curr_move);
 
         int current_eval = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
@@ -315,7 +313,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth <= 0)
         return quiescence_search<inPV>(alpha, beta, ss);
 
-    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators[ss->ply]);
+    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
 
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
@@ -338,9 +336,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // make sure that immediately after we finishd null moving we set the search stack to false, helps with persistent search stack later down the line
         ss->null_moved = true;
         (ss + 1)->board = copy;
-
-        // since we didn't make a move, we can just copy the accumulators over
-        thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
+        (ss + 1)->updated_accumulator = false;
 
         int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - NULL_MOVE_DEPTH_REDUCTION, !cutnode, ss + 1);
 
@@ -476,11 +472,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         // now that we haven't pruned anything, we can update the search stack
         (ss + 1)->board = copy;
+        (ss + 1)->updated_accumulator = false;
         (ss)->move_played = curr_move;
-
-        // we can update the accumulators now
-        thread_data.accumulators[ss->ply + 1] = thread_data.accumulators[ss->ply];
-        thread_data.accumulators[ss->ply + 1].make_move(board, curr_move);
 
         // we can update threefold
         game_history.push_back(copy.hash);
