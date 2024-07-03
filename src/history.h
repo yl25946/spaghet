@@ -70,6 +70,7 @@ public:
     Killers() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
 
     void insert(Move move);
+    void clear() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
 
     // Move get_killer(int ply) const;;
 
