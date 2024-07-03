@@ -311,8 +311,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth <= 0)
         return quiescence_search<inPV>(alpha, beta, ss);
 
-    int static_eval = tt_entry.flag() == BOUND::EXACT ? tt_entry.score : has_tt_entry ? tt_entry.static_eval
-                                                                                      : evaluate(board, thread_data.accumulators, ss);
+    int static_eval = tt_entry.can_use_score(alpha, beta) ? tt_entry.score : has_tt_entry ? tt_entry.static_eval
+                                                                                          : evaluate(board, thread_data.accumulators, ss);
 
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
