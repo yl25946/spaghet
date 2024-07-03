@@ -323,7 +323,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (ss->ply >= MAX_PLY - 1)
         return static_eval;
 
-    (ss + 1)->killers.clear();
+    (ss + 2)->killers.clear();
 
     // applies null move pruning
     if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
