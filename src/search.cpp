@@ -301,7 +301,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -352,6 +352,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (null_move_score >= beta)
             return null_move_score;
+    }
+
+    // Interal Iterative Reduction: If we don't have a TT move, that means our move ordering isn't as good, so we reduce the depth.
+    // alternatively if it is a cutnode, that means it's very likely that we fail high, so we can reduce the depth for a quicker search
+    if (depth >= 4 && !has_tt_move && (inPV || cutnode))
+    {
+        depth -= 1;
     }
 
     MoveList move_list;
