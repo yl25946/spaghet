@@ -483,7 +483,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // move's search
                 if (singular_score < singular_beta)
                 {
-                    int double_margin = 400 * inPV - 300 * !tt_move.is_capture();
+                    int double_margin = 290 * inPV - 200 * !tt_move.is_capture();
 
                     extensions += 1 + (singular_score < singular_beta - double_margin);
                 }
@@ -498,7 +498,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 else if (tt_entry.score >= beta)
                     extensions -= 2;
 
-                // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
+                // // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
                 // else if (cutnode)
                 //     extensions -= 2;
             }
