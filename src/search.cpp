@@ -343,7 +343,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
-        return ss->static_eval;
+        return static_eval;
 
     (ss + 1)->killers.clear();
 
