@@ -77,6 +77,7 @@ inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;
+constexpr int16_t SCORE_NONE = INF + 1;
 // this constant is the baseline mate score where we use ply to ajdjust
 constexpr int16_t MATE = 30000;
 constexpr int16_t MAX_PLY = 255;

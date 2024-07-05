@@ -18,7 +18,7 @@ public:
     Board board;
     Move move_played = NO_MOVE;
     Move tt_move;
-    int static_eval;
+    int static_eval = SCORE_NONE;
 
     SearchStack() {};
     SearchStack(int ply) { this->ply = ply; };
