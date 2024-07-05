@@ -313,20 +313,33 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth <= 0)
         return quiescence_search<inPV>(alpha, beta, ss);
 
-    int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    // have this dummy variable here so it doesn't get overwritten when we store it in the TT
+    const int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
     ss->static_eval = static_eval;
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
 
-    if (ss->ply >= 2)
+    if (board.is_in_check())
     {
-        improving = static_eval > (ss - 2)->static_eval;
+        ss->static_eval = SCORE_NONE;
+    }
+    else if ((ss - 2)->static_eval != SCORE_NONE)
+    {
+        improving = ss->static_eval > (ss - 2)->static_eval;
+    }
+    else if ((ss - 4)->static_eval != SCORE_NONE)
+    {
+        improving = ss->static_eval > (ss - 4)->static_eval;
+    }
+    else
+    {
+        improving = true;
     }
 
     // apply reverse futility pruning
-    if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && static_eval - depth * MARGIN >= beta)
-        return static_eval;
+    if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && ss->static_eval - MARGIN * (depth - improving) >= beta)
+        return ss->static_eval;
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
@@ -335,7 +348,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     (ss + 1)->killers.clear();
 
     // applies null move pruning
-    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && ss->static_eval >= beta)
     {
         int r = depth / 3 + 4;
 
@@ -422,7 +435,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
-            if (depth <= 8 && !board.is_in_check() && is_quiet && static_eval + futility_margin < alpha)
+            if (depth <= 8 && !board.is_in_check() && is_quiet && ss->static_eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
                 continue;
