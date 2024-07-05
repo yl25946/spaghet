@@ -380,7 +380,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // alternatively if it is a cutnode, that means it's very likely that we fail high, so we can reduce the depth for a quicker search
     if (depth >= 4 && !has_tt_move && (inPV || cutnode))
     {
-        depth -= 1;
+        depth -= 2;
     }
 
     MoveList move_list;
