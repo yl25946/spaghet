@@ -482,7 +482,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // No move was able to beat the TT entries score, so we extend the TT
                 // move's search
                 if (singular_score < singular_beta)
-                    ++extensions;
+                {
+                    // int double_margin = 290 * inPV - 200 * !tt_move.is_capture();
+
+                    extensions += 1 + (!inPV && singular_score < singular_beta - 100);
+                }
 
                 // Multicut: Since the sigular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
                 // is larger than beta, we can cutoff
@@ -496,7 +500,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
                 // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
                 // else if (cutnode)
-                //     extensions -= 2;
+                //     extensions -= 1;
             }
         }
 
