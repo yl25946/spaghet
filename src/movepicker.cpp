@@ -105,7 +105,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
 
             // adds followup move history bonus
             if (ply >= 2 && !(ss - 2)->null_moved)
-                move_list.moves[i].score += thread_data.conthist.move_value(ss->board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
+                move_list.moves[i].score += thread_data.conthist.move_value(ss->board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played) / 2;
 
             // adds counter move history bonus
             if (ply >= 1 && !(ss - 1)->null_moved)
