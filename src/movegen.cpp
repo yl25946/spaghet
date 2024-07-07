@@ -203,7 +203,7 @@ void generate_pawn_capture_moves(Board &board, MoveList &move_list)
     uint8_t source_square;
     uint8_t target_square;
 
-    uint64_t bitboard, attacks;
+    uint64_t bitboard, attacks, blocking_pieces = board.blockers();
 
     // generate pawn moves and castle moves
     uint64_t promotions;
@@ -212,6 +212,18 @@ void generate_pawn_capture_moves(Board &board, MoveList &move_list)
     if (board.side_to_move == WHITE)
     {
         bitboard = board.bitboard(WHITE_PAWN);
+
+        // generate all single push quiet/promotion pawn moves
+        attacks = (bitboard >> 8) & ~blocking_pieces;
+        // separates them into promotions and quiet moves
+        promotions = attacks & white_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square + 8, target_square, false, move_list);
+            pop_bit(promotions);
+        }
 
         // generates all capture moves
         // right captures
@@ -268,6 +280,18 @@ void generate_pawn_capture_moves(Board &board, MoveList &move_list)
     else
     {
         bitboard = board.bitboard(BLACK_PAWN);
+
+        // generate all single push quiet/promotion pawn moves
+        attacks = (bitboard << 8) & ~blocking_pieces;
+        // separates them into promotions and quiet moves
+        promotions = attacks & black_promotion;
+        // generates promotion moves
+        while (promotions)
+        {
+            target_square = lsb(promotions);
+            generate_promotions(target_square - 8, target_square, false, move_list);
+            pop_bit(promotions);
+        }
 
         // generates pawn capture moves
         // right captures
