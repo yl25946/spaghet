@@ -11,6 +11,7 @@ public:
     bool exclude_tt_move = false;
     // used for lazy updates,
     bool updated_accumulator = false;
+    bool in_check = false;
     int ply;
     Killers killers;
     MoveList pv;
