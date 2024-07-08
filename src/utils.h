@@ -4,7 +4,7 @@
 
 void print_bitboard(uint64_t bitboard);
 
-#define seed 69420
+constexpr int seed = 69420;
 
 // generates a seeded pseudo random uint64 number with the mersenne twister
 uint64_t random_uint64();
