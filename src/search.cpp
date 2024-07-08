@@ -28,6 +28,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->board = board;
 
     thread_data.search_stack[4].board = board;
+    thread_data.search_stack[4].in_check = board.is_in_check();
     thread_data.accumulators[0] = Accumulator(board);
     thread_data.search_stack[4].updated_accumulator = true;
 
@@ -320,7 +321,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
 
-    if (board.is_in_check())
+    if (ss->in_check)
     {
         ss->static_eval = SCORE_NONE;
     }
@@ -338,7 +339,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // apply reverse futility pruning
-    if (!inPV && !ss->exclude_tt_move && !board.is_in_check() && depth <= DEPTH_MARGIN && ss->static_eval - MARGIN * (depth - improving) >= beta)
+    if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= DEPTH_MARGIN && ss->static_eval - MARGIN * (depth - improving) >= beta)
         return ss->static_eval;
 
     // bailout
@@ -348,7 +349,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     (ss + 1)->killers.clear();
 
     // applies null move pruning
-    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !board.is_in_check() && !board.only_pawns(board.side_to_move) && ss->static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !ss->in_check && !board.only_pawns(board.side_to_move) && ss->static_eval >= beta)
     {
         int r = depth / 3 + 4;
 
@@ -362,6 +363,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         ss->null_moved = true;
         (ss + 1)->board = copy;
         (ss + 1)->updated_accumulator = false;
+        // we will never do nmp in check
+        (ss + 1)->in_check = false;
 
         int null_move_score = -negamax<nonPV>(-beta, -beta + 1, depth - r, !cutnode, ss + 1);
 
@@ -435,7 +438,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
-            if (depth <= 8 && !board.is_in_check() && is_quiet && ss->static_eval + futility_margin < alpha)
+            if (depth <= 8 && !ss->in_check && is_quiet && ss->static_eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
                 continue;
@@ -452,9 +455,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         int new_depth = depth - 1;
         int extensions = 0;
 
-        // extensions
-        if (copy.is_in_check())
-            ++extensions;
+        // std::cout << copy.fen();
 
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
@@ -502,6 +503,17 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 else if (cutnode)
                     extensions -= 2;
             }
+        }
+
+        // check extensions after SE, because we alter the search stack
+        if (copy.is_in_check())
+        {
+            (ss + 1)->in_check = true;
+            ++extensions;
+        }
+        else
+        {
+            (ss + 1)->in_check = false;
         }
 
         new_depth += extensions;
@@ -609,7 +621,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     if (move_picker.moves_seen() == 0)
     {
-        if (board.is_in_check())
+        if (ss->in_check)
         {
             // prioritize faster mates
             return -MATE + ss->ply;
