@@ -45,10 +45,7 @@ Board::Board(const std::string &fen)
 
             // if piece is a pawn we can update the pawn hash
             if (bitboard_piece == BITBOARD_PIECES::PAWN)
-            {
                 pawn_hash ^= zobrist_pieces[piece][square];
-                std::cout << static_cast<int>(piece) << " " << static_cast<int>(square) << " ";
-            }
 
             ++square;
             ++char_it;
