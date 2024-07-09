@@ -655,7 +655,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // update corrhist if we're not in check
     if (!ss->in_check)
-        thread_data.corrhist.update(board, best_eval, uncorrected_static_eval);
+        thread_data.corrhist.update(board, best_eval, ss->static_eval);
 
     return best_eval;
 }
