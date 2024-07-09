@@ -172,8 +172,10 @@ CorrectionHistory::CorrectionHistory()
 {
     for (int i = 0; i < table.size(); ++i)
     {
-        table[i][0] = 0;
-        table[i][1] = 0;
+        table[0][i][0] = 0;
+        table[0][i][1] = 0;
+        table[1][i][0] = 0;
+        table[1][i][1] = 0;
     }
 }
 
@@ -185,17 +187,17 @@ void CorrectionHistory::update(const Board &board, int score, int static_eval)
     const int delta = score - static_eval;
     const int hash_location = board.pawn_hash % table.size();
 
-    table[hash_location][0] += std::clamp(delta, -256, 256);
+    table[board.side_to_move][hash_location][0] += std::clamp(delta, -256, 256);
 
     // update how many times we've updated to the respective corrhist entry
-    ++table[hash_location][1];
+    ++table[board.side_to_move][hash_location][1];
 }
 
 int CorrectionHistory::corrected_eval(const Board &board, int static_eval)
 {
     const int hash_location = board.pawn_hash % table.size();
 
-    return std::clamp<int>(static_eval + table[hash_location][0] / (table[hash_location][1] == 0 ? 1 : table[hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
+    return std::clamp<int>(static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
 }
 
 void Killers::insert(Move move)
