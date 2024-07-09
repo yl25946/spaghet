@@ -381,7 +381,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // Probcut: If we have a really good capture and a reduced search returns a value much higher than beta, we can prune
-    int probcut_beta = beta + 200;
+    int probcut_beta = beta + 500;
     if (!inPV && depth > 3 && !is_mate_score(beta) &&
         // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
         // cuts off
