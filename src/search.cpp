@@ -198,12 +198,6 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         if (!copy.was_legal())
             continue;
 
-        // do we need to check for checkmate in qsearch?
-        // if (is_checkmate(copy))
-        // {
-        //     return -50000 + depth
-        // }
-
         // qsearch SEE pruning
         // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
         // since everything after it will also not pass the SEE threshold
@@ -384,6 +378,54 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (depth >= 4 && !has_tt_move && (inPV || cutnode))
     {
         depth -= 1;
+    }
+
+    // Probcut: If we have a really good capture and a reduced search returns a value much higher than beta, we can prune
+    int probcut_beta = beta + 200;
+    if (!inPV && depth > 3 && !is_mate_score(beta) &&
+        // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
+        // cuts off
+        has_tt_entry && !(ttData.depth >= depth - 3) && tt_entry.score < probcut_beta)
+    {
+        MoveList captures;
+        int score = -INF - 1;
+
+        generate_capture_moves(board, captures);
+
+        // scores moves to order them
+        MovePicker move_picker(move_list);
+        move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+
+        while (move_picker.has_next())
+        {
+            Board copy = board;
+            OrderedMove curr_move = move_picker.next_move();
+
+            copy.make_move(curr_move);
+
+            if (!copy.was_legal())
+                continue;
+
+            // qsearch SEE pruning
+            // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
+            // since everything after it will also not pass the SEE threshold
+            if (curr_move.score < 0)
+                break;
+
+            // updates the search stack
+            ss->move_played = curr_move;
+            (ss + 1)->board = copy;
+            (ss + 1)->updated_accumulator = false;
+
+            score = -quiescence_search<nonPV>(-probcut_beta, -probcut_beta + 1, ss + 1);
+
+            // re-search with verification to verify that the move is good
+            if (score >= probcut_beta)
+                score = -negamax(-probcut_beta, -probcut_beta + 1, depth - 4, !cutNode);
+
+            if (score >= probcut_beta)
+                return score;
+        }
     }
 
     MoveList move_list;
