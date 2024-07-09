@@ -385,7 +385,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (!inPV && depth > 3 && !is_mate_score(beta) &&
         // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
         // cuts off
-        has_tt_entry && !(ttData.depth >= depth - 3) && tt_entry.score < probcut_beta)
+        has_tt_entry && !(tt_entry.depth >= depth - 3) && tt_entry.score < probcut_beta)
     {
         MoveList captures;
         int score = -INF - 1;
@@ -393,7 +393,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         generate_capture_moves(board, captures);
 
         // scores moves to order them
-        MovePicker move_picker(move_list);
+        MovePicker move_picker(captures);
         move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
 
         while (move_picker.has_next())
@@ -415,13 +415,14 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // updates the search stack
             ss->move_played = curr_move;
             (ss + 1)->board = copy;
+            (ss + 1)->in_check = copy.is_in_check();
             (ss + 1)->updated_accumulator = false;
 
             score = -quiescence_search<nonPV>(-probcut_beta, -probcut_beta + 1, ss + 1);
 
             // re-search with verification to verify that the move is good
             if (score >= probcut_beta)
-                score = -negamax(-probcut_beta, -probcut_beta + 1, depth - 4, !cutNode);
+                score = -negamax<nonPV>(-probcut_beta, -probcut_beta + 1, depth - 4, !cutnode, ss + 1);
 
             if (score >= probcut_beta)
                 return score;
