@@ -425,7 +425,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 score = -negamax<nonPV>(-probcut_beta, -probcut_beta + 1, depth - 4, !cutnode, ss + 1);
 
             if (score >= probcut_beta)
+            {
+                // update tranposition table
+                transposition_table.insert(board, curr_move, score, static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
+
                 return score;
+            }
         }
     }
 
