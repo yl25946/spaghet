@@ -30,6 +30,8 @@ uint64_t perft_debug(Board &board, uint8_t depth, uint8_t start_depth)
         Board test(board.fen());
         if (test.hash != board.hash)
             std::cout << board.fen() << " " << board.hash << " " << test.hash << "\n";
+        if (test.pawn_hash != board.pawn_hash)
+            std::cout << board.fen() << " " << board.hash << " " << test.hash << "\n";
         return 1ULL;
     }
 
@@ -81,7 +83,7 @@ void perft_driver(const std::string &fen, uint8_t depth)
 
     std::chrono::duration<double> elapsed_seconds = end - start;
 
-    std::cout << "\nTotal Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second";
+    std::cout << "Total Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second\n";
 }
 
 void perft_debug_driver(const std::string &fen, uint8_t depth)

@@ -189,6 +189,28 @@ void UCI_loop()
         {
             threads.terminate();
         }
+
+        // put this before perft command otherwise it won't catch it
+        else if (!line.compare(0, 11, "perft debug"))
+        {
+            std::cout << "here";
+            for (Move move : move_list)
+                board.make_move(move);
+
+            // parses the depth
+            int depth;
+            size_t end_line;
+            size_t go_pt = line.find("depth");
+            if (go_pt != std::string::npos)
+            {
+                go_pt += 6;
+                end_line = line.find(" ", go_pt);
+                depth = stoi(line.substr(go_pt, end_line - go_pt));
+            }
+
+            perft_debug_driver(board.fen(), depth);
+        }
+
         else if (!line.compare(0, 5, "perft"))
         {
             for (Move move : move_list)
@@ -205,7 +227,7 @@ void UCI_loop()
                 depth = stoi(line.substr(go_pt, end_line - go_pt));
             }
 
-            perft_debug_driver(board.fen(), depth);
+            perft_driver(board.fen(), depth);
         }
 
         else if (!line.compare(0, 25, "setoption name Hash value"))

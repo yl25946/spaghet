@@ -168,6 +168,29 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
     return table[board.mailbox[move.from_square()]][move.to_square()][previous_board.mailbox[previous_move.from_square()]][previous_move.to_square()];
 }
 
+CorrectionHistory::CorrectionHistory()
+{
+    table.fill(0);
+}
+
+void CorrectionHistory::update(const Board &board, int score, int static_eval)
+{
+    if (is_mate_score(score))
+        return;
+
+    const int delta = (score - static_eval) / 32;
+    const int hash_location = board.pawn_hash % table.size();
+
+    table[hash_location] = std::clamp(table[hash_location] + delta, MIN_HISTORY, MAX_HISTORY);
+}
+
+int CorrectionHistory::corrected_eval(const Board &board, int static_eval)
+{
+    const int hash_location = board.pawn_hash % table.size();
+
+    return std::clamp<int>(static_eval + table[hash_location], MIN_MATE_SCORE, MAX_MATE_SCORE);
+}
+
 void Killers::insert(Move move)
 {
     // don't want to insert multiple of the same moves into killers

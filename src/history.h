@@ -62,6 +62,19 @@ public:
     int64_t move_value(const Board &board, Move move, const Board &previous_board, Move previous_move);
 };
 
+class CorrectionHistory
+{
+    std::array<int64_t, 16384> table;
+
+public:
+    CorrectionHistory();
+
+    // filters out mate scores internally
+    void update(const Board &board, int score, int static_eval);
+
+    int corrected_eval(const Board &board, int static_eval);
+};
+
 class Killers
 {
 public:

@@ -107,8 +107,9 @@ int main(int argc, char *argv[])
     }
 
     // Board board(start_position);
+    // Board alternative_board("5k2/pppppppp/8/8/8/8/PPPPPPPP/1K6 w - - 0 1");
     // std::cout
-    //     << evaluate(board);
+    //     << board.pawn_hash << " " << alternative_board.pawn_hash;
 
     UCI_loop();
 
