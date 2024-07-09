@@ -182,10 +182,10 @@ void CorrectionHistory::update(const Board &board, int score, int static_eval)
     if (is_mate_score(score))
         return;
 
-    const int delta = (score - static_eval) / 32;
+    const int delta = score - static_eval;
     const int hash_location = board.pawn_hash % table.size();
 
-    table[hash_location][0] = std::clamp(table[hash_location][0] + delta, MIN_HISTORY, MAX_HISTORY);
+    table[hash_location][0] += std::clamp(delta, -256, 256);
 
     // update how many times we've updated to the respective corrhist entry
     ++table[hash_location][1];
