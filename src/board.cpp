@@ -74,7 +74,7 @@ Board::Board(const std::string &fen)
 
         // masks the side_to_move in zobrist hash
         hash ^= zobrist_side_to_move;
-        pawn_hash ^= zobrist_side_to_move;
+        // pawn_hash ^= zobrist_side_to_move;
     }
 
     // increment the reader
@@ -602,7 +602,7 @@ void Board::make_move(Move move)
 
     // update zobrist side_to_move
     hash ^= zobrist_side_to_move;
-    pawn_hash ^= zobrist_side_to_move;
+    // pawn_hash ^= zobrist_side_to_move;
 
     if (bitboard_piece_type != PAWN && !(move_flag & CAPTURES))
         ++fifty_move_counter;

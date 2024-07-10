@@ -318,7 +318,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
     const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    ss->static_eval = thread_data.corrhist.corrected_eval(board, uncorrected_static_eval);
+    // ss->static_eval = thread_data.corrhist.corrected_eval(board, uncorrected_static_eval);
+    ss->static_eval = uncorrected_static_eval;
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
@@ -653,9 +654,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
-    // update corrhist if we're not in check
-    if (!ss->in_check)
-        thread_data.corrhist.update(board, best_eval, ss->static_eval);
+    // // update corrhist if we're not in check
+    // if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_eval >= beta && best_eval <= ss->static_eval) && !(best_move == NO_MOVE && best_eval >= ss->static_eval))
+    //     thread_data.corrhist.update(board, best_eval, ss->static_eval);
 
     return best_eval;
 }

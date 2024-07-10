@@ -185,7 +185,7 @@ void CorrectionHistory::update(const Board &board, int score, int static_eval)
         return;
 
     const int delta = score - static_eval;
-    const int hash_location = board.pawn_hash % table.size();
+    const int hash_location = board.pawn_hash % table[0].size();
 
     table[board.side_to_move][hash_location][0] += std::clamp(delta, -256, 256);
 
@@ -195,7 +195,7 @@ void CorrectionHistory::update(const Board &board, int score, int static_eval)
 
 int CorrectionHistory::corrected_eval(const Board &board, int static_eval)
 {
-    const int hash_location = board.pawn_hash % table.size();
+    const int hash_location = board.pawn_hash % table[0].size();
 
     return std::clamp<int>(static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
 }
