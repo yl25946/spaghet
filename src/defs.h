@@ -103,6 +103,9 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = 1 << 20;
 
+// entries in our thing
+constexpr int CORRHIST_SIZE = 16384;
+
 // SEE values
 constexpr int SEEValue[7] = {
     100,

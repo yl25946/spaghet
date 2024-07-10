@@ -65,7 +65,7 @@ public:
 class CorrectionHistory
 {
     //  first indicates stm, second array indice is the mod of the pawn hash, third array indice is how many times we've updating this
-    std::array<std::array<std::array<int64_t, 2>, 16384>, 2> table;
+    std::array<std::array<std::array<int64_t, 2>, CORRHIST_SIZE>, 2> table;
 
 public:
     CorrectionHistory();
@@ -73,7 +73,7 @@ public:
     // filters out mate scores internally
     void update(const Board &board, int score, int static_eval);
 
-    int corrected_eval(const Board &board, int static_eval);
+    int corrected_eval(const Board &board, int unadjusted_static_eval);
 };
 
 class Killers

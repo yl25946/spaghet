@@ -86,10 +86,10 @@ int main(int argc, char *argv[])
             {
                 Board board(fen);
                 TranspositionTable tt(16);
-                ThreadData single_thread_data;
+                std::vector<ThreadData> single_thread_data(1);
                 Time time("go depth 12");
 
-                Searcher searcher(board, moves, tt, single_thread_data, 0);
+                Searcher searcher(board, moves, tt, single_thread_data[0], 0);
                 time.set_time(searcher);
 
                 searcher.search();

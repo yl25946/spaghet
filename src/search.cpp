@@ -163,7 +163,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    const int uncorrected_static_eval = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators, ss);
+    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
 
     const int stand_pat = thread_data.corrhist.corrected_eval(board, uncorrected_static_eval);
 
@@ -317,9 +317,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return quiescence_search<inPV>(alpha, beta, ss);
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
-    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    // ss->static_eval = thread_data.corrhist.corrected_eval(board, uncorrected_static_eval);
-    ss->static_eval = uncorrected_static_eval;
+    const int unadjusted_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    ss->static_eval = thread_data.corrhist.correct_eval(board, unadjusted_static_eval);
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
@@ -347,7 +346,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
-        return uncorrected_static_eval;
+        return unadjusted_static_eval;
 
     (ss + 1)->killers.clear();
 
@@ -651,7 +650,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             bound_flag = BOUND::FAIL_LOW;
         }
         if (best_eval != (-INF - 1))
-            transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
+            transposition_table.insert(board, best_move, best_eval, unadjusted_static_eval, depth, ss->ply, age, bound_flag);
     }
 
     // // update corrhist if we're not in check
