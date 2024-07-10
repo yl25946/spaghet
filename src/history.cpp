@@ -194,7 +194,7 @@ int CorrectionHistory::correct_eval(const Board &board, int unadjusted_static_ev
 {
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
-    return unadjusted_static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]);
+    return std::clamp<int>(unadjusted_static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
 }
 
 void Killers::insert(Move move)
