@@ -105,6 +105,7 @@ constexpr int64_t MAX_KILLERS = 1 << 20;
 
 // entries in our thing
 constexpr int CORRHIST_SIZE = 16384;
+constexpr int CORRHIST_LIMIT = 1024;
 
 // SEE values
 constexpr int SEEValue[7] = {

@@ -172,29 +172,29 @@ CorrectionHistory::CorrectionHistory()
 {
     for (int i = 0; i < CORRHIST_SIZE; ++i)
     {
-        table[0][i][0] = table[0][i][1] = table[1][i][0] = table[1][i][1] = 0;
+        table[0][i] = table[1][i] = 0;
     }
 }
-
-void CorrectionHistory::update(const Board &board, int score, int static_eval)
+void CorrectionHistory::update(const Board &board, int depth, int score, int static_eval)
 {
     if (is_mate_score(score))
         return;
 
     const int delta = score - static_eval;
+    const int bonus = std::clamp(delta * depth / 8, -CORRHIST_LIMIT / 4, CORRHIST_LIMIT / 4);
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
-    table[board.side_to_move][hash_location][0] += std::clamp(delta, -256, 256);
-
-    // update how many times we've updated to the respective corrhist entry
-    ++table[board.side_to_move][hash_location][1];
+    table[board.side_to_move][hash_location] += bonus - (table[board.side_to_move][hash_location] * abs(bonus) / CORRHIST_LIMIT);
 }
 
 int CorrectionHistory::correct_eval(const Board &board, int uncorrected_static_eval)
 {
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
-    return std::clamp<int>(uncorrected_static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
+    const int raw_correction = table[board.side_to_move][hash_location];
+    const int correction = raw_correction * std::abs(raw_correction) / 20'000;
+
+    return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
 }
 
 void Killers::insert(Move move)
