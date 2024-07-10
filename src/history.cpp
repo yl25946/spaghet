@@ -190,26 +190,11 @@ void CorrectionHistory::update(const Board &board, int score, int static_eval)
     ++table[board.side_to_move][hash_location][1];
 }
 
-int CorrectionHistory::corrected_eval(const Board &board, int static_eval)
-{
-    const int hash_location = board.pawn_hash % table[0].size();
-
-    return std::clamp<int>(static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]), MIN_MATE_SCORE, MAX_MATE_SCORE);
-    const int hash_location = board.pawn_hash % CORRHIST_SIZE;
-
-    const int delta = std::clamp(score - static_eval, -256, 256);
-
-    table[board.side_to_move][hash_location][0] += delta;
-
-    ++table[board.side_to_move][hash_location][1];
-}
-
 int CorrectionHistory::correct_eval(const Board &board, int unadjusted_static_eval)
 {
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
     return unadjusted_static_eval + table[board.side_to_move][hash_location][0] / (table[board.side_to_move][hash_location][1] == 0 ? 1 : table[board.side_to_move][hash_location][1]);
->>>>>>> Stashed changes
 }
 
 void Killers::insert(Move move)

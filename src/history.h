@@ -73,7 +73,7 @@ public:
     // filters out mate scores internally
     void update(const Board &board, int score, int static_eval);
 
-    int corrected_eval(const Board &board, int unadjusted_static_eval);
+    int correct_eval(const Board &board, int unadjusted_static_eval);
 };
 
 class Killers

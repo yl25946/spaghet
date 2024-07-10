@@ -165,7 +165,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // creates a baseline
     const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
 
-    const int stand_pat = thread_data.corrhist.corrected_eval(board, uncorrected_static_eval);
+    const int stand_pat = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -654,8 +654,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // // update corrhist if we're not in check
-    // if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_eval >= beta && best_eval <= ss->static_eval) && !(best_move == NO_MOVE && best_eval >= ss->static_eval))
-    //     thread_data.corrhist.update(board, best_eval, ss->static_eval);
+    if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_eval >= beta && best_eval <= ss->static_eval) && !(best_move == NO_MOVE && best_eval >= ss->static_eval))
+        thread_data.corrhist.update(board, best_eval, ss->static_eval);
 
     return best_eval;
 }
