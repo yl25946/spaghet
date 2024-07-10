@@ -164,7 +164,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // creates a baseline
     const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    const int stand_pat = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    const int stand_pat = has_tt_entry ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
