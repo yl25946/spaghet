@@ -163,7 +163,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators, ss);
+    int stand_pat = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
