@@ -30,9 +30,10 @@ Board::Board(const std::string &fen)
         if (std::isalpha(fen[char_it]))
         {
             int piece = char_pieces[fen[char_it]];
+            uint8_t bitboard_piece = colored_to_uncolored(piece);
             // initialize the bitboard
             // divide by two since we aren't keeping track of color
-            set_bit(pieces[piece / 2], square);
+            set_bit(pieces[bitboard_piece], square);
             // if piece & 1 = 1, then that means it is the black
             set_bit(colors[piece & 1], square);
 
@@ -41,6 +42,10 @@ Board::Board(const std::string &fen)
 
             // initialize the zobrist hash
             hash ^= zobrist_pieces[piece][square];
+
+            // if piece is a pawn we can update the pawn hash
+            if (bitboard_piece == BITBOARD_PIECES::PAWN)
+                pawn_hash ^= zobrist_pieces[piece][square];
 
             ++square;
             ++char_it;
@@ -69,6 +74,7 @@ Board::Board(const std::string &fen)
 
         // masks the side_to_move in zobrist hash
         hash ^= zobrist_side_to_move;
+        // pawn_hash ^= zobrist_side_to_move;
     }
 
     // increment the reader
@@ -436,8 +442,6 @@ void Board::make_move(Move move)
     uint8_t target_square = move.to_square();
     uint8_t move_flag = move.move_flag();
 
-    // deals with castle;
-
     // colored piece
     uint8_t move_piece_type = mailbox[source_square];
     // uncolored piece
@@ -455,11 +459,14 @@ void Board::make_move(Move move)
         // removes pawn from zobrist hash
         // side_to_move ^ 1 represent the opposite move's pawn
         hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
+        pawn_hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
     }
     else if (move_flag & CAPTURES)
     {
         uint8_t captured_piece = mailbox[target_square];
-        remove_bit(pieces[colored_to_uncolored(captured_piece)], target_square);
+        uint8_t uncolored_captured_piece = colored_to_uncolored(captured_piece);
+
+        remove_bit(pieces[uncolored_captured_piece], target_square);
         remove_bit(colors[side_to_move ^ 1], target_square);
 
         // do not need to update mailbox because it would've automatically overwritten it
@@ -469,6 +476,9 @@ void Board::make_move(Move move)
 
         // std::cout << (int)captured_piece << " " << move.to_string() << " " << this->fen() << '\n';
         hash ^= zobrist_pieces[captured_piece][target_square];
+
+        if (uncolored_captured_piece == BITBOARD_PIECES::PAWN)
+            pawn_hash ^= zobrist_pieces[captured_piece][target_square];
     }
 
     // moves the piece
@@ -484,6 +494,12 @@ void Board::make_move(Move move)
 
     hash ^= zobrist_pieces[move_piece_type][source_square];
     hash ^= zobrist_pieces[move_piece_type][target_square];
+
+    if (bitboard_piece_type == BITBOARD_PIECES::PAWN)
+    {
+        pawn_hash ^= zobrist_pieces[move_piece_type][source_square];
+        pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
+    }
 
     if (move_flag & PROMOTION)
     {
@@ -586,6 +602,7 @@ void Board::make_move(Move move)
 
     // update zobrist side_to_move
     hash ^= zobrist_side_to_move;
+    // pawn_hash ^= zobrist_side_to_move;
 
     if (bitboard_piece_type != PAWN && !(move_flag & CAPTURES))
         ++fifty_move_counter;

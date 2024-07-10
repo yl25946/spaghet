@@ -62,6 +62,20 @@ public:
     int64_t move_value(const Board &board, Move move, const Board &previous_board, Move previous_move);
 };
 
+class CorrectionHistory
+{
+    //  first indicates stm, second array indice is the mod of the pawn hash
+    std::array<std::array<int64_t, CORRHIST_SIZE>, 2> table;
+
+public:
+    CorrectionHistory();
+
+    // filters out mate scores internally
+    void update(const Board &board, int depth, int score, int static_eval);
+
+    int correct_eval(const Board &board, int uncorrected_static_eval);
+};
+
 class Killers
 {
 public:

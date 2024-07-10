@@ -12,6 +12,7 @@ public:
     QuietHistory main_history;
     CaptureHistory capthist;
     ContinuationHistory conthist;
+    CorrectionHistory corrhist;
 
     ThreadData() : accumulators(MAX_PLY + 4)
     {

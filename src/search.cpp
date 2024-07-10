@@ -163,7 +163,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    int stand_pat = has_tt_entry ? tt_entry.score : evaluate(board, thread_data.accumulators, ss);
+    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    const int stand_pat = has_tt_entry ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -248,7 +249,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             bound_flag = BOUND::FAIL_HIGH;
         }
 
-        transposition_table.insert(board, best_move, best_eval, stand_pat, 0, ss->ply, age, bound_flag);
+        transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, 0, ss->ply, age, bound_flag);
     }
 
     // TODO: add check moves
@@ -315,8 +316,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return quiescence_search<inPV>(alpha, beta, ss);
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
-    const int static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    ss->static_eval = static_eval;
+    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
@@ -344,7 +345,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
-        return static_eval;
+        return uncorrected_static_eval;
 
     (ss + 1)->killers.clear();
 
@@ -648,8 +649,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             bound_flag = BOUND::FAIL_LOW;
         }
         if (best_eval != (-INF - 1))
-            transposition_table.insert(board, best_move, best_eval, static_eval, depth, ss->ply, age, bound_flag);
+            transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
+
+    // // update corrhist if we're not in check
+    if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_eval >= beta && best_eval <= ss->static_eval) && !(best_move == NO_MOVE && best_eval >= ss->static_eval))
+        thread_data.corrhist.update(board, depth, best_eval, ss->static_eval);
 
     return best_eval;
 }

@@ -168,6 +168,35 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
     return table[board.mailbox[move.from_square()]][move.to_square()][previous_board.mailbox[previous_move.from_square()]][previous_move.to_square()];
 }
 
+CorrectionHistory::CorrectionHistory()
+{
+    for (int i = 0; i < CORRHIST_SIZE; ++i)
+    {
+        table[0][i] = table[1][i] = 0;
+    }
+}
+void CorrectionHistory::update(const Board &board, int depth, int score, int static_eval)
+{
+    if (is_mate_score(score))
+        return;
+
+    const int delta = score - static_eval;
+    const int bonus = std::clamp(delta * depth / 8, -CORRHIST_LIMIT / 4, CORRHIST_LIMIT / 4);
+    const int hash_location = board.pawn_hash % CORRHIST_SIZE;
+
+    table[board.side_to_move][hash_location] += bonus - (table[board.side_to_move][hash_location] * abs(bonus) / CORRHIST_LIMIT);
+}
+
+int CorrectionHistory::correct_eval(const Board &board, int uncorrected_static_eval)
+{
+    const int hash_location = board.pawn_hash % CORRHIST_SIZE;
+
+    const int raw_correction = table[board.side_to_move][hash_location];
+    const int correction = raw_correction * std::abs(raw_correction) / 20'000;
+
+    return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+}
+
 void Killers::insert(Move move)
 {
     // don't want to insert multiple of the same moves into killers
