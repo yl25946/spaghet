@@ -541,7 +541,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // move's search
                 if (singular_score < singular_beta)
                 {
-                    int double_margin = 100 + 300 * inPV;
+                    int double_margin = 100 + 500 * inPV;
 
                     extensions += 1 + (singular_score < singular_beta - double_margin);
                 }
