@@ -12,6 +12,8 @@
 class Killers;
 class QuietHistory;
 
+extern int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move quiet_move);
+
 class MovePicker
 {
 public:
