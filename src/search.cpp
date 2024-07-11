@@ -602,6 +602,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             else
                 reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
 
+            // make sure we don't accidentially extend
+            reduction = std::max(reduction, 0);
+
             current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - reduction, true, ss + 1);
 
             // if the search fails high we do a full depth research
