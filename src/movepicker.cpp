@@ -1,5 +1,22 @@
 #include "movepicker.h"
 
+int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move quiet_move)
+{
+    int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move);
+
+    int ply = ss->ply;
+
+    // // adds followup move history bonus
+    // if (ply >= 2 && !(ss - 2)->null_moved)
+    //     move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
+
+    // adds counter move history bonus
+    if (ply >= 1 && !(ss - 1)->null_moved)
+        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 1)->board, (ss - 1)->move_played);
+
+    return quiet_move_score;
+}
+
 MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
 {
     // this->move_list = move_list;
@@ -97,19 +114,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         // not a capture, use history table
         else
         {
-
-            // std::cout << history.move_value(moves[i]) << "\n";
-            move_list.moves[i].score += thread_data.main_history.move_value(move_list.moves[i], ss->board.side_to_move);
-
-            int ply = ss->ply;
-
-            // // adds followup move history bonus
-            // if (ply >= 2 && !(ss - 2)->null_moved)
-            //     move_list.moves[i].score += conthist.move_value(board, move_list.moves[i], (ss - 2)->board, (ss - 2)->move_played);
-
-            // adds counter move history bonus
-            if (ply >= 1 && !(ss - 1)->null_moved)
-                move_list.moves[i].score += thread_data.conthist.move_value(ss->board, move_list.moves[i], (ss - 1)->board, (ss - 1)->move_played);
+            move_list.moves[i].score = get_quiet_history_score(ss, thread_data, move_list.moves[i]);
 
             // check killer moves
             for (int j = 0; j < ss->killers.size(); ++j)
