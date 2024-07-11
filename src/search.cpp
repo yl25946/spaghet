@@ -392,7 +392,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (!inPV && !ss->in_check && depth > 3 && !is_mate_score(beta) &&
         // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
         // cuts off
-        has_tt_entry && !(tt_entry.depth >= depth - 3) && tt_entry.score < probcut_beta)
+        !(has_tt_entry && tt_entry.depth >= depth - 3 && tt_entry.score < probcut_beta))
     {
         // only stores queen promotions
         MoveList captures_and_promotions;
