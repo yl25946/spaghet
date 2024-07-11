@@ -5,7 +5,8 @@ uint64_t megabytes_to_bytes = 1 << 20;
 TT_Entry::TT_Entry()
 {
     hash = 0;
-    score = 0;
+    score = SCORE_NONE;
+    static_eval = SCORE_NONE;
     depth = 0;
     best_move = NO_MOVE;
     flag_and_age = BOUND::NONE;

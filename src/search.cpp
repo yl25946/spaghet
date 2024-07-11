@@ -387,6 +387,62 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         depth -= 1;
     }
 
+    // Probcut: If we have a really good capture/queen promotion and a reduced search returns a value much higher than beta, we can prune
+    int probcut_beta = beta + 350;
+    if (!inPV && !ss->in_check && depth > 3 && !is_mate_score(beta) &&
+        // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
+        // cuts off
+        !(has_tt_entry && tt_entry.depth >= depth - 3 && tt_entry.score < probcut_beta))
+    {
+        // only stores queen promotions
+        MoveList captures_and_promotions;
+        int score = -INF - 1;
+
+        generate_queen_promotions(board, captures_and_promotions);
+        generate_capture_moves(board, captures_and_promotions);
+
+        // scores moves to order them
+        MovePicker move_picker(captures_and_promotions);
+        move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+
+        while (move_picker.has_next())
+        {
+            Board copy = board;
+            OrderedMove curr_move = move_picker.next_move();
+
+            copy.make_move(curr_move);
+
+            if (!copy.was_legal())
+                continue;
+
+            // qsearch SEE pruning
+            // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
+            // since everything after it will also not pass the SEE threshold
+            if (curr_move.score < 0)
+                break;
+
+            // updates the search stack
+            ss->move_played = curr_move;
+            (ss + 1)->board = copy;
+            (ss + 1)->in_check = copy.is_in_check();
+            (ss + 1)->updated_accumulator = false;
+
+            score = -quiescence_search<nonPV>(-probcut_beta, -probcut_beta + 1, ss + 1);
+
+            // re-search with verification to verify that the move is good
+            if (score >= probcut_beta)
+                score = -negamax<nonPV>(-probcut_beta, -probcut_beta + 1, depth - 4, !cutnode, ss + 1);
+
+            if (score >= probcut_beta)
+            {
+                // update tranposition table
+                transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
+
+                return score;
+            }
+        }
+    }
+
     MoveList move_list;
     MoveList quiet_moves;
     MoveList noises;
