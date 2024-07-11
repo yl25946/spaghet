@@ -688,7 +688,7 @@ void generate_queen_promotions(const Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            move_list.insert(target_square + 8, target_square, MOVE_FLAG::QUEEN_PROMOTION_CAPTURE);
+            move_list.insert(target_square + 8, target_square, MOVE_FLAG::QUEEN_PROMOTION);
             pop_bit(promotions);
         }
     }
@@ -706,10 +706,10 @@ void generate_queen_promotions(const Board &board, MoveList &move_list)
         while (promotions)
         {
             target_square = lsb(promotions);
-            generate_promotions(target_square - 8, target_square, false, move_list);
+            move_list.insert(target_square - 8, target_square, MOVE_FLAG::QUEEN_PROMOTION);
             pop_bit(promotions);
         }
-        }
+    }
 }
 
 void generate_moves(Board &board, MoveList &move_list)
