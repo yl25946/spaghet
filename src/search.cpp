@@ -343,7 +343,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // we can fail low
     if (ss->static_eval < alpha - 500 - 300 * depth * depth)
     {
-        int razoring_score = -quiescence_search<nonPV>(-alpha - 1, alpha, ss);
+        int razoring_score = quiescence_search<nonPV>(-alpha - 1, alpha, ss);
 
         if (razoring_score < alpha && !is_mate_score(razoring_score))
             return razoring_score;
