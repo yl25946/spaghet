@@ -460,7 +460,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     Move best_move = NO_MOVE;
     bool is_quiet;
 
-    const int futility_margin = 150 + 100 * (depth - improving);
+    const int futility_margin = 150 + 100 * (depth - 2 * improving);
 
     while (move_picker.has_next())
     {
