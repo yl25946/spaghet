@@ -607,7 +607,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // if the search fails high we do a full depth research
             if (current_eval > alpha)
             {
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, depth - 1, !cutnode, ss + 1);
+                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
             }
         }
 
