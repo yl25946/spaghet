@@ -83,6 +83,11 @@ public:
 
     Killers() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
 
+    Move operator[](int index)
+    {
+        return killers[index];
+    }
+
     void insert(Move move);
     void clear() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
 
