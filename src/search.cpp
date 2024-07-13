@@ -589,6 +589,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (cutnode)
             reduction += 1;
 
+        if (tt_move.is_capture())
+            reduction += 1;
+
         if (is_quiet)
             reduction -= get_quiet_history_score(ss, thread_data, curr_move) / 10'000;
 
