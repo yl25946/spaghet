@@ -119,7 +119,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             // check killer moves
             for (int j = 0; j < ss->killers.size(); ++j)
             {
-                if (move_list.moves[i] == ss->killers.killers[j])
+                if (move_list.moves[i] == ss->killers[j])
                 {
                     move_list.moves[i].score = MAX_KILLERS - j;
                 }
