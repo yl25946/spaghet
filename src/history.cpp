@@ -34,8 +34,7 @@ void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
 
     // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
-    const int delta = good ? 170 * depth : -450 * depth;
-
+    const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
     // formula taken from ethereal
     butterfly_table[side_to_move][from_square][to_square] += delta - (static_cast<int64_t>(butterfly_table[side_to_move][from_square][to_square]) * abs(delta) / MAX_HISTORY);
 }
@@ -102,7 +101,7 @@ void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
 
     // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
-    const int delta = good ? 170 * depth : -450 * depth;
+    const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
     // formula taken from ethereal
     table[capturing_piece][to_square][uncolored_captured_piece] += delta - (static_cast<int64_t>(table[capturing_piece][to_square][uncolored_captured_piece]) * abs(delta) / MAX_HISTORY);
@@ -146,7 +145,7 @@ void ContinuationHistory::update(const Board &board, Move move, const Board &pre
 
     // table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
-    const int delta = good ? 170 * depth : -450 * depth;
+    const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
     // formula taken from ethereal
     table[piece][to_square][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[piece][to_square][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
