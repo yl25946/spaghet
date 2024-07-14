@@ -504,8 +504,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // History Pruning: if we have a low history score and at low depth, we can skip all quiets
             if (depth <= 5 && is_quiet && get_quiet_history_score(ss, thread_data, curr_move) < -1500 * depth - 500)
             {
-                // killers may have a lower history score than the highest rated history move if (curr_move != ss->killers[0] && curr_move != ss->killers[1])
-                move_picker.skip_quiets();
+                // killers may have a lower history score than the highest rated history move
+                if (curr_move != ss->killers[0] && curr_move != ss->killers[1])
+                    move_picker.skip_quiets();
+
                 continue;
             }
         }
