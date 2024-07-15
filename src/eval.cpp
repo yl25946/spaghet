@@ -894,5 +894,5 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
         accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
     }
 
-    return NNUE::eval(accumulators[ending], board.side_to_move);
+    return NNUE::eval(accumulators[ending], board.side_to_move) * (200 - board.fifty_move_counter) / 200;
 }
