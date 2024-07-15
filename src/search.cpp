@@ -119,9 +119,9 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 {
     int ply = ss->ply;
 
-    // // updates followup move history
-    // if (ply >= 2 && !(ss - 2)->null_moved)
-    //     thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
+    // updates followup move history
+    if (ply >= 2 && !(ss - 2)->null_moved)
+        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
 
     // updates counter move history
     if (ply >= 1 && !(ss - 1)->null_moved)
