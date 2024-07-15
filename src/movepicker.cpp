@@ -8,7 +8,7 @@ int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move q
 
     // adds 4 ply conthist bonus
     if (ply >= 4 && !(ss - 4)->null_moved)
-        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 4)->board, (ss - 4)->move_played);
+        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 4)->board, (ss - 4)->move_played) / 2;
 
     // adds followup move history bonus
     if (ply >= 2 && !(ss - 2)->null_moved)
