@@ -111,7 +111,11 @@ int main(int argc, char *argv[])
     // std::cout
     //     << board.pawn_hash << " " << alternative_board.pawn_hash;
 
-    UCI_loop();
+    // UCI_loop();
+
+    Board board(start_position);
+    std::cout
+        << NNUE::eval(board);
 
     return 0;
 }
