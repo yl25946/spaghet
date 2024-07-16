@@ -543,7 +543,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 {
                     // int double_margin = 290 * inPV - 200 * !tt_move.is_capture();
 
-                    extensions += 1 + (!inPV && singular_score < singular_beta - 100);
+                    int double_margin = 0;
+                    int triple_margin = 200;
+
+                    extensions += 1 + (!inPV && singular_score < singular_beta - double_margin);
+                    //   (!inPV && tt_move.is_quiet() && singular_score < singular_beta - triple_margin);
                 }
 
                 // Multicut: Since the sigular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
