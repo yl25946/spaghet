@@ -894,7 +894,7 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
         accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
     }
 
-    int eval = NNUE::eval(accumulators[ending], board.side_to_move);
+    int eval = NNUE::eval(board, accumulators[ending]);
 
     int phase = 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 10 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
 
