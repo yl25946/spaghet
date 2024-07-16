@@ -333,8 +333,11 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
+<<<<<<< HEAD
 
 #endif
+    == == == =
+>>>>>>> 52aff36 (yolo)
 
     eval /= L1Q;
     eval += net.output_bias[bucket];
