@@ -341,7 +341,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // Razoring: If static evaluation is really low, use qsearch to see if we can raise alpha. If qsearch says we can't raise alpha,
     // we can fail low
-    if (ss->static_eval < alpha - 500 - 300 * depth * depth)
+    if (ss->static_eval < alpha - 200 * depth)
     {
         int razoring_score = quiescence_search<nonPV>(-alpha - 1, alpha, ss);
 
