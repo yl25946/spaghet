@@ -6,9 +6,13 @@
 
 constexpr int INPUT_WEIGHTS = 768;
 constexpr int HIDDEN_SIZE = 2048;
+constexpr int OUTPUT_BUCKETS = 8;
 constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
+
+// used for calculating buckets
+constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
 
 class Accumulator
 {
@@ -39,8 +43,8 @@ struct Network
 {
     int16_t feature_weights[INPUT_WEIGHTS][HIDDEN_SIZE];
     int16_t feature_bias[HIDDEN_SIZE];
-    int16_t output_weights[2][HIDDEN_SIZE];
-    int16_t output_bias;
+    int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE];
+    int16_t output_bias[OUTPUT_BUCKETS];
 };
 
 extern Network net;
@@ -52,7 +56,7 @@ public:
 
     static void init(const char *file);
     static int eval(const Board &board);
-    static int eval(const Accumulator &accumulator, uint8_t side_to_move);
+    static int eval(const Board &board, const Accumulator &accumulator);
     // void add(NNUE::accumulator &board_accumulator, const int piece, const int to);
     // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);
     // void addSub(NNUE::accumulator &board_accumulator, NNUEIndices add, NNUEIndices sub);
