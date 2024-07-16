@@ -517,7 +517,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
         // move excluded to see if any other moves can beat it.
-        if (!in_root && depth >= 4 && curr_move == tt_move && !ss->exclude_tt_move)
+        if (!in_root && depth >= 6 && curr_move == tt_move && !ss->exclude_tt_move)
         {
             const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
 
