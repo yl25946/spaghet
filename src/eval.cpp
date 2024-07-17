@@ -900,5 +900,11 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
 
     eval = eval * (206 + phase) / 256;
 
+    // Eval Grain: allows for easier cutoffs with some randomization for robustness
+    eval = (eval / 16) * 16;
+
+    // Randomization: allows for a more robust evaluatino
+    eval += -1 + (board.hash & 0b10);
+
     return eval;
 }
