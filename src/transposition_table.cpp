@@ -108,34 +108,45 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 {
     uint64_t hash_location = board.hash % hashtable.size();
 
+    TT_Entry &tt_entry = hashtable[hash_location];
+
+    if (tt_entry.flag() != BOUND::EXACT && depth < tt_entry.depth)
+    {
+        // if there is no move in the entry we can still put our move in
+        if (tt_entry.best_move == NO_MOVE)
+            tt_entry.best_move = best_move;
+
+        return;
+    }
+
     // TODO: ADD BETTER TT REPLACEMENT ALGO
-    hashtable[hash_location].hash = board.hash;
-    hashtable[hash_location].score = best_score;
-    hashtable[hash_location].static_eval = static_eval;
-    hashtable[hash_location].depth = depth;
+    tt_entry.hash = board.hash;
+    tt_entry.score = best_score;
+    tt_entry.static_eval = static_eval;
+    tt_entry.depth = depth;
 
     // only time we will not have a tt move is with a fail low
     if (flag != BOUND::FAIL_LOW)
-        hashtable[hash_location].best_move = best_move;
+        tt_entry.best_move = best_move;
 
     // treat mate scores so that they're relative to the position instead of the root
     if (best_score >= MAX_MATE_SCORE)
     {
         // the mate is relative to the root, we have to add the ply to account for the additional depth searched
-        hashtable[hash_location].score = best_score + ply;
+        tt_entry.score = best_score + ply;
     }
     else if (best_score <= MIN_MATE_SCORE)
     {
         // same idea as above
-        hashtable[hash_location].score = best_score - ply;
+        tt_entry.score = best_score - ply;
     }
     else
     {
-        hashtable[hash_location].score = best_score;
+        tt_entry.score = best_score;
     }
 
     uint8_t modular_age = age & 63;
-    hashtable[hash_location].flag_and_age = (modular_age << 2) | flag;
+    tt_entry.flag_and_age = (modular_age << 2) | flag;
 }
 
 // bool TranspositionTable::contains(const Board &board)
