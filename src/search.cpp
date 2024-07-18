@@ -341,7 +341,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && ss->static_eval - 80 * (depth - improving) >= beta)
-        return beta + (ss->eval - beta) / 3;
+        return beta + (ss->static_eval - beta) / 3;
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
