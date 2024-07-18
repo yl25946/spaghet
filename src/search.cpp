@@ -596,8 +596,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (curr_move == ss->killers[0] || curr_move == ss->killers[1])
             --reduction;
 
-        if (improving)
-            --reduction;
+        if (!improving)
+            ++reduction;
 
         if (is_quiet)
             reduction -= get_quiet_history_score(ss, thread_data, curr_move) / 10'000;
