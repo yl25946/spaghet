@@ -902,3 +902,14 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
 
     return eval;
 }
+
+int evaluate(const Board &board, const Accumulator &accumulator)
+{
+    int eval = NNUE::eval(accumulator, board.side_to_move);
+
+    int phase = 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 10 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+
+    eval = eval * (206 + phase) / 256;
+
+    return eval;
+}

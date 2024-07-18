@@ -73,6 +73,8 @@ public:
     // creates a null move, do this for easy debugging
     void make_null_move();
 
+    void remove_piece(uint8_t square);
+
     // converts position into a fen
     std::string fen() const;
 

@@ -2,7 +2,6 @@
 
 #include "defs.h"
 #include "board.h"
-#include "utils.h"
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;

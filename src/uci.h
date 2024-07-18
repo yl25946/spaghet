@@ -4,6 +4,7 @@
 
 #include "move.h"
 #include "board.h"
+#include "nnue_misc.h"
 #include "search.h"
 #include "time.h"
 #include "perft.h"

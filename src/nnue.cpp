@@ -232,67 +232,9 @@ void NNUE::init(const char *file)
 
 int NNUE::eval(const Board &board)
 {
-    std::array<std::array<int32_t, HIDDEN_SIZE>, 2> accumulator;
+    Accumulator accumulator(board);
 
-    // copies over all the biases
-
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[0][i] = net.feature_bias[i];
-
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[1][i] = net.feature_bias[i];
-
-    for (int color = 0; color < 2; ++color)
-    {
-        for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
-        {
-            uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
-            while (bitboard)
-            {
-                // nnue uses a8 = 0, while we want a1 = 0, so we flip the white square
-                int black_square = lsb(bitboard);
-                int white_square = flip(black_square);
-                int nnue_white_piece = uncolored_to_nnue(piece, color);
-
-                int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
-
-                int nnue_white_input_index = 64 * nnue_white_piece + white_square;
-                int nnue_black_input_index = 64 * nnue_black_piece + black_square;
-
-                // std::cout << color << " " << piece << "\n";
-
-                // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
-
-                // updates all the pieces in the accumulators
-                for (int i = 0; i < HIDDEN_SIZE; ++i)
-                    accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
-
-                for (int i = 0; i < HIDDEN_SIZE; ++i)
-                    accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
-
-                pop_bit(bitboard);
-            }
-        }
-    }
-
-    // for (int i = 0; i < HIDDEN_SIZE; ++i)
-    // {
-    //     std::cout << accumulator[0][i] << " " << accumulator[1][i] << " ";
-    // }
-
-    int eval = 0;
-    // feed everything forward to get the final value
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[0][i];
-
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[1][i];
-
-    eval /= L1Q;
-    eval += net.output_bias;
-    eval = (eval * SCALE) / (L1Q * OutputQ);
-
-    return eval;
+    return eval(accumulator, board.side_to_move);
 }
 
 int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)

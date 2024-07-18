@@ -59,7 +59,7 @@ uint8_t file(uint8_t square)
 
 uint8_t rank(uint8_t square)
 {
-    return square >> 3;
+    return 7 - (square >> 3);
 }
 
 int lmr_reduction_quiet(int depth, int move_number)

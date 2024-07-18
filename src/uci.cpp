@@ -230,6 +230,14 @@ void UCI_loop()
             perft_driver(board.fen(), depth);
         }
 
+        else if (!line.compare(0, 4, "eval"))
+        {
+            for (Move move : move_list)
+                board.make_move(move);
+
+            print_eval(board);
+        }
+
         else if (!line.compare(0, 25, "setoption name Hash value"))
         {
             info.hash_size = std::stoi(line.substr(26));

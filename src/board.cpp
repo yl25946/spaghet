@@ -631,6 +631,16 @@ void Board::make_null_move()
     ++half_move_counter;
 }
 
+void Board::remove_piece(uint8_t square)
+{
+    uint8_t colored_piece = mailbox[square];
+
+    mailbox[square] = NO_PIECE;
+
+    remove_bit(pieces[colored_to_uncolored(colored_piece)], square);
+    remove_bit(colors[colored_piece & 1], square);
+}
+
 void Board::print() const
 {
 

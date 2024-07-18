@@ -18,7 +18,7 @@ uint64_t get_time();
 // gets the file of a piece, a-h is 0-7 respectively
 uint8_t file(uint8_t square);
 
-// gets the rank of a piece, zero indexed and flipped
+// gets the rank of a piece, zero indexed
 uint8_t rank(uint8_t square);
 
 // TAKEN FROM WEISS:
