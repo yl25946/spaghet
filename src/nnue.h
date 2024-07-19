@@ -2,6 +2,7 @@
 
 #include "defs.h"
 #include "board.h"
+#include "simd.h"
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
@@ -10,10 +11,13 @@ constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
+// how many accumulator ints we can evaluate at a time
+int chunk_size = 1;
+
 class Accumulator
 {
 public:
-    std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
+    alignas(32) std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
 
     Accumulator() {};
     Accumulator(const Board &board);
@@ -37,10 +41,10 @@ public:
 
 struct Network
 {
-    int16_t feature_weights[INPUT_WEIGHTS][HIDDEN_SIZE];
-    int16_t feature_bias[HIDDEN_SIZE];
-    int16_t output_weights[2][HIDDEN_SIZE];
-    int16_t output_bias;
+    alignas(32) int16_t feature_weights[INPUT_WEIGHTS][HIDDEN_SIZE];
+    alignas(32) int16_t feature_bias[HIDDEN_SIZE];
+    alignas(32) int16_t output_weights[2][HIDDEN_SIZE];
+    alignas(32) int16_t output_bias;
 };
 
 extern Network net;

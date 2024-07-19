@@ -228,6 +228,12 @@ void NNUE::init(const char *file)
         memoryIndex += HIDDEN_SIZE * sizeof(int16_t) * 2;
         std::memcpy(&net.output_bias, &gEVALData[memoryIndex], 1 * sizeof(int16_t));
     }
+
+#if defined(USE_AVX512)
+    chunk_size = 32;
+#elif defined(USE_AVX2)
+    chunk_size = 16;
+#endif
 }
 
 int NNUE::eval(const Board &board)
@@ -240,6 +246,17 @@ int NNUE::eval(const Board &board)
 int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
 {
     int eval = 0;
+
+#if defined(USE_SIMD)
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+        eval += screlu_reduce(&accumulator[side_to_move][i], &net.output_weights[0][i], L1Q);
+
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+        eval += screlu_reduce(&accumulator[side_to_move ^ 1][i], &net.output_weights[1][i], L1Q);
+
+    std::cout << "using simd!";
+
+#else
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[side_to_move][i]) * net.output_weights[0][i];
@@ -250,6 +267,7 @@ int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
     eval /= L1Q;
     eval += net.output_bias;
     eval = (eval * SCALE) / (L1Q * OutputQ);
+#endif
 
     return eval;
 }
