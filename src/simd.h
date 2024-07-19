@@ -19,7 +19,14 @@ inline vepi16 load_epi16(int num) { return _mm512_set1_epi16(num); };
 inline vepi32 load_epi32(int num) { return _mm512_set1_epi32(num); };
 // inline void store_epi16(void *memory_address, vepi16 vector) { _mm512_store_si512(memory_address, vector); }
 
+inline vepi32 add_epi32(vepi32 v1, vepi32 v2) { return _mm512_add_epi32(v1, v2); }
+inline vepi16 multiply_epi16(vepi16 v1, vepi16 v2) { return _mm512_mullo_epi16(v1, v2); }
+// multiplies the two vectors together using intermediate int32, and then adds adjacent int32s
+inline vepi32 multiply_add_epi16(vepi16 v1, vepi16 v2) { return _mm512_madd_epi16(v1, v2); }
+
 inline vepi16 clip(vepi16 vector, int L1Q) { return _mm512_min_epi16(_mm512_max_epi16(vector, zero_epi16()), load_epi16(L1Q)); }
+
+inline int reduce_add_epi32(vepi32 v) { return __mm512_reduce_add_epi32(v); }
 
 #elif defined(USE_AVX2)
 using vepi16 = __m256i;
@@ -34,10 +41,15 @@ inline vepi16 load_epi16(int num) { return _mm256_set1_epi16(num); };
 inline vepi32 load_epi32(int num) { return _mm256_set1_epi32(num); };
 // inline void store_epi16(void *memory_address, vepi16 vector) { _mm256_store_si256(memory_address, vector); }
 
+inline vepi32 add_epi32(vepi32 v1, vepi32 v2) { return _mm256_add_epi32(v1, v2); }
+inline vepi16 multiply_epi16(vepi16 v1, vepi16 v2) { return _mm256_mullo_epi16(v1, v2); }
+// multiplies the two vectors together using intermediate int32, and then adds adjacent int32s
+inline vepi32 multiply_add_epi16(vepi16 v1, vepi16 v2) { return _mm256_madd_epi16(v1, v2); }
+
 inline vepi16 clip(vepi16 vector, int L1Q) { return _mm256_min_epi16(_mm256_max_epi16(vector, zero_epi16()), load_epi16(L1Q)); }
 
 // implementation from Stormphrax
-inline int _mm256_reduce_add_epi32(vepi32 vector)
+inline int reduce_add_epi32(vepi32 vector)
 {
     auto high128 = _mm256_extracti128_si256(vector, 1);
     auto low128 = _mm256_castsi256_si128(vector);
@@ -59,42 +71,6 @@ inline int _mm256_reduce_add_epi32(vepi32 vector)
 
     // extracts the sum
     return _mm_cvtsi128_si32(sum32);
-}
-
-// screlus everything and then reduces it to a single int
-inline int screlu_reduce(const int16_t *accumulator_address, const int16_t *net_weight_address, int L1Q)
-{
-    vepi16 accumulator_values256 = load_epi16(accumulator_address);
-    vepi16 net_weights256 = load_epi16(net_weight_address);
-
-    vepi16 clipped256 = clip(accumulator_values256, L1Q);
-
-    // extract high and low 128 bits
-    const auto low128 = _mm256_castsi256_si128(clipped256);
-    const auto high128 = _mm256_extracti128_si256(clipped256, 1);
-    const auto low_net_weights128 = _mm256_castsi256_si128(net_weights256);
-    const auto high_net_weights128 = _mm256_extracti128_si256(net_weights256, 1);
-
-    // cast to int32
-    vepi32 converted_low256 = _mm256_cvtepi16_epi32(low128);
-    vepi32 converted_high256 = _mm256_cvtepi16_epi32(high128);
-    vepi32 converted_low_net_weights256 = _mm256_cvtepi16_epi32(low_net_weights128);
-    vepi32 converted_high_net_weights256 = _mm256_cvtepi16_epi32(high_net_weights128);
-
-    // squaring
-    vepi32 squared_low256 = _mm256_mullo_epi32(converted_low256, converted_low256);
-    vepi32 squared_high256 = _mm256_mullo_epi32(converted_high256, converted_high256);
-
-    // multiply by net weight
-
-    vepi32 final_low256 = _mm256_mullo_epi32(squared_low256, converted_low_net_weights256);
-    vepi32 final_high256 = _mm256_mullo_epi32(squared_high256, converted_high_net_weights256);
-
-    // reduce into a single value
-    int reduced_value = _mm256_reduce_add_epi32(final_low256);
-    reduced_value += _mm256_reduce_add_epi32(final_high256);
-
-    return reduced_value;
 }
 
 #endif

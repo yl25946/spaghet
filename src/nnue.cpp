@@ -230,12 +230,6 @@ void NNUE::init(const char *file)
         memoryIndex += HIDDEN_SIZE * sizeof(int16_t) * 2;
         std::memcpy(&net.output_bias, &gEVALData[memoryIndex], 1 * sizeof(int16_t));
     }
-
-#if defined(USE_AVX512)
-    chunk_size = 32;
-#elif defined(USE_AVX2)
-    chunk_size = 16;
-#endif
 }
 
 int NNUE::eval(const Board &board)
@@ -250,12 +244,53 @@ int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
     int eval = 0;
 
 #if defined(USE_SIMD)
-    int seperate_eval = 0;
-    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
-        eval += screlu_reduce(&accumulator[side_to_move][i], &net.output_weights[0][i], L1Q);
+    vepi32 sum = zero_epi32();
 
+    constexpr int chunk_size = sizeof(vepi16) / sizeof(int16_t);
+    // our perspective
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
-        eval += screlu_reduce(&accumulator[side_to_move ^ 1][i], &net.output_weights[1][i], L1Q);
+    {
+        // load in the data from the weights
+        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move][i]);
+        const vepi16 weights = load_epi16(&net.output_weights[0][i]);
+
+        // clip
+        const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+
+        // multiply with weights
+        // still int16s, will not overflow
+        const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
+
+        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+
+        // add the result we have to the running sum
+        sum = add_epi32(sum, result);
+    }
+
+    // their perspective
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        // load in the data from the weights
+        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move ^ 1][i]);
+        const vepi16 weights = load_epi16(&net.output_weights[1][i]);
+
+        // clip
+        const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+
+        // multiply with weights
+        // still int16s, will not overflow
+        const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
+
+        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+
+        // add the result we have to the running sum
+        sum = add_epi32(sum, result);
+    }
+
+    // finally reduce
+    eval = reduce_add_epi32(sum);
 
 #else
     // feed everything forward to get the final value

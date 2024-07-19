@@ -11,9 +11,6 @@ constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
-// how many accumulator ints we can evaluate at a time
-extern int chunk_size;
-
 class Accumulator
 {
 public:
