@@ -10,10 +10,10 @@
 using vepi16 = __m512i;
 using vepi32 = __m512i;
 
-inline vepi16 zero_epi16() { return _mm512_setzero_si512; }
-inline vepi32 zero_epi32() { return _mm512_setzero_si512; }
-inline vepi16 load_epi16(void *memory_address) { return _mm512_load_si512(memory_address); }
-inline vepi32 load_epi32(void *memory_address) { return _mm512_load_si512(memory_address); }
+inline vepi16 zero_epi16() { return *_mm512_setzero_si512(); }
+inline vepi32 zero_epi32() { return *_mm512_setzero_si512(); }
+inline vepi16 load_epi16(const int16_t *memory_address) { return _mm512_load_si512(reinterpret_cast<const __m512i *>(memory_address)); }
+inline vepi32 load_epi32(const int32_t *memory_address) { return _mm512_load_si512(reinterpret_cast<const __m512i *>(memory_address)); }
 // this function puts num as every value in the vector
 inline vepi16 load_epi16(int num) { return _mm512_set1_epi16(num); };
 inline vepi32 load_epi32(int num) { return _mm512_set1_epi32(num); };
@@ -25,10 +25,10 @@ inline vepi16 clip(vepi16 vector, int L1Q) { return _mm512_min_epi16(_mm512_max_
 using vepi16 = __m256i;
 using vepi32 = __m256i;
 
-inline vepi16 zero_epi16() { return _mm256_setzero_si256; }
-inline vepi32 zero_epi32() { return _mm256_setzero_si256; }
-inline vepi16 load_epi16(void *memory_address) { return _mm256_load_si256(memory_address); }
-inline vepi32 load_epi32(void *memory_address) { return _mm256_load_si256(memory_address); }
+inline vepi16 zero_epi16() { return _mm256_setzero_si256(); }
+inline vepi32 zero_epi32() { return _mm256_setzero_si256(); }
+inline vepi16 load_epi16(const int16_t *memory_address) { return _mm256_load_si256(reinterpret_cast<const __m256i *>(memory_address)); }
+inline vepi32 load_epi32(const int32_t *memory_address) { return _mm256_load_si256(reinterpret_cast<const __m256i *>(memory_address)); }
 // this function puts num as every value in the vector
 inline vepi16 load_epi16(int num) { return _mm256_set1_epi16(num); };
 inline vepi32 load_epi32(int num) { return _mm256_set1_epi32(num); };

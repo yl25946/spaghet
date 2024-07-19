@@ -15,6 +15,8 @@ const unsigned char *const gEVALEnd = &gEVALData[1];
 const unsigned int gEVALSize = 1;
 #endif
 
+int chunk_size = 1;
+
 Network net;
 
 inline int uncolored_to_nnue(int piece, int color)
@@ -248,13 +250,12 @@ int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
     int eval = 0;
 
 #if defined(USE_SIMD)
+    int seperate_eval = 0;
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
         eval += screlu_reduce(&accumulator[side_to_move][i], &net.output_weights[0][i], L1Q);
 
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
         eval += screlu_reduce(&accumulator[side_to_move ^ 1][i], &net.output_weights[1][i], L1Q);
-
-    std::cout << "using simd!";
 
 #else
     // feed everything forward to get the final value
@@ -264,10 +265,11 @@ int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[side_to_move ^ 1][i]) * net.output_weights[1][i];
 
+#endif
+
     eval /= L1Q;
     eval += net.output_bias;
     eval = (eval * SCALE) / (L1Q * OutputQ);
-#endif
 
     return eval;
 }

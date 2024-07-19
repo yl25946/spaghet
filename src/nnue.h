@@ -12,7 +12,7 @@ constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
 // how many accumulator ints we can evaluate at a time
-int chunk_size = 1;
+extern int chunk_size;
 
 class Accumulator
 {
