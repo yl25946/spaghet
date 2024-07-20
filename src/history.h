@@ -34,7 +34,7 @@ class PawnHistory
     // [mod pawn hash][[piece][to]
     int16_t table[PAWNHIST_SIZE][12][64];
 
-    PawnHistory{};
+    PawnHistory();
 
     void update(const Board &board, MoveList &move_list, Move fail_high_move, int depth);
     void update(const Board &board, Move move, int depth, bool good);
