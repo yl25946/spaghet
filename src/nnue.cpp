@@ -285,7 +285,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
     {
         // load in the data from the weights
-        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move][i]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][0][i]);
 
         // clip
@@ -306,7 +306,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
     {
         // load in the data from the weights
-        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move ^ 1][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][1][i]);
 
         // clip
@@ -333,7 +333,6 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
-
 #endif
 
     eval /= L1Q;
