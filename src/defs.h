@@ -19,13 +19,6 @@
 #include <sstream>
 #include <memory>
 
-// #include "utils.h"
-// #include "attacks.h"
-// #include "magic_bitboards.h"
-// #include "board.h"
-// #include "utils.h"
-// #include "movegen.h"
-
 // toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
 
@@ -103,7 +96,7 @@ constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 // this is the move ordering value for killers, make sure it's above histories
 constexpr int64_t MAX_KILLERS = 1 << 20;
 
-// entries in our thing
+// number of entries in corrhist
 constexpr int CORRHIST_SIZE = 16384;
 constexpr int CORRHIST_LIMIT = 1024;
 

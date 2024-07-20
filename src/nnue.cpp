@@ -15,6 +15,8 @@ const unsigned char *const gEVALEnd = &gEVALData[1];
 const unsigned int gEVALSize = 1;
 #endif
 
+int chunk_size = 1;
+
 Network net;
 
 inline int uncolored_to_nnue(int piece, int color)
@@ -240,12 +242,65 @@ int NNUE::eval(const Board &board)
 int NNUE::eval(const Accumulator &accumulator, uint8_t side_to_move)
 {
     int eval = 0;
+
+#if defined(USE_SIMD)
+    vepi32 sum = zero_epi32();
+
+    constexpr int chunk_size = sizeof(vepi16) / sizeof(int16_t);
+    // our perspective
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        // load in the data from the weights
+        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move][i]);
+        const vepi16 weights = load_epi16(&net.output_weights[0][i]);
+
+        // clip
+        const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+
+        // multiply with weights
+        // still int16s, will not overflow
+        const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
+
+        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+
+        // add the result we have to the running sum
+        sum = add_epi32(sum, result);
+    }
+
+    // their perspective
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        // load in the data from the weights
+        const vepi16 accumulator_data = load_epi16(&accumulator[side_to_move ^ 1][i]);
+        const vepi16 weights = load_epi16(&net.output_weights[1][i]);
+
+        // clip
+        const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+
+        // multiply with weights
+        // still int16s, will not overflow
+        const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
+
+        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+
+        // add the result we have to the running sum
+        sum = add_epi32(sum, result);
+    }
+
+    // finally reduce
+    eval = reduce_add_epi32(sum);
+
+#else
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[side_to_move][i]) * net.output_weights[0][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
         eval += screlu(accumulator[side_to_move ^ 1][i]) * net.output_weights[1][i];
+
+#endif
 
     eval /= L1Q;
     eval += net.output_bias;
