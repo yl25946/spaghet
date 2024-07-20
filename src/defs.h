@@ -97,6 +97,9 @@ constexpr int64_t MAX_KILLERS = 1 << 20;
 constexpr int CORRHIST_SIZE = 16384;
 constexpr int CORRHIST_LIMIT = 1024;
 
+// number of pawn entries in pawnhist
+constexpr int PAWNHIST_SIZE = 16384;
+
 // SEE values
 constexpr int SEEValue[7] = {
     100,

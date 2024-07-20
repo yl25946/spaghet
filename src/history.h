@@ -29,6 +29,18 @@ public:
     int64_t move_value(Move move, uint8_t side_to_move);
 };
 
+class PawnHistory
+{
+    // [mod pawn hash][[piece][to]
+    int16_t table[PAWNHIST_SIZE][12][64];
+
+    PawnHistory{};
+
+    void update(const Board &board, MoveList &move_list, Move fail_high_move, int depth);
+    void update(const Board &board, Move move, int depth, bool good);
+    int64_t move_value(const Board &board, Move move);
+};
+
 class CaptureHistory
 {
 public:
