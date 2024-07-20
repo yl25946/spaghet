@@ -10,8 +10,8 @@
 using vepi16 = __m512i;
 using vepi32 = __m512i;
 
-inline vepi16 zero_epi16() { return *_mm512_setzero_si512(); }
-inline vepi32 zero_epi32() { return *_mm512_setzero_si512(); }
+inline vepi16 zero_epi16() { return _mm512_setzero_si512(); }
+inline vepi32 zero_epi32() { return _mm512_setzero_si512(); }
 inline vepi16 load_epi16(const int16_t *memory_address) { return _mm512_load_si512(reinterpret_cast<const __m512i *>(memory_address)); }
 inline vepi32 load_epi32(const int32_t *memory_address) { return _mm512_load_si512(reinterpret_cast<const __m512i *>(memory_address)); }
 // this function puts num as every value in the vector
@@ -26,7 +26,7 @@ inline vepi32 multiply_add_epi16(vepi16 v1, vepi16 v2) { return _mm512_madd_epi1
 
 inline vepi16 clip(vepi16 vector, int L1Q) { return _mm512_min_epi16(_mm512_max_epi16(vector, zero_epi16()), load_epi16(L1Q)); }
 
-inline int reduce_add_epi32(vepi32 v) { return __mm512_reduce_add_epi32(v); }
+inline int reduce_add_epi32(vepi32 v) { return _mm512_reduce_add_epi32(v); }
 
 #elif defined(USE_AVX2)
 using vepi16 = __m256i;
