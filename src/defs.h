@@ -79,10 +79,6 @@ constexpr int16_t MIN_MATE_SCORE = -MATE + MAX_PLY;
 // the max the highest a mate can reach
 constexpr int16_t MAX_MATE_SCORE = MATE - MAX_PLY;
 
-// these two are used for reverse futility pruning
-constexpr int DEPTH_MARGIN = 6;
-constexpr int MARGIN = 80;
-
 // used for move ordering
 constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
 constexpr int64_t CAPTURE_BONUS = 1LL << 21;
