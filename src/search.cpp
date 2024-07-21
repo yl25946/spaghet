@@ -623,12 +623,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // SF idea:
                 // Adjust the depth of the full-depth search based on LMR results - if the results were good
                 // enough we should search deeper, if it was bad enough search shallower
-                // const bool do_deeper_search = current_score > (best_score + 35 + 2 * new_depth);
+                const bool do_deeper_search = current_score > (best_score + 35 + 2 * new_depth);
                 const bool do_shallower_search = current_score < best_score + new_depth;
 
-                new_depth += -do_shallower_search;
+                new_depth += do_deeper_search - do_shallower_search;
 
-                // redundant code but may add do_shallower_search later
                 if (new_depth > reduced_depth)
                     current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
             }
