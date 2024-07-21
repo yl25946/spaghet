@@ -36,53 +36,6 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     this->transposition_table = transposition_table;
 }
 
-// Searcher::Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time) : board(board), transposition_table(transposition_table), history(history), conthist(conthist), search_stack(search_stack)
-// {
-//     // reserves enough space so we don't have to resize
-//     game_history.reserve(300 + MAX_PLY);
-
-//     game_history.push_back(board.hash);
-
-//     for (Move m : move_list)
-//     {
-//         board.make_move(m);
-//         // if (count_bits(board.bitboard(WHITE_KING)) == 2)
-//         //     board.print();
-//         game_history.push_back(board.hash);
-//     }
-
-//     search_stack[4].board = board;
-
-//     nodes_spent_table.fill(0);
-
-//     this->board = board;
-//     this->age = age;
-//     this->transposition_table = transposition_table;
-//     this->history = history;
-//     this->max_stop_time = end_time;
-//     this->optimum_stop_time = end_time;
-//     this->max_stop_time_duration = end_time - get_time();
-//     this->optimum_stop_time_duration = end_time - get_time();
-// }
-// Searcher::Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth)
-//     : board(board)
-// {
-
-//     for (Move m : move_list)
-//     {
-//         board.make_move(m);
-//     }
-
-//     this->board = board;
-//     this->end_time = end_time;
-//     this->max_depth = max_depth;
-// }
-
-// bool Searcher::is_checkmate(Board &board)
-// {
-//     return false;
-// }
-
 bool Searcher::twofold(Board &board)
 {
     // in here, the board's hash is already added into the game_history
