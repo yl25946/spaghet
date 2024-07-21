@@ -303,7 +303,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = has_tt_entry && tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -544,10 +544,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     // int double_margin = 290 * inPV - 200 * !tt_move.is_capture();
 
                     int double_margin = 0;
-                    int triple_margin = 200;
+                    int triple_margin = 100;
 
-                    extensions += 1 + (!inPV && singular_score < singular_beta - double_margin);
-                    //   (!inPV && tt_move.is_quiet() && singular_score < singular_beta - triple_margin);
+                    extensions += 1 + (!inPV && singular_score < singular_beta - double_margin) +
+                                  (!inPV && tt_move.is_quiet() && singular_score < singular_beta - triple_margin);
                 }
 
                 // Multicut: Since the sigular search failed high, that means that the main search is likely to fail high too, so if our singular_beta
