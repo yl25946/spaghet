@@ -303,7 +303,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = has_tt_entry && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -381,11 +381,16 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // Interal Iterative Reduction: If we don't have a TT move, that means our move ordering isn't as good, so we reduce the depth.
-    // alternatively if it is a cutnode, that means it's very likely that we fail high, so we can reduce the depth for a quicker search
-    if (depth >= 4 && !has_tt_move && (inPV || cutnode))
-    {
+    if (inPV && !has_tt_move)
+        depth -= 2;
+
+    if (depth <= 0)
+        return quiescence_search<inPV>(alpha, beta, ss);
+
+    // Cutnode Internal Iterative Reduction: same idea as PV IIR
+    // TODO: test cutnode IIR with upper (fail low) bounds and reduce twice if there's no tt move and reduce once if there is a fail low
+    if (cutnode && depth >= 5 && !has_tt_move && !ss->exclude_tt_move)
         depth -= 1;
-    }
 
     // Probcut: If we have a really good capture/queen promotion and a reduced search returns a value much higher than beta, we can prune
     int probcut_beta = beta + 350;
