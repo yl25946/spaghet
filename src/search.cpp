@@ -626,7 +626,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // const bool do_deeper_search = current_score > (best_score + 35 + 2 * new_depth);
                 const bool do_shallower_search = current_score < best_score + new_depth;
 
-                new_depth += do_deeper_search;
+                new_depth += -do_shallower_search;
 
                 // redundant code but may add do_shallower_search later
                 if (new_depth > reduced_depth)
