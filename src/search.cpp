@@ -128,7 +128,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     if (alpha < stand_pat)
         alpha = stand_pat;
 
-    int best_eval = stand_pat;
+    int best_score = stand_pat;
     // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
@@ -168,21 +168,21 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         (ss + 1)->updated_accumulator = false;
         (ss)->move_played = curr_move;
 
-        int current_eval = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
+        int current_score = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
         if (stopped)
             return 0;
 
-        if (current_eval > best_eval)
+        if (current_score > best_score)
         {
-            best_eval = current_eval;
+            best_score = current_score;
             best_move = curr_move;
 
             // ++capture_moves;
 
-            if (current_eval > alpha)
+            if (current_score > alpha)
             {
-                alpha = current_eval;
+                alpha = current_score;
                 if (alpha >= beta)
                 {
                     break; // fail soft
@@ -202,11 +202,11 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             bound_flag = BOUND::FAIL_HIGH;
         }
 
-        transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, 0, ss->ply, age, bound_flag);
+        transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, bound_flag);
     }
 
     // TODO: add check moves
-    return best_eval;
+    return best_score;
 }
 
 template <bool inPV>
@@ -409,7 +409,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     const int original_alpha = alpha;
 
     // get pvs here
-    int best_eval = -INF - 1;
+    int best_score = -INF - 1;
     Move best_move = NO_MOVE;
     bool is_quiet;
 
@@ -432,7 +432,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         is_quiet = curr_move.is_quiet();
 
-        if (!in_root && best_eval > MIN_MATE_SCORE)
+        if (!in_root && best_score > MIN_MATE_SCORE)
         {
             // applies late move pruning
             if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth / (2 - improving))
@@ -541,7 +541,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         game_history.push_back(copy.hash);
 
         int reduction = 0;
-        int current_eval;
+        int current_score;
 
         if (cutnode)
             reduction += 1;
@@ -568,34 +568,35 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // makes sure that depth is always positive and if reduction is negative, we only extend once
             int reduced_depth = std::max(std::min(new_depth - reduction, new_depth + 1), 1);
 
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, reduced_depth, true, ss + 1);
+            current_score = -negamax<nonPV>(-alpha - 1, -alpha, reduced_depth, true, ss + 1);
 
             // if the search fails high we do a full depth research
-            if (current_eval > alpha && new_depth > reduced_depth)
+            if (current_score > alpha && new_depth > reduced_depth)
             {
                 // SF idea:
                 // Adjust the depth of the full-depth search based on LMR results - if the results were good
                 // enough we should search deeper, if it was bad enough search shallower
-                const bool do_deeper_search = current_eval > (best_eval + 35 + 2 * new_depth);
+                // const bool do_deeper_search = current_score > (best_score + 35 + 2 * new_depth);
+                const bool do_shallower_search = current_score < best_score + new_depth;
 
                 new_depth += do_deeper_search;
 
                 // redundant code but may add do_shallower_search later
-                // if (new_depth > reduced_depth)
-                current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
+                if (new_depth > reduced_depth)
+                    current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
             }
         }
 
         // full depth search
         else if (!inPV || move_picker.moves_seen() > 0)
         {
-            current_eval = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
+            current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth, !cutnode, ss + 1);
         }
 
         // if we are in a PV node, we do a full window search on the first move or a fail high
-        if (inPV && (move_picker.moves_seen() == 0 || current_eval > alpha))
+        if (inPV && (move_picker.moves_seen() == 0 || current_score > alpha))
         {
-            current_eval = -negamax<PV>(-beta, -alpha, new_depth, false, ss + 1);
+            current_score = -negamax<PV>(-beta, -alpha, new_depth, false, ss + 1);
         }
 
         move_picker.update_moves_seen();
@@ -612,13 +613,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             return 0;
 
         // fail soft framework
-        if (current_eval > best_eval)
+        if (current_score > best_score)
         {
-            best_eval = current_eval;
+            best_score = current_score;
 
-            if (current_eval > alpha)
+            if (current_score > alpha)
             {
-                alpha = current_eval;
+                alpha = current_score;
                 best_move = curr_move;
 
                 // logic to update the pv when we have a new best_move
@@ -682,15 +683,15 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // failed to raise alpha, fail low
             bound_flag = BOUND::FAIL_LOW;
         }
-        if (best_eval != (-INF - 1))
-            transposition_table.insert(board, best_move, best_eval, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
+        if (best_score != (-INF - 1))
+            transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
     // // update corrhist if we're not in check
-    if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_eval >= beta && best_eval <= ss->static_eval) && !(best_move == NO_MOVE && best_eval >= ss->static_eval))
-        thread_data.corrhist.update(board, depth, best_eval, ss->static_eval);
+    if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
+        thread_data.corrhist.update(board, depth, best_score, ss->static_eval);
 
-    return best_eval;
+    return best_score;
 }
 
 void Searcher::search()
