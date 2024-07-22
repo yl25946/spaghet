@@ -388,6 +388,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
             if (score >= probcut_beta)
             {
+                // update capthist
+                if (curr_move.is_capture())
+                    thread_data.capthist.update(board, curr_move, depth - 3, true);
+
                 // update tranposition table
                 transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
 
