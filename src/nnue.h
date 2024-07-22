@@ -15,6 +15,16 @@ constexpr int OutputQ = 64;
 // used for calculating buckets
 constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
 
+inline int calculate_bucket(const Board &board)
+{
+    int active_neurons = 0;
+
+    for (int i = 0; i < 6; ++i)
+        active_neurons += count_bits(board.pieces[i]);
+
+    return (active_neurons - 2) / BUCKET_DIVISOR;
+}
+
 class Accumulator
 {
 public:
@@ -57,6 +67,8 @@ public:
 
     static void init(const char *file);
     static int eval(const Board &board);
+    static int eval(const Board &board, int bucket);
+    static int eval(const Board &board, const Accumulator &accumulator, int bucket);
     static int eval(const Board &board, const Accumulator &accumulator);
     // void add(NNUE::accumulator &board_accumulator, const int piece, const int to);
     // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);

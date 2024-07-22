@@ -189,16 +189,6 @@ inline int32_t screlu(int16_t value)
     return clipped * clipped;
 }
 
-inline int32_t calculate_bucket(const Board &board)
-{
-    int active_neurons = 0;
-
-    for (int i = 0; i < 6; ++i)
-        active_neurons += count_bits(board.pieces[i]);
-
-    return (active_neurons - 2) / BUCKET_DIVISOR;
-}
-
 void NNUE::init(const char *file)
 {
     // open the nn file
@@ -266,15 +256,23 @@ void NNUE::init(const char *file)
 
 int NNUE::eval(const Board &board)
 {
+    return eval(board, calculate_bucket(board));
+}
+
+int NNUE::eval(const Board &board, int bucket)
+{
     Accumulator accumulator(board);
 
-    return eval(board, accumulator);
+    return eval(board, accumulator, bucket);
 }
 
 int NNUE::eval(const Board &board, const Accumulator &accumulator)
 {
-    const int bucket = calculate_bucket(board);
+    return eval(board, accumulator, calculate_bucket(board));
+}
 
+int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
+{
     int eval = 0;
 
 #if defined(USE_SIMD)
