@@ -168,6 +168,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         (ss + 1)->updated_accumulator = false;
         (ss)->move_played = curr_move;
 
+        // prefetch the TT entry
+        transposition_table.prefetch(copy);
+
         int current_score = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
 
         if (stopped)
@@ -465,8 +468,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         int new_depth = depth - 1;
         int extensions = 0;
 
-        // std::cout << copy.fen();
-
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
         // move excluded to see if any other moves can beat it.
@@ -539,6 +540,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         // we can update threefold
         game_history.push_back(copy.hash);
+
+        // prefetch the TT entry
+        transposition_table.prefetch(copy);
 
         int reduction = 0;
         int current_score;

@@ -104,9 +104,15 @@ void TranspositionTable::resize(uint64_t size)
     hashtable.resize(tt_entry_count, TT_Entry());
 }
 
+void TranspositionTable::prefetch(const Board &board)
+{
+    const uint64_t hash_location = index(board);
+    __builtin_prefetch(&hashtable[hash_location]);
+}
+
 void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
 {
-    uint64_t hash_location = board.hash % hashtable.size();
+    uint64_t hash_location = index(board);
 
     // TODO: ADD BETTER TT REPLACEMENT ALGO
     hashtable[hash_location].hash = board.hash;
@@ -149,7 +155,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 
 TT_Entry &TranspositionTable::probe(const Board &board)
 {
-    uint64_t hash_location = board.hash % hashtable.size();
+    uint64_t hash_location = index(board);
 
     return hashtable[hash_location];
 }
