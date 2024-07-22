@@ -84,8 +84,6 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 template <bool inPV>
 int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 {
-    // return evaluate(board);
-
     if (stopped)
         return 0;
 
@@ -122,14 +120,14 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
 
-    if (stand_pat >= beta)
+    // we never want to use stand_pat if we are in check
+    if (!ss->in_check && stand_pat >= beta)
         return stand_pat; // fail soft
 
-    if (alpha < stand_pat)
+    if (!ss->in_check && alpha < stand_pat)
         alpha = stand_pat;
 
     int best_score = stand_pat;
-    // int capture_moves = 0;
     MoveList move_list;
     generate_capture_moves(board, move_list);
 
@@ -149,14 +147,12 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
         copy.make_move(curr_move);
 
+        // we only search the first check evasion
+        if (ss->in_check && move_picker.moves_seen() > 0)
+            break;
+
         if (!copy.was_legal())
             continue;
-
-        // do we need to check for checkmate in qsearch?
-        // if (is_checkmate(copy))
-        // {
-        //     return -50000 + depth
-        // }
 
         // qsearch SEE pruning
         // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
@@ -166,6 +162,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
         (ss + 1)->board = copy;
         (ss + 1)->updated_accumulator = false;
+        (ss + 1)->in_check = copy.is_in_check();
         (ss)->move_played = curr_move;
 
         int current_score = -quiescence_search<inPV>(-beta, -alpha, ss + 1);
@@ -190,6 +187,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             }
         }
     }
+
+    if (ss->in_check && move_picker.moves_seen() == 0)
+        return -MATE + ss->ply;
 
     // add to TT only if we aren't in SE
     if (!ss->exclude_tt_move)
