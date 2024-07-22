@@ -156,8 +156,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
         // qsearch SEE pruning
         // since we only generate capture moves, if the score of the move is negative, that means it did not pass the SEE threshold, so we can just stop the loop
-        // since everything after it will also not pass the SEE threshold
-        if (curr_move.score < 0)
+        // since everything after it will also not pass the SEE threshold, only do this if we're not in check
+        if (!ss->in_check && curr_move.score < 0)
             break;
 
         (ss + 1)->board = copy;
@@ -169,6 +169,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
         if (stopped)
             return 0;
+
+        move_picker.update_moves_seen();
 
         if (current_score > best_score)
         {
