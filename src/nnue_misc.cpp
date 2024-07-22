@@ -39,6 +39,16 @@ void format_cp_compact(int centripawn_value, char *buffer)
     }
 }
 
+// eval in cp
+void format_cp_aligned_dot(int eval)
+{
+    const double pawn = static_cast<double>(std::abs(eval)) / 100.0;
+
+    std::cout << (eval < 0 ? '-' : eval > 0 ? '+'
+                                            : ' ')
+              << std::setiosflags(std::ios::fixed) << std::setw(6) << std::setprecision(2) << pawn;
+}
+
 void print_eval(Board &board)
 {
     Accumulator accumulator(board);
@@ -92,6 +102,28 @@ void print_eval(Board &board)
     for (int row = 0; row < 3 * 8 + 1; ++row)
         std::cout << char_board[row] << '\n';
     std::cout << '\n';
+
+    std::cout << "NNUE network contributions "
+              << (board.side_to_move == WHITE ? "(White to move)" : "(Black to move)") << std::endl
+              << "+------------+------------+\n"
+              << "|   Bucket   | Evaluation |\n"
+              << "+------------+------------+\n";
+
+    const int correct_bucket = calculate_bucket(board);
+
+    for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
+    {
+        std::cout << "|  " << bucket << "        " //
+                  << " |  ";
+        format_cp_aligned_dot(NNUE::eval(board, bucket));
+        std::cout << "  " //
+                  << " |";
+        if (bucket == correct_bucket)
+            std::cout << " <-- this bucket is used";
+        std::cout << '\n';
+    }
+
+    std::cout << "+------------+------------+\n\n";
 
     int unscaled_eval = NNUE::eval(board);
     int scaled_eval = evaluate(board, accumulator);
