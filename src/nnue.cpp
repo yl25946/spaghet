@@ -237,21 +237,6 @@ void NNUE::init(const char *file)
         for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
             for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
                 net.output_weights[bucket][stm][weight] = untransposed_output_weights[stm][weight][bucket];
-
-    // for (int stm = 0; stm < 2; ++stm)
-    //     for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
-    //         for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
-    //         {
-    //             const int srcIdx = stm * weight * OUTPUT_BUCKETS + bucket;
-    //             const int dstIdx = bucket * 2 * HIDDEN_SIZE + stm * weight;
-
-    //             if (dstIdx / (HIDDEN_SIZE * OUTPUT_BUCKETS) >= 2 || (dstIdx % (HIDDEN_SIZE * OUTPUT_BUCKETS)) / HIDDEN_SIZE >= OUTPUT_BUCKETS || dstIdx % HIDDEN_SIZE >= HIDDEN_SIZE)
-    //                 std::cout << "error";
-
-    //             net.output_weights[bucket][stm][weight] = untransposed_output_weights[srcIdx];
-    //         }
-
-    // std::memcpy(net.output_weights, transposedL1Weights, HIDDEN_SIZE * sizeof(int16_t) * 2 * OUTPUT_BUCKETS);
 }
 
 int NNUE::eval(const Board &board)
