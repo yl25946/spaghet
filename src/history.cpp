@@ -216,7 +216,7 @@ int CorrectionHistory::correct_eval(const Board &board, int uncorrected_static_e
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
     const int raw_correction = table[board.side_to_move][hash_location];
-    const int correction = raw_correction * std::abs(raw_correction) / 20'000;
+    const int correction = raw_correction * std::abs(raw_correction) / 5'000;
 
     return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
 }
