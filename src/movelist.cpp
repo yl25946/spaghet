@@ -57,6 +57,6 @@ void MoveList::copy_over(MoveList &move_list)
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        insert(move_list.moves[i]);
+        insert(move_list[i]);
     }
 }

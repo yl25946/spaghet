@@ -24,6 +24,8 @@ public:
     void clear() { count = 0; }
     void copy_over(MoveList &move_list);
 
+    Move operator[](int index) const { return moves[index]; }
+
     std::string to_string();
     // iterates through the moves backwards (used for PV Tables)
     std::string reverse_to_string();

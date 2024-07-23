@@ -30,12 +30,9 @@ void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
     uint8_t from_square = move.from_square();
     uint8_t to_square = move.to_square();
 
-    // const int64_t updated_value = butterfly_table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
-
-    // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
-
     const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
-    // formula taken from ethereal
+
+    // gravity formula
     butterfly_table[side_to_move][from_square][to_square] += delta - (static_cast<int64_t>(butterfly_table[side_to_move][from_square][to_square]) * abs(delta) / MAX_HISTORY);
 }
 
@@ -43,16 +40,52 @@ void QuietHistory::update(MoveList &move_list, Move best_move, int depth, uint8_
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        if (move_list.moves[i].info == best_move.info)
-            update(move_list.moves[i], depth, side_to_move, true);
+        if (move_list[i] == best_move)
+            update(move_list[i], depth, side_to_move, true);
         else
-            update(move_list.moves[i], depth, side_to_move, false);
+            update(move_list[i], depth, side_to_move, false);
     }
 }
 
 int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
 {
     return butterfly_table[side_to_move][move.from_square()][move.to_square()];
+}
+
+PawnHistory::PawnHistory()
+{
+    for (int i = 0; i < PAWNHIST_SIZE; ++i)
+        for (int j = 0; j < 12; ++j)
+            for (int k = 0; k < 64; ++k)
+                table[i][j][k] = 0;
+}
+
+void PawnHistory::update(const Board &board, const MoveList &move_list, Move fail_high_move, int depth)
+{
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        if (move_list[i] == fail_high_move)
+            update(board, move_list[i], depth, true);
+        else
+            update(board, move_list[i], depth, false);
+    }
+}
+
+void PawnHistory::update(const Board &board, Move move, int depth, bool good)
+{
+    const uint8_t piece = board.mailbox[move.from_square()];
+    const uint8_t to = move.to_square();
+    const uint64_t pawn_hash_index = pawn_index(board);
+
+    const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
+
+    // gravity formula
+    table[pawn_hash_index][piece][to] += delta - (static_cast<int64_t>(table[pawn_hash_index][piece][to]) * abs(delta) / MAX_HISTORY);
+}
+
+int64_t PawnHistory::move_value(const Board &board, Move move)
+{
+    return table[pawn_index(board)][board.mailbox[move.from_square()]][move.to_square()];
 }
 
 CaptureHistory::CaptureHistory()
@@ -75,10 +108,10 @@ void CaptureHistory::update(const Board &board, MoveList &move_list, Move failed
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        if (move_list.moves[i].info == failed_high_move.info)
-            update(board, move_list.moves[i], depth, true);
+        if (move_list[i] == failed_high_move)
+            update(board, move_list[i], depth, true);
         else
-            update(board, move_list.moves[i], depth, false);
+            update(board, move_list[i], depth, false);
     }
 }
 
@@ -96,10 +129,6 @@ void CaptureHistory::update(const Board &board, Move move, int depth, bool good)
     uint8_t to_square = move.to_square();
     uint8_t capturing_piece = board.mailbox[from_square];
     uint8_t uncolored_captured_piece = colored_to_uncolored(board.mailbox[to_square]);
-
-    // const int64_t updated_value = butterfly_table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
-
-    // butterfly_table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
 
     const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
@@ -141,13 +170,9 @@ void ContinuationHistory::update(const Board &board, Move move, const Board &pre
     uint8_t previous_piece = previous_board.mailbox[previous_move.from_square()];
     uint8_t previous_to_square = previous_move.to_square();
 
-    // const int64_t updated_value = table[side_to_move][from_square][to_square] + (good ? depth * depth : -depth * depth);
-
-    // table[side_to_move][from_square][to_square] = std::clamp(updated_value, -MAX_HISTORY, MAX_HISTORY);
-
     const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
-    // formula taken from ethereal
+    // gravity formula
     table[piece][to_square][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[piece][to_square][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
 }
 
@@ -155,10 +180,10 @@ void ContinuationHistory::update(const Board &board, MoveList &move_list, Move b
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
-        if (move_list.moves[i].info == best_move.info)
-            update(board, move_list.moves[i], previous_board, previous_move, depth, true);
+        if (move_list[i] == best_move)
+            update(board, move_list[i], previous_board, previous_move, depth, true);
         else
-            update(board, move_list.moves[i], previous_board, previous_move, depth, false);
+            update(board, move_list[i], previous_board, previous_move, depth, false);
     }
 }
 
