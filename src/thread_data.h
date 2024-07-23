@@ -10,6 +10,7 @@ public:
     std::vector<SearchStack> search_stack;
     std::vector<Accumulator> accumulators;
     QuietHistory main_history;
+    PawnHistory pawnhist;
     CaptureHistory capthist;
     ContinuationHistory conthist;
     CorrectionHistory corrhist;

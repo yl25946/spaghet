@@ -59,7 +59,7 @@ bool Searcher::twofold(Board &board)
 void Searcher::scale_time(int best_move_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    const Move best_move = thread_data.search_stack[4].pv.moves[0];
+    const Move best_move = thread_data.search_stack[4].pv[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     // const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double node_scaling_factor = 1.0;
@@ -639,6 +639,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     {
                         update_conthist(ss, quiet_moves, curr_move, depth);
                         thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
+                        thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
                         ss->killers.insert(curr_move);
                     }
 
@@ -716,11 +717,11 @@ void Searcher::search()
     for (int i = 0; i < move_list.size(); ++i)
     {
         Board copy = board;
-        copy.make_move(move_list.moves[i]);
+        copy.make_move(move_list[i]);
 
         if (copy.was_legal())
         {
-            best_move = move_list.moves[i];
+            best_move = move_list[i];
             break;
         }
     }
@@ -781,7 +782,7 @@ void Searcher::search()
         if (stopped)
             break;
 
-        best_move = thread_data.search_stack[4].pv.moves[0];
+        best_move = thread_data.search_stack[4].pv[0];
 
         // clears the pv before starting the new search
         // for (int i = 0; i < MAX_PLY; ++i)
