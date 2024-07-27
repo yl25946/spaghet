@@ -48,6 +48,10 @@ public:
     void add(uint8_t piece, uint8_t square);
     // automatically converts a colored piece to a nnue piece
     void remove(uint8_t piece, uint8_t square);
+
+    void add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_piece, uint8_t sub_square);
+    void add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square);
+    void add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8_t add2_piece, uint8_t add2_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square);
 };
 
 struct Network
@@ -71,10 +75,7 @@ public:
     static int eval(const Board &board, const Accumulator &accumulator, int bucket);
     static int eval(const Board &board, const Accumulator &accumulator);
     // void add(NNUE::accumulator &board_accumulator, const int piece, const int to);
-    // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);
+    // // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);
     // void addSub(NNUE::accumulator &board_accumulator, NNUEIndices add, NNUEIndices sub);
     // void addSubSub(NNUE::accumulator &board_accumulator, NNUEIndices add, NNUEIndic es sub1, NNUEIndices sub2);
-    // #if defined(USE_AVX2)
-    //     [[nodiscard]] int32_t horizontal_add(const __m256i sum);
-    // #endif
 };

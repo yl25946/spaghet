@@ -102,8 +102,8 @@ void Accumulator::remove(uint8_t piece, uint8_t square)
     // board uses a8 = 0, while we want a1 = 0, so we flip the white square
     int black_square = square;
     int white_square = flip(black_square);
-    int nnue_white_piece = colored_to_nnue(piece);
 
+    int nnue_white_piece = colored_to_nnue(piece);
     int nnue_black_piece = colored_to_nnue(piece ^ 1);
 
     int nnue_white_input_index = 64 * nnue_white_piece + white_square;
@@ -121,6 +121,120 @@ void Accumulator::remove(uint8_t piece, uint8_t square)
         accumulator[BLACK][i] -= net.feature_weights[nnue_black_input_index][i];
 }
 
+void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_piece, uint8_t sub_square)
+{
+    const int black_add_square = add_square;
+    const int white_add_square = flip(black_add_square);
+    const int black_sub_square = sub_square;
+    const int white_sub_square = flip(black_sub_square);
+
+    const int nnue_add_white_piece = colored_to_nnue(add_piece);
+    const int nnue_add_black_piece = colored_to_nnue(add_piece ^ 1);
+    const int nnue_sub_white_piece = colored_to_nnue(sub_piece);
+    const int nnue_sub_black_piece = colored_to_nnue(sub_piece ^ 1);
+
+    const int nnue_add_white_input_index = 64 * nnue_add_white_piece + white_add_square;
+    const int nnue_add_black_input_index = 64 * nnue_add_black_piece + black_add_square;
+    const int nnue_sub_white_input_index = 64 * nnue_sub_white_piece + white_sub_square;
+    const int nnue_sub_black_input_index = 64 * nnue_sub_black_piece + black_sub_square;
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[nnue_sub_white_input_index][i];
+    }
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[BLACK][i] += net.feature_weights[nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[nnue_sub_black_input_index][i];
+    }
+}
+
+void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
+{
+    const int black_add_square = add_square;
+    const int white_add_square = flip(black_add_square);
+    const int black_sub1_square = sub1_square;
+    const int white_sub1_square = flip(black_sub1_square);
+    const int black_sub2_square = sub2_square;
+    const int white_sub2_square = flip(black_sub2_square);
+
+    const int nnue_add_white_piece = colored_to_nnue(add_piece);
+    const int nnue_add_black_piece = colored_to_nnue(add_piece ^ 1);
+    const int nnue_sub1_white_piece = colored_to_nnue(sub1_piece);
+    const int nnue_sub1_black_piece = colored_to_nnue(sub1_piece ^ 1);
+    const int nnue_sub2_white_piece = colored_to_nnue(sub2_piece);
+    const int nnue_sub2_black_piece = colored_to_nnue(sub2_piece ^ 1);
+
+    const int nnue_add_white_input_index = 64 * nnue_add_white_piece + white_add_square;
+    const int nnue_add_black_input_index = 64 * nnue_add_black_piece + black_add_square;
+    const int nnue_sub1_white_input_index = 64 * nnue_sub1_white_piece + white_sub1_square;
+    const int nnue_sub1_black_input_index = 64 * nnue_sub1_black_piece + black_sub1_square;
+    const int nnue_sub2_white_input_index = 64 * nnue_sub2_white_piece + white_sub2_square;
+    const int nnue_sub2_black_input_index = 64 * nnue_sub2_black_piece + black_sub2_square;
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[nnue_sub2_white_input_index][i];
+    }
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[BLACK][i] += net.feature_weights[nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[nnue_sub2_black_input_index][i];
+    }
+}
+
+void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8_t add2_piece, uint8_t add2_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
+{
+    const int black_add1_square = add1_square;
+    const int white_add1_square = flip(black_add1_square);
+    const int black_add2_square = add2_square;
+    const int white_add2_square = flip(black_add2_square);
+    const int black_sub1_square = sub1_square;
+    const int white_sub1_square = flip(black_sub1_square);
+    const int black_sub2_square = sub2_square;
+    const int white_sub2_square = flip(black_sub2_square);
+
+    const int nnue_add1_white_piece = colored_to_nnue(add1_piece);
+    const int nnue_add1_black_piece = colored_to_nnue(add1_piece ^ 1);
+    const int nnue_add2_white_piece = colored_to_nnue(add2_piece);
+    const int nnue_add2_black_piece = colored_to_nnue(add2_piece ^ 1);
+    const int nnue_sub1_white_piece = colored_to_nnue(sub1_piece);
+    const int nnue_sub1_black_piece = colored_to_nnue(sub1_piece ^ 1);
+    const int nnue_sub2_white_piece = colored_to_nnue(sub2_piece);
+    const int nnue_sub2_black_piece = colored_to_nnue(sub2_piece ^ 1);
+
+    const int nnue_add1_white_input_index = 64 * nnue_add1_white_piece + white_add1_square;
+    const int nnue_add1_black_input_index = 64 * nnue_add1_black_piece + black_add1_square;
+    const int nnue_add2_white_input_index = 64 * nnue_add2_white_piece + white_add2_square;
+    const int nnue_add2_black_input_index = 64 * nnue_add2_black_piece + black_add2_square;
+    const int nnue_sub1_white_input_index = 64 * nnue_sub1_white_piece + white_sub1_square;
+    const int nnue_sub1_black_input_index = 64 * nnue_sub1_black_piece + black_sub1_square;
+    const int nnue_sub2_white_input_index = 64 * nnue_sub2_white_piece + white_sub2_square;
+    const int nnue_sub2_black_input_index = 64 * nnue_sub2_black_piece + black_sub2_square;
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[WHITE][i] += net.feature_weights[nnue_add1_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[nnue_add2_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[nnue_sub2_white_input_index][i];
+    }
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+    {
+        accumulator[BLACK][i] += net.feature_weights[nnue_add1_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[nnue_add2_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[nnue_sub2_black_input_index][i];
+    }
+}
+
 void Accumulator::make_move(const Board &board, Move move)
 {
     uint8_t from = move.from_square();
@@ -128,58 +242,47 @@ void Accumulator::make_move(const Board &board, Move move)
     uint8_t move_flag = move.move_flag();
     uint8_t moving_piece = board.mailbox[from];
 
-    // std::cout << static_cast<int>(move_flag) << " ";
-
     if (move_flag & PROMOTION)
     {
-        remove(uncolored_to_colored(BITBOARD_PIECES::PAWN, board.side_to_move), from);
-        add(uncolored_to_colored(move.promotion_piece(), board.side_to_move), to);
-
         if (move_flag & CAPTURES)
         {
             uint8_t captured_piece = board.mailbox[to];
-            remove(captured_piece, to);
+            add_sub_sub(uncolored_to_colored(move.promotion_piece(), board.side_to_move), to, moving_piece, from, captured_piece, to);
         }
-
-        // early return to avoid unecessary iteration, because that's expensive
-        return;
+        else
+            add_sub(uncolored_to_colored(move.promotion_piece(), board.side_to_move), to, moving_piece, from);
     }
-
-    if (move_flag == EN_PASSANT_CAPTURE)
+    else if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
     {
-        uint8_t remove_square = board.en_passant_square + ((board.side_to_move == WHITE) ? 8 : -8);
-        remove(uncolored_to_colored(BITBOARD_PIECES::PAWN, board.side_to_move ^ 1), remove_square);
+        uint8_t en_passant_captured_pawn_square = board.en_passant_square + ((board.side_to_move == WHITE) ? 8 : -8);
+        add_sub_sub(moving_piece, to, moving_piece, from, moving_piece ^ 1, en_passant_captured_pawn_square);
     }
     else if (move_flag & CAPTURES)
     {
         uint8_t captured_piece = board.mailbox[to];
-        remove(captured_piece, to);
+        add_sub_sub(moving_piece, to, moving_piece, from, captured_piece, to);
     }
-
-    // moves the piece
-    remove(moving_piece, from);
-    add(moving_piece, to);
-
-    uint8_t rook_from;
-    uint8_t rook_to;
     // castling
-    if (move_flag == KING_CASTLE)
+    else if (move_flag == MOVE_FLAG::KING_CASTLE)
     {
         // shifts the rook
-        rook_from = from + 3;
-        rook_to = to - 1;
+        uint8_t rook_from = from + 3;
+        uint8_t rook_to = to - 1;
 
-        remove(uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
-        add(uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to);
+        add_sub_add_sub(moving_piece, to, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
     }
-    else if (move_flag == QUEEN_CASTLE)
+    else if (move_flag == MOVE_FLAG::QUEEN_CASTLE)
     {
         // shifts the rook
-        rook_from = from - 4;
-        rook_to = to + 1;
+        uint8_t rook_from = from - 4;
+        uint8_t rook_to = to + 1;
 
-        remove(uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
-        add(uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to);
+        add_sub_add_sub(moving_piece, to, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
+    }
+    // quiet move
+    else
+    {
+        add_sub(moving_piece, to, moving_piece, from);
     }
 }
 
@@ -237,21 +340,6 @@ void NNUE::init(const char *file)
         for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
             for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
                 net.output_weights[bucket][stm][weight] = untransposed_output_weights[stm][weight][bucket];
-
-    // for (int stm = 0; stm < 2; ++stm)
-    //     for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
-    //         for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
-    //         {
-    //             const int srcIdx = stm * weight * OUTPUT_BUCKETS + bucket;
-    //             const int dstIdx = bucket * 2 * HIDDEN_SIZE + stm * weight;
-
-    //             if (dstIdx / (HIDDEN_SIZE * OUTPUT_BUCKETS) >= 2 || (dstIdx % (HIDDEN_SIZE * OUTPUT_BUCKETS)) / HIDDEN_SIZE >= OUTPUT_BUCKETS || dstIdx % HIDDEN_SIZE >= HIDDEN_SIZE)
-    //                 std::cout << "error";
-
-    //             net.output_weights[bucket][stm][weight] = untransposed_output_weights[srcIdx];
-    //         }
-
-    // std::memcpy(net.output_weights, transposedL1Weights, HIDDEN_SIZE * sizeof(int16_t) * 2 * OUTPUT_BUCKETS);
 }
 
 int NNUE::eval(const Board &board)
