@@ -277,9 +277,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
+    ss->in_check = false;
 
-    if (ss->in_check)
+    if (ss->board.is_in_check())
     {
+        ss->in_check = true;
         ss->static_eval = SCORE_NONE;
     }
     else if ((ss - 2)->static_eval != SCORE_NONE)
@@ -500,7 +502,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     int double_margin = 0;
                     int triple_margin = 200;
 
-                    extensions += 1 + (!inPV && singular_score < singular_beta - double_margin);
+                    extensions = 1 + (!inPV && singular_score < singular_beta - double_margin);
                     //   (!inPV && tt_move.is_quiet() && singular_score < singular_beta - triple_margin);
                 }
 
@@ -512,23 +514,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // Negative Extensions: if there is a fail high without TT move but singular beta is not high enough for the seacrh to fail high,
                 // it's better to search other moves
                 else if (tt_entry.score >= beta)
-                    extensions -= 2;
+                    extensions = -2;
 
                 // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
                 else if (cutnode)
-                    extensions -= 2;
+                    extensions = -2;
             }
-        }
-
-        // check extensions after SE, because we alter the search stack
-        if (copy.is_in_check())
-        {
-            (ss + 1)->in_check = true;
-            ++extensions;
-        }
-        else
-        {
-            (ss + 1)->in_check = false;
         }
 
         new_depth += extensions;
