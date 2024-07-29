@@ -6,6 +6,8 @@
 constexpr uint64_t MOVE_OVERHEAD = 16;
 constexpr int64_t min_move_time = 20;
 
+class Searcher;
+
 class Time
 {
 public:
@@ -14,6 +16,7 @@ public:
     int64_t white_increment = 0;
     int64_t black_increment = 0;
 
+    int max_depth = 255;
     uint64_t nodes = 0;
 
     bool has_depth = false;
@@ -27,6 +30,6 @@ public:
     // archaeic, no one uses this
     int moves_to_go;
 
-    // will give you the time in milliseconds of hwen the search should end, and subtracts the buffer from the acutal time to account for computation time
+    // will give you the time in milliseconds of when the search should end, and subtracts the buffer from the acutal time to account for computation time
     void set_time(Searcher &searcher);
 };

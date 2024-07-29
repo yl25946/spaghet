@@ -11,3 +11,4 @@
 #include "eval.h"
 #include "zobrist.h"
 #include "tests.h"
+#include "threads.h"

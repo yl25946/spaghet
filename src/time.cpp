@@ -13,10 +13,6 @@ Time::Time(const std::string &go_command)
         max_depth = stoi(go_command.substr(go_pt, end_line - go_pt));
         has_depth = true;
     }
-    else
-    {
-        max_depth = 255;
-    }
 
     go_pt = go_command.find("wtime");
     if (go_pt != std::string::npos)
@@ -95,6 +91,7 @@ void Time::set_time(Searcher &searcher)
         searcher.max_stop_time_duration = UINT64_MAX;
         searcher.optimum_stop_time = UINT64_MAX;
         searcher.max_stop_time = UINT64_MAX;
+        searcher.max_depth = max_depth;
 
         return;
     }

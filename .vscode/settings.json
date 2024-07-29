@@ -79,6 +79,7 @@
         "list": "cpp",
         "span": "cpp",
         "variant": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "bitset": "cpp"
     }
 }
