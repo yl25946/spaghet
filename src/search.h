@@ -15,14 +15,12 @@
 
 class QuietHistory;
 class Killers;
+class ThreadManager;
 
 constexpr uint64_t check_count = 4096;
 
 constexpr bool PV = true;
 constexpr bool nonPV = false;
-
-// tracking the max depth across the engine
-extern int max_depth;
 
 class Searcher
 {
@@ -31,16 +29,19 @@ public:
     std::vector<uint64_t> game_history;
 
     // will play all the moves in the movelist
-    Board &board;
+    Board board;
 
     TranspositionTable &transposition_table;
 
     ThreadData &thread_data;
 
+    ThreadManager &thread_manager;
+
     // tracks how many times we've called "go" command to check age in TT
     uint32_t age;
 
     bool stopped = false;
+    bool is_main_thread;
 
     // start time of the current id so we can calculate nps
     uint64_t start_time;
@@ -54,6 +55,7 @@ public:
     // if we're playing on btime, wtime, binc, winc commands
     bool time_set = false;
     bool nodes_set = false;
+    int max_depth = 255;
 
     // current deth for iterative deepening
     int curr_depth = 0;
@@ -65,22 +67,13 @@ public:
     int average_score = -INF;
     // bool increase_depth = true;
 
-    // std::vector<MoveList> pv;
-
     // represents the number of nodes for a depths search
     uint64_t nodes = 0;
     uint64_t max_nodes = UINT64_MAX;
 
     std::array<uint64_t, 64 * 64> nodes_spent_table;
 
-    // Searcher();
-    Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, uint32_t age);
-
-    // creates a hard time limit
-    // Searcher(Board &board, std::vector<Move> &move_list, std::vector<SearchStack> &search_stack, TranspositionTable &transposition_table, QuietHistory &history, ContinuationHistory &conthist, uint32_t age, uint64_t end_time);
-    // Searcher(Board &board, std::vector<Move> &move_list, uint64_t end_time, uint8_t max_depth);
-
-    // bool SEE(const Board &board, Move move, int threshold);
+    Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread);
 
     // uses iterative deepening
     void search();
@@ -99,6 +92,4 @@ public:
     bool twofold(Board &board);
 
     void scale_time(int best_move_stability_factor);
-
-    // void bench();
 };

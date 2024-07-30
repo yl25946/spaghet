@@ -1,14 +1,6 @@
 #include "search.h"
 
-int max_depth = 255;
-
-// Searcher::Searcher() : board(Board(start_position))
-// {
-//     this->board = Board(start_position);
-//     this->end_time = UINT64_MAX;
-// }
-
-Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, uint32_t age) : board(board), transposition_table(transposition_table), thread_data(thread_data)
+Searcher::Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread) : board(board), transposition_table(transposition_table), thread_data(thread_data), thread_manager(thread_manager)
 {
     // reserves enough space so we don't have to resize
     game_history.reserve(300 + MAX_PLY);
@@ -18,8 +10,6 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     for (Move m : move_list)
     {
         board.make_move(m);
-        // if (count_bits(board.bitboard(WHITE_KING)) == 2)
-        //     board.print();
         game_history.push_back(board.hash);
     }
 
@@ -33,7 +23,7 @@ Searcher::Searcher(Board &board, std::vector<Move> &move_list, TranspositionTabl
     thread_data.search_stack[4].updated_accumulator = true;
 
     this->age = age;
-    this->transposition_table = transposition_table;
+    this->is_main_thread = is_main_thread;
 }
 
 bool Searcher::twofold(Board &board)
@@ -103,7 +93,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     Board &board = ss->board;
 
     // we check if the TT has seen this before
-    TT_Entry &tt_entry = transposition_table.probe(board);
+    TT_Entry tt_entry = transposition_table.probe(board);
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
@@ -786,19 +776,21 @@ void Searcher::search()
         if (stopped)
             break;
 
-        best_move = thread_data.search_stack[4].pv[0];
+        // everything we do down here is about time management and info printing, if we aren't in the main thread, we don't do anything
+        if (!is_main_thread)
+            continue;
 
-        // clears the pv before starting the new search
-        // for (int i = 0; i < MAX_PLY; ++i)
-        //     std::cout << static_cast<int>(pv[i].size()) << " ";
+        best_move = thread_data.search_stack[4].pv[0];
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
+        uint64_t all_thread_node_count = thread_manager.get_nodes();
+
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << nodes << " time " << time_elapsed << " nps " << (uint64_t)((double)nodes / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
         if (nodes > max_nodes)
@@ -827,11 +819,14 @@ void Searcher::search()
         average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
     }
 
-    // printf("bestmove %s\n", best_move.to_string().c_str());
+    if (is_main_thread)
+    {
+        if (nodes_set)
+            std::cout << "bestmove " << previous_best_move.to_string() << " " << std::endl;
+        else
+            std::cout
+                << "bestmove " << best_move.to_string() << " " << std::endl;
 
-    if (nodes_set)
-        std::cout << "bestmove " << previous_best_move.to_string() << " " << std::endl;
-    else
-        std::cout
-            << "bestmove " << best_move.to_string() << " " << std::endl;
+        thread_manager.stop();
+    }
 }

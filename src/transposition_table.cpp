@@ -144,15 +144,6 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     hashtable[hash_location].flag_and_age = (modular_age << 2) | flag;
 }
 
-// bool TranspositionTable::contains(const Board &board)
-// {
-//     uint64_t hash_location = hash % hashtable.size();
-
-//     TT_Entry &entry = hashtable[hash_location];
-
-//     return entry.hash == hash;
-// }
-
 TT_Entry &TranspositionTable::probe(const Board &board)
 {
     uint64_t hash_location = index(board);

@@ -84,17 +84,17 @@ int main(int argc, char *argv[])
                                              "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"};
             for (const std::string &fen : fens)
             {
+                ThreadManager threads;
+
                 Board board(fen);
-                TranspositionTable tt(16);
-                std::vector<ThreadData> single_thread_data(1);
+                std::vector<Move> move_list;
                 Time time("go depth 12");
 
-                Searcher searcher(board, moves, tt, single_thread_data[0], 0);
-                time.set_time(searcher);
+                threads.go(board, move_list, time);
 
-                searcher.search();
+                threads.join();
 
-                nodes += searcher.nodes;
+                nodes += threads.nodes;
             }
 
             uint64_t time_elapsed = get_time() - start_time;

@@ -83,52 +83,23 @@ void parse_moves(const std::string &line, std::vector<Move> &moves, Board board)
     return;
 }
 
-void UciOptions::reset()
-{
-    hash_size = 16;
-    age = 0;
-    threads = 0;
-}
-
 void UCI_loop()
 {
     std::string line;
     Board board(start_position);
-    UciOptions info;
     std::vector<Move> move_list;
-    TranspositionTable transposition_table(info.hash_size);
-    std::vector<ThreadData> thread_data(1);
-    Threads threads(info);
-    // dummy variable, should almost never be used other than in bench
-    // Searcher searcher(board, move_list, UINT64_MAX);
+    ThreadManager threads;
 
     std::cout
         << "id name Spaghet MariNNara 1.0\n"
         << "id author Li Ying\n"
-        << "option name Hash type spin default 16 min 1 max 1024\n"
-        << "option name Threads type spin default 1 min 1 max 1\n"
+        << "option name Hash type spin default 16 min 1 max 131072\n"
+        << "option name Threads type spin default 1 min 1 max 1024\n"
         << "uciok" << std::endl;
-
-    // std::cout << "option name Threads type spin default 1 min 1 max 1\n";
 
     while (true)
     {
         std::getline(std::cin, line);
-
-        // int64_t min = 0;
-        // int64_t max = 0;
-        // for (int i = 0; i < 13; ++i)
-        //     for (int j = 0; j < 64; ++j)
-        //         for (int k = 0; k < 13; ++k)
-        //             for (int l = 0; l < 64; ++l)
-        //                 std::cout << thread_data[0].conthist.table[i][j][k][l] << " ";
-        //             // min = std::min(min, history.butterfly_table[i][j][k]);
-        //             // max = std::max(max, history.butterfly_table[i][j][k]);
-        //         }
-        //     }
-        // }
-
-        // std::cout << min << " " << max << "\n";
 
         if (line[0] == '\n')
             continue;
@@ -137,53 +108,33 @@ void UCI_loop()
             std::cout << "readyok" << std::endl;
         else if (!line.compare(0, 8, "position"))
         {
+            // if the user puts in a new position we assume that they want to stop the current search
+            threads.terminate();
+
             // make sure we don't accidentially stack on previous position moves
             move_list.clear();
 
             board = parse_position(line);
             parse_moves(line, move_list, board);
-
-            // Move m = move_list[move_list.size() - 1];
-
-            // m.print();
-            // std::cout << "flag: " << (int)m.move_flag();
-
-            // Searcher searcher(board, move_list);
-            // searcher.board.print();
         }
         else if (!line.compare(0, 2, "go"))
         {
-            // if we're calling on this, we assume that you've already gotten the moves, so we can just kill any rogue processes
-            threads.terminate();
-            // update history before searching to prevent race conditions
-            // for (int i = 0; i < thread_data.size(); ++i)
-            //     thread_data[i].main_history.update();
-
             // now that we've called go, we can increase the age
-            ++info.age;
+            ++threads.options.age;
 
-            for (int i = 0; i < thread_data.size(); ++i)
+            // implements the go infinite command
+            if (!line.compare(0, 11, "go infinite"))
             {
-                Searcher searcher(board, move_list, transposition_table, thread_data[i], info.age);
+                Time time("go depth 255");
 
-                // implements the go infinite command
-                if (!line.compare(0, 11, "go infinite"))
-                {
-                    Time time("go depth 255");
-
-                    time.set_time(searcher);
-                }
-                else
-                {
-                    Time time(line);
-
-                    time.set_time(searcher);
-                }
-
-                threads.insert(searcher);
+                threads.go(board, move_list, time);
             }
+            else
+            {
+                Time time(line);
 
-            threads.go();
+                threads.go(board, move_list, time);
+            }
         }
         else if (!line.compare(0, 4, "stop"))
         {
@@ -193,7 +144,6 @@ void UCI_loop()
         // put this before perft command otherwise it won't catch it
         else if (!line.compare(0, 11, "perft debug"))
         {
-            std::cout << "here";
             for (Move move : move_list)
                 board.make_move(move);
 
@@ -240,21 +190,16 @@ void UCI_loop()
 
         else if (!line.compare(0, 25, "setoption name Hash value"))
         {
-            info.hash_size = std::stoi(line.substr(26));
-            // std::cout << info.hash_size << "\n";
-            transposition_table.resize(info.hash_size);
+            threads.resize_tt(std::stoi(line.substr(26)));
         }
         else if (!line.compare(0, 28, "setoption name Threads value"))
         {
-            // no op because no multithreading
+            threads.resize(std::stoi(line.substr(29)));
         }
         else if (!line.compare(0, 10, "ucinewgame"))
         {
             threads.terminate();
-            info.reset();
-            transposition_table = TranspositionTable(info.hash_size);
-            thread_data.clear();
-            thread_data.resize(1);
+            threads.ucinewgame();
         }
         else if (!line.compare(0, 3, "uci"))
         {
