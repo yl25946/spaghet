@@ -681,9 +681,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
-    // // update corrhist if we're not in check
+    // update corrhist if we're not in check
     if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
-        thread_data.corrhist.update(board, depth, best_score, ss->static_eval);
+    {
+        int recorrected_static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+        thread_data.corrhist.update(board, depth, best_score, recorrected_static_eval);
+    }
 
     return best_score;
 }
