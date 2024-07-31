@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     // initialize psqt
     NNUE::init("random stuff");
-    // init_pesto_tables();
+    init_pesto_tables();
 
     // for (int i = 0; i < INPUT_WEIGHTS; ++i)
     //     for (int j = 0; j < HIDDEN_SIZE; ++j)
