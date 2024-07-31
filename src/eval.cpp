@@ -811,7 +811,7 @@ void init_pesto_tables()
     }
 }
 
-int pesto_eval(Board &board)
+int pesto_eval(const Board &board)
 {
     int mg[2];
     int eg[2];
@@ -843,17 +843,17 @@ int pesto_eval(Board &board)
     int mgScore = mg[side_to_move] - mg[OTHER(side_to_move)];
     int egScore = eg[side_to_move] - eg[OTHER(side_to_move)];
 
-    // gives a small bonus if we have two bishops and gives a bonus to the opponent if they have two bishops
-    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move))) == 2)
-    {
-        mgScore += 25;
-        egScore += 50;
-    }
-    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move ^ 1))) == 2)
-    {
-        mgScore -= 25;
-        egScore -= 50;
-    }
+    // // gives a small bonus if we have two bishops and gives a bonus to the opponent if they have two bishops
+    // if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move))) == 2)
+    // {
+    //     mgScore += 25;
+    //     egScore += 50;
+    // }
+    // if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move ^ 1))) == 2)
+    // {
+    //     mgScore -= 25;
+    //     egScore -= 50;
+    // }
 
     int mgPhase = gamePhase;
     if (mgPhase > 24)
@@ -870,31 +870,36 @@ int pesto_eval(Board &board)
 
 int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
-    int counter = 0;
-    SearchStack *ss_copy = ss;
+    // int counter = 0;
+    // SearchStack *ss_copy = ss;
 
-    // we keep going until we have a clean, updated accumulator
-    while (!ss_copy->updated_accumulator)
-    {
-        ++counter;
-        --ss_copy;
-    }
+    // // we keep going until we have a clean, updated accumulator
+    // while (!ss_copy->updated_accumulator)
+    // {
+    //     ++counter;
+    //     --ss_copy;
+    // }
 
-    int starting = ss_copy->ply;
-    const int ending = ss->ply;
+    // int starting = ss_copy->ply;
+    // const int ending = ss->ply;
 
-    for (; starting < ending; ++starting, ++ss_copy)
-    {
-        accumulators[starting + 1] = accumulators[starting];
-        (ss_copy + 1)->updated_accumulator = true;
+    // for (; starting < ending; ++starting, ++ss_copy)
+    // {
+    //     accumulators[starting + 1] = accumulators[starting];
+    //     (ss_copy + 1)->updated_accumulator = true;
 
-        if (ss_copy->null_moved)
-            continue;
+    //     if (ss_copy->null_moved)
+    //         continue;
 
-        accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
-    }
+    //     accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+    // }
+    // int eval = NNUE::eval(board, accumulators[ending]);
 
-    return evaluate(board, accumulators[ending]);
+    // int phase = 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 10 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+
+    // eval = eval * (206 + phase) / 256;
+
+    return pesto_eval(board);
 }
 
 int evaluate(const Board &board, const Accumulator &accumulator)
