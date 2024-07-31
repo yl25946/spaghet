@@ -118,8 +118,9 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 
     // replacement policy
     if (board.hash == entry.hash && flag != BOUND::EXACT && depth <= entry.depth - 4)
+        return;
 
-        entry.hash = board.hash;
+    entry.hash = board.hash;
     entry.score = best_score;
     entry.static_eval = static_eval;
     entry.depth = depth;
