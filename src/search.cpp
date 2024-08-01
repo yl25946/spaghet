@@ -400,6 +400,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
 
     const int original_alpha = alpha;
+    // counts how many moves it has been since we've raised original_alpha
+    int moves_since_original_alpha = 0;
 
     // get pvs here
     int best_score = -INF - 1;
@@ -446,6 +448,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 move_picker.skip_quiets();
                 continue;
             }
+
+            // Original alpha raises pruning: if we don't have a move that raises original alpha for some time, we can prune
+            if (depth <= 8 && moves_since_original_alpha > 1 + 2 * depth)
+                break;
         }
 
         const uint64_t nodes_before_search = nodes;
@@ -604,6 +610,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (stopped)
             return 0;
+
+        moves_since_original_alpha = current_score > original_alpha ? 0 : moves_since_original_alpha + 1;
 
         // fail soft framework
         if (current_score > best_score)
