@@ -450,7 +450,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             }
 
             // Original alpha raises pruning: if we don't have a move that raises original alpha for some time, we can prune
-            if (depth <= 8 && moves_since_original_alpha > 1 + 2 * depth)
+            if (depth <= 8 && moves_since_original_alpha >= 1 + 2 * depth)
                 break;
         }
 
