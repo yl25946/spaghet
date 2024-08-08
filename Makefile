@@ -29,7 +29,7 @@ endif
 ifeq ($(CXX), g++)
 	GCC_VERSION := $(shell $(CXX) -dumpversion)
 # Check if the GCC major version is 9
-ifeq ($(GCC_MAJOR_VERSION),9)
+ifeq ($(GCC_MAJOR_VERSION),8)
     CXXFLAGS += -std=c++2a
 else
     CXXFLAGS += -std=c++20
