@@ -8,7 +8,7 @@ NOOP		:=:
 NULL 	    := /dev/null
 TARGET      := Spaghet
 WARNINGS     = -Wall -Wcast-qual -Wextra -Wshadow -Wdouble-promotion -Wformat=2 -Wnull-dereference -Wlogical-op -Wold-style-cast -Wundef -pedantic
-CXXFLAGS    :=  -funroll-loops -O3 -flto -fno-exceptions -std=c++20 -DNDEBUG $(WARNINGS)
+CXXFLAGS    :=  -funroll-loops -O3 -flto -fno-exceptions -DNDEBUG $(WARNINGS)
 NATIVE       = -march=native
 AVX2FLAGS    = -DUSE_AVX2 -DUSE_SIMD -mavx2 -mbmi
 BMI2FLAGS    = -DUSE_AVX2 -DUSE_SIMD -mavx2 -mbmi -mbmi2
@@ -23,6 +23,19 @@ TMPDIR = .tmp
 # Detect Clang
 ifeq ($(CXX), clang++)
 CXXFLAGS = -funroll-loops -O3 -flto -fuse-ld=lld -fno-exceptions -std=gnu++2a -DNDEBUG
+endif
+
+# Detect g++ version
+GCC_VERSION := $(shell $(CXX) -dumpversion)
+
+# Extract the major version number using cmd.exe
+GCC_MAJOR_VERSION := $(shell for /F "tokens=1 delims=." %i in ("$(GCC_VERSION)") do @echo %i)
+
+# Set the C++ standard flag based on the g++ version using cmd.exe
+ifeq ($(shell if $(GCC_MAJOR_VERSION) LEQ 9 (echo yes)), yes)
+    CXXFLAGS += -std=c++2a
+else
+    CXXFLAGS += -std=c++20
 endif
 
 # Detect Windows
