@@ -425,7 +425,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         is_quiet = curr_move.is_quiet();
 
-        if (!in_root && best_score > MIN_MATE_SCORE)
+        if (!in_root && best_score > MIN_MATE_SCORE && !board.only_pawns(board.side_to_move))
         {
             // applies late move pruning
             if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth / (2 - improving))
