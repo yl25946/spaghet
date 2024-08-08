@@ -245,11 +245,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
-    TT_Entry &tt_entry = transposition_table.probe(board);
+    TT_Entry tt_entry = ss->exclude_tt_move ? TT_Entry() : transposition_table.probe(board);
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = has_tt_entry && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -262,8 +262,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return quiescence_search<inPV>(alpha, beta, ss);
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
-    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    const int uncorrected_static_eval = ss->exclude_tt_move ? SCORE_NONE : has_tt_entry ? tt_entry.static_eval
+                                                                                        : evaluate(board, thread_data.accumulators, ss);
+    if (!ss->exclude_tt_move)
+        ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
