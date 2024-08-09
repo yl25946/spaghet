@@ -24,18 +24,10 @@ TMPDIR = .tmp
 ifeq ($(CXX), clang++)
 	CXXFLAGS = -funroll-loops -O3 -flto -fuse-ld=lld -fno-exceptions -std=gnu++2a -DNDEBUG
 endif
+
 # Detect g++ version and set CXXFLAGS accordingly
 ifeq ($(CXX), g++)
-    # Use shell command to get GCC version
-    GCC_VERSION := $(shell $(CXX) -dumpversion)
-    # Use shell command to compare version (works on both Linux and Windows)
-    GCC_LT_10 := $(expr $(GCC_VERSION) \< 10)
-    # Check if GCC version is less than 10
-    ifeq ($(GCC_LT_10),1)
-        CXXFLAGS += -std=c++2a
-    else
-        CXXFLAGS += -std=c++20
-    endif
+    CXXFLAGS += -std=c++2a;
 # Add flag if not using g++
 else
     CXXFLAGS += -std=c++20
