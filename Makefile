@@ -27,7 +27,7 @@ endif
 
 # Detect g++ version and set CXXFLAGS accordingly
 ifeq ($(CXX), g++)
-    CXXFLAGS += -std=c++2a;
+    CXXFLAGS += -std=c++2a
 # Add flag if not using g++
 else
     CXXFLAGS += -std=c++20
