@@ -43,6 +43,28 @@ void ThreadManager::go(Board &board, std::vector<Move> &move_list, Time &time)
         threads.emplace_back(search, &searcher, &options);
 }
 
+Move ThreadManager::get_best_move()
+{
+    int best_thread = 0;
+
+    // Step 1: Check for any mates
+    bool has_mate_score = false;
+    int fastest_mate = 0;
+    for (int curr_thread = 0; curr_thread < searchers.size(); ++curr_thread)
+    {
+
+        if (searchers[curr_thread].root_score > MAX_MATE_SCORE)
+        {
+            has_mate_score = true;
+            if (searchers[curr_thread].root_score > fastest_mate)
+            {
+                fastest_mate = searcher.root_score;
+                best_thread =
+            }
+        }
+    }
+}
+
 void ThreadManager::stop()
 {
     if (!searching)
