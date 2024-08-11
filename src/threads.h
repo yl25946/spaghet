@@ -30,6 +30,8 @@ public:
     ThreadManager() : thread_data(options.threads) {}
 
     void go(Board &board, std::vector<Move> &move_list, Time &time);
+    // selects the best move using thread voting
+    Move get_best_move();
     // clears thread data and resizes to new number of threads
     void resize(int new_thread_count);
     void ucinewgame() { resize(thread_data.size()); }

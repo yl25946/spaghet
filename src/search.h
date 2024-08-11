@@ -57,8 +57,10 @@ public:
     bool nodes_set = false;
     int max_depth = 255;
 
-    // current deth for iterative deepening
-    int curr_depth = 0;
+    // all used for thread voting, or finding the best move
+    int depth_reached = 0;
+    int root_score = 0;
+    Move best_move = NO_MOVE;
 
     // use for tracking seldepth
     int seldepth = 0;

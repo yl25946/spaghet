@@ -691,8 +691,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 void Searcher::search()
 {
     int best_score = -INF;
-    Move previous_best_move(a8, a8, 0);
-    Move best_move(a8, a8, 0);
+    Move previous_best_move = NO_MOVE;
     int best_move_stability_factor = 0;
     uint64_t time_elapsed;
     int alpha = -INF;
@@ -722,8 +721,7 @@ void Searcher::search()
 
     for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
     {
-        this->curr_depth = root_depth;
-        this->seldepth = 0;
+        seldepth = 0;
 
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
 
@@ -776,11 +774,14 @@ void Searcher::search()
         if (stopped)
             break;
 
+        best_move = thread_data.search_stack[4].pv[0];
+
+        // we update the depth reached after we finish everything
+        depth_reached = root_depth;
+
         // everything we do down here is about time management and info printing, if we aren't in the main thread, we don't do anything
         if (!is_main_thread)
             continue;
-
-        best_move = thread_data.search_stack[4].pv[0];
 
         time_elapsed = std::max(get_time() - start_time, (uint64_t)1);
 
