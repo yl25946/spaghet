@@ -93,8 +93,8 @@ void UCI_loop()
     std::cout
         << "id name Spaghet BologNNese 1.0\n"
         << "id author Li Ying\n"
-        << "option name Hash type spin default 16 min 1 max 131072\n"
-        << "option name Threads type spin default 1 min 1 max 1024\n"
+        << "option name Hash type spin default 16 min 1 max " << MAX_HASH << "\n"
+        << "option name Threads type spin default 1 min 1 max " << MAX_THREADS << "\n"
         << "uciok" << std::endl;
 
     while (true)
@@ -205,8 +205,8 @@ void UCI_loop()
         {
             std::cout << "id name Spaghet BologNNese 1.0\n"
                       << "id author Li Ying\n"
-                      << "option name Hash type spin default 16 min 1 max 1024\n"
-                      << "option name Threads type spin default 1 min 1 max 1\n"
+                      << "option name Hash type spin default 16 min 1 max " << MAX_HASH << "\n"
+                      << "option name Threads type spin default 1 min 1 max " << MAX_THREADS << "\n"
                       << "uciok" << std::endl;
         }
         else if (!line.compare(0, 4, "quit"))
