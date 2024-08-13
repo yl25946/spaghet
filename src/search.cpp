@@ -816,7 +816,7 @@ void Searcher::search()
             std::cout << "bestmove " << previous_best_move.to_string() << " " << std::endl;
         else
             std::cout
-                << "bestmove " << best_move.to_string() << " " << std::endl;
+                << "bestmove " << thread_manager.get_best_move().to_string() << " " << std::endl;
 
         thread_manager.stop();
     }
