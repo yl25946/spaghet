@@ -50,19 +50,75 @@ Move ThreadManager::get_best_move()
     // Step 1: Check for any mates
     bool has_mate_score = false;
     int fastest_mate = 0;
-    for (int curr_thread = 0; curr_thread < searchers.size(); ++curr_thread)
+    for (size_t curr_thread = 0; curr_thread < searchers.size(); ++curr_thread)
     {
-
-        if (searchers[curr_thread].root_score > MAX_MATE_SCORE)
+        Searcher &searcher = searchers[curr_thread];
+        if (searcher.root_score > MAX_MATE_SCORE)
         {
             has_mate_score = true;
-            if (searchers[curr_thread].root_score > fastest_mate)
+            if (searcher.root_score > fastest_mate)
             {
                 fastest_mate = searcher.root_score;
-                best_thread =
+                best_thread = curr_thread;
             }
         }
     }
+
+    // return the move that gives the fastest mate
+    if (has_mate_score)
+        return searchers[best_thread].best_move;
+
+    // if there is no mate, then we select the thread with the highest depth reached
+    thread_tracker1.clear();
+
+    int max_depth_reached = -1;
+    for (size_t curr_thread = 0; curr_thread < searchers.size(); ++curr_thread)
+    {
+        Searcher &searcher = searchers[curr_thread];
+
+        if (searcher.depth_reached > max_depth_reached)
+        {
+            thread_tracker1.clear();
+            max_depth_reached = searcher.depth_reached;
+            thread_tracker1.push_back(curr_thread);
+        }
+        else if (searcher.depth_reached == max_depth_reached)
+            thread_tracker1.push_back(curr_thread);
+    }
+
+    // if there is only one thread, that means we have a unanimous decision
+    if (thread_tracker1.size() == 1)
+        return searchers[thread_tracker1[0]].best_move;
+
+    // tiebreaker: if there are multiple threads with the same depth, we prioritize the thread with the longest pv
+    thread_tracker2.clear();
+    int longest_pv = -1;
+    for (int i : thread_tracker1)
+    {
+        Searcher &searcher = searchers[i];
+        if (searcher.root_pv.size() > longest_pv)
+        {
+            thread_tracker2.clear();
+            max_depth_reached = searcher.depth_reached;
+            thread_tracker2.push_back(i);
+        }
+        else if (searcher.root_pv.size() == longest_pv)
+            thread_tracker2.push_back(i);
+    }
+
+    // final tiebreaker: choose the thread with the highest score (let's pray that none of the threads have the same score)
+    int best_score = -INF;
+    for (int i : thread_tracker2)
+    {
+        Searcher &searcher = searchers[i];
+        if (searcher.root_score > best_score)
+        {
+            best_score = searcher.root_score;
+            best_thread = i;
+        }
+    }
+
+    return searchers[best_thread].best_move;
 }
 
 void ThreadManager::stop()

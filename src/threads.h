@@ -18,6 +18,10 @@ void search(Searcher *searcher, UciOptions *options);
 
 class ThreadManager
 {
+    // used for tracking which threads is the best
+    std::vector<int> thread_tracker1;
+    std::vector<int> thread_tracker2;
+
 public:
     UciOptions options;
     std::vector<std::jthread> threads;
@@ -27,7 +31,11 @@ public:
     // pretty much only used for bench
     uint64_t nodes = 0;
 
-    ThreadManager() : thread_data(options.threads) {}
+    ThreadManager() : thread_data(options.threads)
+    {
+        thread_tracker1.reserve(MAX_THREADS);
+        thread_tracker2.reserve(MAX_THREADS);
+    }
 
     void go(Board &board, std::vector<Move> &move_list, Time &time);
     // selects the best move using thread voting

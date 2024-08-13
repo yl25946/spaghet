@@ -61,6 +61,7 @@ public:
     int depth_reached = 0;
     int root_score = 0;
     Move best_move = NO_MOVE;
+    MoveList root_pv;
 
     // use for tracking seldepth
     int seldepth = 0;

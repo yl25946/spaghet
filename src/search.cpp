@@ -700,7 +700,6 @@ void Searcher::search()
 
     Board board = thread_data.search_stack[4].board;
 
-    // this->start_time = get_time();
     nodes = 0;
 
     // generates a legal move in that position in case that we didn't finish depth one
@@ -722,28 +721,19 @@ void Searcher::search()
     for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
     {
         seldepth = 0;
+        root_pv.clear();
 
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
-
-        // stockfish uses 9, let's try that later
         int delta = 9 + average_score * average_score / 10182;
-        // int delta = 25;
 
-        // alpha = -INF;
-        // beta = INF;
-
-        // if (root_depth > 5)
-        // {
         alpha = std::max<int>(best_score - delta, -INF);
         beta = std::min<int>(best_score + delta, INF);
-        // }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
         int failed_high_count = 0;
 
         while (true)
         {
-
             // missing the search again counter but it's always 0?
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
@@ -769,11 +759,11 @@ void Searcher::search()
             delta += delta / 3;
         }
 
-        // std::cout << static_cast<int>(aspiration_adjustments) << " " << alpha << " " << beta << "\n";
-
         if (stopped)
             break;
 
+        // copies over the PV so there are no possibilty of accessing an incomplete search's pv
+        root_pv.copy_over(thread_data.search_stack[4].pv);
         best_move = thread_data.search_stack[4].pv[0];
 
         // we update the depth reached after we finish everything
