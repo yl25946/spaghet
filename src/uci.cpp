@@ -203,7 +203,7 @@ void UCI_loop()
         }
         else if (!line.compare(0, 3, "uci"))
         {
-            std::cout << "id name Spaghet MariNNara 1.0\n"
+            std::cout << "id name Spaghet BologNNese 1.0\n"
                       << "id author Li Ying\n"
                       << "option name Hash type spin default 16 min 1 max 1024\n"
                       << "option name Threads type spin default 1 min 1 max 1\n"
