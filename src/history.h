@@ -45,6 +45,22 @@ private:
     inline uint64_t pawn_index(const Board &board) { return board.pawn_hash % PAWNHIST_SIZE; }
 };
 
+class KingPawnHistory
+{
+    // [mod pawn hash][[piece][to]
+    int16_t table[PAWNHIST_SIZE][12][64];
+
+public:
+    KingPawnHistory();
+
+    void update(const Board &board, const MoveList &move_list, Move fail_high_move, int depth);
+    void update(const Board &board, Move move, int depth, bool good);
+    int64_t move_value(const Board &board, Move move);
+
+private:
+    inline uint64_t king_pawn_index(const Board &board) { return board.king_pawn_hash % PAWNHIST_SIZE; }
+};
+
 class CaptureHistory
 {
 public:

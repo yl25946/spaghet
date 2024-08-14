@@ -11,6 +11,7 @@ public:
     std::vector<Accumulator> accumulators;
     QuietHistory main_history;
     PawnHistory pawnhist;
+    KingPawnHistory kingpawnhist;
     CaptureHistory capthist;
     ContinuationHistory conthist;
     CorrectionHistory corrhist;

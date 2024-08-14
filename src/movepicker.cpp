@@ -8,6 +8,7 @@ int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move q
     int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move);
 
     quiet_move_score += thread_data.pawnhist.move_value(ss->board, quiet_move);
+    quiet_move_score += thread_data.kingpawnhist.move_value(ss->board, quiet_move);
 
     // adds followup move history bonus
     if (ply >= 2 && !(ss - 2)->null_moved)

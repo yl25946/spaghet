@@ -45,7 +45,14 @@ Board::Board(const std::string &fen)
 
             // if piece is a pawn we can update the pawn hash
             if (bitboard_piece == BITBOARD_PIECES::PAWN)
+            {
                 pawn_hash ^= zobrist_pieces[piece][square];
+                king_pawn_hash ^= zobrist_pieces[piece][square];
+            }
+            else if (bitboard_piece == BITBOARD_PIECES::PAWN)
+            {
+                king_pawn_hash ^= zobrist_pieces[piece][square];
+            }
 
             ++square;
             ++char_it;
@@ -460,6 +467,7 @@ void Board::make_move(Move move)
         // side_to_move ^ 1 represent the opposite move's pawn
         hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
         pawn_hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
+        king_pawn_hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
     }
     else if (move_flag & CAPTURES)
     {
@@ -478,7 +486,10 @@ void Board::make_move(Move move)
         hash ^= zobrist_pieces[captured_piece][target_square];
 
         if (uncolored_captured_piece == BITBOARD_PIECES::PAWN)
+        {
             pawn_hash ^= zobrist_pieces[captured_piece][target_square];
+            king_pawn_hash ^= zobrist_pieces[captured_piece][target_square];
+        }
     }
 
     // moves the piece
@@ -499,6 +510,13 @@ void Board::make_move(Move move)
     {
         pawn_hash ^= zobrist_pieces[move_piece_type][source_square];
         pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
+        king_pawn_hash ^= zobrist_pieces[move_piece_type][source_square];
+        king_pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
+    }
+    else if (bitboard_piece_type == BITBOARD_PIECES::KING)
+    {
+        king_pawn_hash ^= zobrist_pieces[move_piece_type][source_square];
+        king_pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
     }
 
     if (move_flag & PROMOTION)
@@ -602,7 +620,6 @@ void Board::make_move(Move move)
 
     // update zobrist side_to_move
     hash ^= zobrist_side_to_move;
-    // pawn_hash ^= zobrist_side_to_move;
 
     if (bitboard_piece_type != PAWN && !(move_flag & CAPTURES))
         ++fifty_move_counter;

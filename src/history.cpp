@@ -88,6 +88,42 @@ int64_t PawnHistory::move_value(const Board &board, Move move)
     return table[pawn_index(board)][board.mailbox[move.from_square()]][move.to_square()];
 }
 
+KingPawnHistory::KingPawnHistory()
+{
+    for (int i = 0; i < PAWNHIST_SIZE; ++i)
+        for (int j = 0; j < 12; ++j)
+            for (int k = 0; k < 64; ++k)
+                table[i][j][k] = 0;
+}
+
+void KingPawnHistory::update(const Board &board, const MoveList &move_list, Move fail_high_move, int depth)
+{
+    for (int i = 0; i < move_list.size(); ++i)
+    {
+        if (move_list[i] == fail_high_move)
+            update(board, move_list[i], depth, true);
+        else
+            update(board, move_list[i], depth, false);
+    }
+}
+
+void KingPawnHistory::update(const Board &board, Move move, int depth, bool good)
+{
+    const uint8_t piece = board.mailbox[move.from_square()];
+    const uint8_t to = move.to_square();
+    const uint64_t pawn_hash_index = king_pawn_index(board);
+
+    const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
+
+    // gravity formula
+    table[pawn_hash_index][piece][to] += delta - (static_cast<int64_t>(table[pawn_hash_index][piece][to]) * abs(delta) / MAX_HISTORY);
+}
+
+int64_t KingPawnHistory::move_value(const Board &board, Move move)
+{
+    return table[king_pawn_index(board)][board.mailbox[move.from_square()]][move.to_square()];
+}
+
 CaptureHistory::CaptureHistory()
 {
     for (int i = 0; i < 12; ++i)

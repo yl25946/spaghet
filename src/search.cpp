@@ -634,6 +634,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                         update_conthist(ss, quiet_moves, curr_move, depth);
                         thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
+                        thread_data.kingpawnhist.update(board, quiet_moves, curr_move, depth);
                         ss->killers.insert(curr_move);
                     }
 
