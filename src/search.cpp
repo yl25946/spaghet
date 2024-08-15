@@ -443,7 +443,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
-            if (depth <= 8 && !gives_check && is_quiet && ss->static_eval + futility_margin < alpha)
+            if (depth <= 8 && !gives_check && !ss->in_check && is_quiet && ss->static_eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
                 continue;
