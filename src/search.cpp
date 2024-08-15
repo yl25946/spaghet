@@ -405,6 +405,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     int best_score = -INF - 1;
     Move best_move = NO_MOVE;
     bool is_quiet;
+    bool gives_check;
 
     const int futility_margin = 150 + 100 * depth;
 
@@ -424,6 +425,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         move_picker.update_legal_moves();
 
         is_quiet = curr_move.is_quiet();
+        gives_check = copy.is_in_check();
 
         if (!in_root && best_score > MIN_MATE_SCORE)
         {
@@ -441,7 +443,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
-            if (depth <= 8 && !ss->in_check && is_quiet && ss->static_eval + futility_margin < alpha)
+            if (depth <= 8 && gives_check && is_quiet && ss->static_eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
                 continue;
@@ -511,15 +513,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         }
 
         // check extensions after SE, because we alter the search stack
-        if (copy.is_in_check())
-        {
-            (ss + 1)->in_check = true;
-            ++extensions;
-        }
-        else
-        {
-            (ss + 1)->in_check = false;
-        }
+        (ss + 1)->in_check = gives_check;
+        extensions += gives_check;
 
         new_depth += extensions;
 
