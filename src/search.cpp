@@ -405,8 +405,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     int best_score = -INF - 1;
     Move best_move = NO_MOVE;
     bool is_quiet;
-
-    const int futility_margin = 150 + 100 * depth;
+    int reduction;
 
     while (move_picker.has_next())
     {
@@ -425,8 +424,18 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         is_quiet = curr_move.is_quiet();
 
+        int new_depth = depth - 1;
+
+        if (is_quiet)
+            reduction = lmr_reduction_quiet(depth, move_picker.moves_seen());
+        // noisy move
+        else
+            reduction = lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+
         if (!in_root && best_score > MIN_MATE_SCORE)
         {
+            int lmr_depth = depth - reduction;
+
             // applies late move pruning
             if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth / (2 - improving))
             {
@@ -441,6 +450,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
+            const int futility_margin = 150 + 100 * lmr_depth;
+
             if (depth <= 8 && !ss->in_check && is_quiet && ss->static_eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
@@ -455,7 +466,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         else if (!curr_move.is_promotion())
             noises.insert(curr_move);
 
-        int new_depth = depth - 1;
         int extensions = 0;
 
         // Singular Extensions: If a TT move exists and its score is accurate enough
@@ -534,7 +544,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // prefetch the TT entry
         transposition_table.prefetch(copy);
 
-        int reduction = 0;
         int current_score;
 
         if (cutnode)
@@ -553,12 +562,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // the depths of later moves because they are less important
         if (move_picker.moves_seen() > 1)
         {
-            if (is_quiet)
-                reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
-            // noisy move
-            else
-                reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
-
             // makes sure that depth is always positive and if reduction is negative, we only extend once
             int reduced_depth = std::max(std::min(new_depth - reduction, new_depth + 1), 1);
 
