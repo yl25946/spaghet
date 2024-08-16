@@ -11,7 +11,8 @@
 class QuietHistory
 {
 public:
-    int16_t butterfly_table[2][64][64];
+    // [stc][from][from threatened][to][to threatened]
+    int16_t butterfly_table[2][64][2][64][2];
 
     QuietHistory();
 
@@ -24,9 +25,9 @@ public:
     // side_to_move is based on the side that is playing the move
 
     // inserts a move into the butterfly tables
-    void update(Move move, int depth, uint8_t side_to_move, bool good);
-    void update(MoveList &move_list, Move best_move, int depth, uint8_t side_to_move);
-    int64_t move_value(Move move, uint8_t side_to_move);
+    void update(const Board &board, Move move, int depth, bool good);
+    void update(const Board &board, MoveList &move_list, Move best_move, int depth);
+    int64_t move_value(const Board &board, Move move);
 };
 
 class PawnHistory

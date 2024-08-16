@@ -6,7 +6,7 @@ QuietHistory::QuietHistory()
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 64; ++j)
             for (int k = 0; k < 64; ++k)
-                butterfly_table[i][j][k] = 0;
+                butterfly_table[i][j][0][k][0] = butterfly_table[i][j][0][k][1] = butterfly_table[i][j][1][k][0] = butterfly_table[i][j][1][k][1] = 0;
 }
 
 void QuietHistory::clear()
@@ -14,42 +14,49 @@ void QuietHistory::clear()
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 64; ++j)
             for (int k = 0; k < 64; ++k)
-                butterfly_table[i][j][k] = 0;
+                butterfly_table[i][j][0][k][0] = butterfly_table[i][j][0][k][1] = butterfly_table[i][j][1][k][0] = butterfly_table[i][j][1][k][1] = 0;
 }
 
 void QuietHistory::update()
 {
-    for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 64; ++j)
-            for (int k = 0; k < 64; ++k)
-                butterfly_table[i][j][k] /= 4;
+    // for (int i = 0; i < 2; ++i)
+    //     for (int j = 0; j < 64; ++j)
+    //         for (int k = 0; k < 64; ++k)
+    //             butterfly_table[i][j][k] /= 4;
 }
 
-void QuietHistory::update(Move move, int depth, uint8_t side_to_move, bool good)
+void QuietHistory::update(const Board &board, Move move, int depth, bool good)
 {
     uint8_t from_square = move.from_square();
     uint8_t to_square = move.to_square();
+    bool from_square_attacked = board.is_square_attacked(from_square, board.side_to_move ^ 1);
+    bool to_square_attacked = board.is_square_attacked(to_square, board.side_to_move ^ 1);
 
     const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
     // gravity formula
-    butterfly_table[side_to_move][from_square][to_square] += delta - (static_cast<int64_t>(butterfly_table[side_to_move][from_square][to_square]) * abs(delta) / MAX_HISTORY);
+    butterfly_table[board.side_to_move][from_square][from_square_attacked][to_square][to_square_attacked] += delta - (static_cast<int64_t>(butterfly_table[board.side_to_move][from_square][from_square_attacked][to_square][to_square_attacked]) * abs(delta) / MAX_HISTORY);
 }
 
-void QuietHistory::update(MoveList &move_list, Move best_move, int depth, uint8_t side_to_move)
+void QuietHistory::update(const Board &board, MoveList &move_list, Move best_move, int depth)
 {
     for (int i = 0; i < move_list.size(); ++i)
     {
         if (move_list[i] == best_move)
-            update(move_list[i], depth, side_to_move, true);
+            update(board, move_list[i], depth, true);
         else
-            update(move_list[i], depth, side_to_move, false);
+            update(board, move_list[i], depth, false);
     }
 }
 
-int64_t QuietHistory::move_value(Move move, uint8_t side_to_move)
+int64_t QuietHistory::move_value(const Board &board, Move move)
 {
-    return butterfly_table[side_to_move][move.from_square()][move.to_square()];
+    uint8_t from_square = move.from_square();
+    uint8_t to_square = move.to_square();
+    bool from_square_attacked = board.is_square_attacked(from_square, board.side_to_move ^ 1);
+    bool to_square_attacked = board.is_square_attacked(to_square, board.side_to_move ^ 1);
+
+    return butterfly_table[board.side_to_move][from_square][from_square][to_square][to_square_attacked];
 }
 
 PawnHistory::PawnHistory()
