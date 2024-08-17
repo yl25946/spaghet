@@ -103,7 +103,7 @@ constexpr int KING_BUCKETS_SIZE = 4;
 constexpr int KING_BUCKET_SHIFT = 2;
 
 // number of entries in corrhist
-constexpr int CORRHIST_SIZE = 16384;
+constexpr int CORRHIST_SIZE = 1024;
 constexpr int CORRHIST_LIMIT = 1024;
 
 // number of pawn entries in pawnhist
