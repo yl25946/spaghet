@@ -80,8 +80,8 @@ public:
 
 class CorrectionHistory
 {
-    //  first indicates stm, second array indice is the mod of the pawn hash
-    std::array<std::array<int64_t, CORRHIST_SIZE>, 2> table;
+    //  first indicates stm, second array is a piece count evaluation ranges, third is mod of pawn hash
+    std::array<std::array<std::array<int64_t, CORRHIST_SIZE>, 5>, 2> table;
 
 public:
     CorrectionHistory();
@@ -90,6 +90,9 @@ public:
     void update(const Board &board, int depth, int score, int static_eval);
 
     int correct_eval(const Board &board, int uncorrected_static_eval);
+
+private:
+    inline int get_bucket(const Board &board);
 };
 
 class Killers
