@@ -662,6 +662,22 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         }
     }
 
+    // Bonus for prior move if there was a fail low
+    if (alpha <= original_alpha && !in_root && (ss - 1)->move_played.is_quiet())
+    {
+
+        thread_data.main_history.update((ss - 1)->move_played, depth, (ss - 1)->board.side_to_move, true);
+        thread_data.pawnhist.update((ss - 1)->board, (ss - 1)->move_played, depth, true);
+
+        // updates followup move history
+        if (ss->ply >= 2 && !(ss - 2)->null_moved)
+            thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - 3)->board, (ss - 3)->move_played, depth, true);
+
+        // updates counter move history
+        if (ss->ply >= 1 && !(ss - 1)->null_moved)
+            thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - 4)->board, (ss - 4)->move_played, depth, true);
+    }
+
     // add to TT if we aren't in singular search
     if (!ss->exclude_tt_move)
     {
