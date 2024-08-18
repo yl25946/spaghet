@@ -1,6 +1,22 @@
 #include "history.h"
 // #include "movepicker.h"
 
+// just counts the pieces and adds them up
+uint16_t piece_value[6] = {
+    100, 300, 350, 500, 900, 0};
+
+int piece_count_evaluation(const Board &board)
+{
+    int eval = 0;
+    for (uint8_t piece = PAWN; piece <= QUEEN; ++piece)
+    {
+        eval += piece_value[piece] * count_bits(board.bitboard(2 * piece + board.side_to_move));
+        eval -= piece_value[piece] * count_bits(board.bitboard(2 * piece + (board.side_to_move ^ 1)));
+    }
+
+    return eval;
+}
+
 QuietHistory::QuietHistory()
 {
     for (int i = 0; i < 2; ++i)
@@ -194,9 +210,13 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
 
 CorrectionHistory::CorrectionHistory()
 {
+
     for (int i = 0; i < KING_BUCKETS_SIZE * KING_BUCKETS_SIZE; ++i)
-        for (int j = 0; j < CORRHIST_SIZE; ++j)
-            table[0][i][j] = table[1][i][j] = 0;
+
+        for (int j = 0; j < 5; ++j)
+
+            for (int k = 0; k < CORRHIST_SIZE; ++k)
+                table[0][j][i][k] = table[1][j][i][k] = 0;
 }
 
 int CorrectionHistory::king_bucket_location(const Board &board)
@@ -208,6 +228,22 @@ int CorrectionHistory::king_bucket_location(const Board &board)
     return king_buckets[white_king_square] << KING_BUCKET_SHIFT | king_buckets[flip(black_king_square)];
 }
 
+inline int CorrectionHistory::get_bucket(const Board &board)
+{
+    int piececount = piece_count_evaluation(board);
+
+    if (std::abs(piececount) <= 100)
+        return 2;
+    else if (piececount < -100 && piececount >= -300)
+        return 1;
+    else if (piececount < -300)
+        return 0;
+    else if (piececount > 100 && piececount < 300)
+        return 3;
+    else
+        return 4;
+}
+
 void CorrectionHistory::update(const Board &board, int depth, int score, int static_eval)
 {
     if (is_mate_score(score))
@@ -217,16 +253,19 @@ void CorrectionHistory::update(const Board &board, int depth, int score, int sta
     const int bonus = std::clamp(delta * depth / 8, -CORRHIST_LIMIT / 4, CORRHIST_LIMIT / 4);
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
     const int king_bucket = king_bucket_location(board);
+    const int material_difference_bucket = get_bucket(board);
 
-    table[board.side_to_move][king_bucket][hash_location] += bonus - (table[board.side_to_move][king_bucket][hash_location] * abs(bonus) / CORRHIST_LIMIT);
+    table[board.side_to_move][material_difference_bucket][king_bucket][hash_location] += bonus - (table[board.side_to_move][material_difference_bucket][king_bucket][hash_location] * abs(bonus) / CORRHIST_LIMIT);
 }
 
 int CorrectionHistory::correct_eval(const Board &board, int uncorrected_static_eval)
 {
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
     const int king_bucket = king_bucket_location(board);
+    const int material_difference_bucket = get_bucket(board);
 
-    const int raw_correction = table[board.side_to_move][king_bucket][hash_location];
+    const int raw_correction = table[board.side_to_move][material_difference_bucket][king_bucket][hash_location];
+
     const int correction = raw_correction * std::abs(raw_correction) / 5'000;
 
     return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);

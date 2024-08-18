@@ -80,8 +80,8 @@ public:
 
 class CorrectionHistory
 {
-    //  first indicates stm, second array indice is the mod of the pawn hash
-    std::array<std::array<std::array<int64_t, CORRHIST_SIZE>, KING_BUCKETS_SIZE * KING_BUCKETS_SIZE>, 2> table;
+    //[stm][material diff bucket][king bucket][mod of pawn hash]
+    std::array<std::array<std::array<std::array<int64_t, CORRHIST_SIZE>, KING_BUCKETS_SIZE * KING_BUCKETS_SIZE>, 5>, 2> table;
 
 public:
     CorrectionHistory();
@@ -93,7 +93,8 @@ public:
 
 private:
     // white bucket << 2 | black bucket
-    int king_bucket_location(const Board &board);
+    inline int king_bucket_location(const Board &board);
+    inline int get_bucket(const Board &board);
 };
 
 class Killers
