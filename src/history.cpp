@@ -194,11 +194,12 @@ int64_t ContinuationHistory::move_value(const Board &board, Move move, const Boa
 
 CorrectionHistory::CorrectionHistory()
 {
-    for (int i = 0; i < CORRHIST_SIZE; ++i)
-    {
-        table[0][i] = table[1][i] = 0;
-    }
+    for (int i = 0; i < KING_BUCKETS_SIZE; ++i)
+        for (int j = 0; j < KING_BUCKETS_SIZE; ++j)
+            for (int k = 0; k < CORRHIST_SIZE; ++k)
+                table[0][i][j][k] = table[1][i][j][k] = 0;
 }
+
 void CorrectionHistory::update(const Board &board, int depth, int score, int static_eval)
 {
     if (is_mate_score(score))
@@ -207,15 +208,24 @@ void CorrectionHistory::update(const Board &board, int depth, int score, int sta
     const int delta = score - static_eval;
     const int bonus = std::clamp(delta * depth / 8, -CORRHIST_LIMIT / 4, CORRHIST_LIMIT / 4);
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
+    const int white_king_square = lsb(board.pieces[BITBOARD_PIECES::KING] & board.colors[WHITE]);
+    const int black_king_square = lsb(board.pieces[BITBOARD_PIECES::KING] & board.colors[BLACK]);
+    const int white_king_bucket = king_buckets[white_king_square];
+    const int black_king_bucket = king_buckets[flip(black_king_square)];
 
-    table[board.side_to_move][hash_location] += bonus - (table[board.side_to_move][hash_location] * abs(bonus) / CORRHIST_LIMIT);
+    table[board.side_to_move][white_king_bucket][black_king_bucket][hash_location] += bonus - (table[board.side_to_move][white_king_bucket][black_king_bucket][hash_location] * abs(bonus) / CORRHIST_LIMIT);
 }
 
 int CorrectionHistory::correct_eval(const Board &board, int uncorrected_static_eval)
 {
     const int hash_location = board.pawn_hash % CORRHIST_SIZE;
 
-    const int raw_correction = table[board.side_to_move][hash_location];
+    const int white_king_square = lsb(board.pieces[BITBOARD_PIECES::KING] & board.colors[WHITE]);
+    const int black_king_square = lsb(board.pieces[BITBOARD_PIECES::KING] & board.colors[BLACK]);
+    const int white_king_bucket = king_buckets[white_king_square];
+    const int black_king_bucket = king_buckets[flip(black_king_square)];
+
+    const int raw_correction = table[board.side_to_move][white_king_bucket][black_king_bucket][hash_location];
     const int correction = raw_correction * std::abs(raw_correction) / 5'000;
 
     return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);

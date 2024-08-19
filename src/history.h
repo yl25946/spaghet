@@ -80,8 +80,8 @@ public:
 
 class CorrectionHistory
 {
-    //  first indicates stm, second array indice is the mod of the pawn hash
-    std::array<std::array<int64_t, CORRHIST_SIZE>, 2> table;
+    // [stm][white king bucket][black king bucket][mod pawn hash]
+    std::array<std::array<std::array<std::array<int64_t, CORRHIST_SIZE>, KING_BUCKETS_SIZE>, KING_BUCKETS_SIZE>, 2> table;
 
 public:
     CorrectionHistory();
