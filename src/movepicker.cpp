@@ -96,7 +96,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             curr_move.score = get_quiet_history_score(ss, thread_data, move_list.moves[i]);
 
             // give a huge malus if it isn't a good see move
-            if (SEE(ss->board, curr_move, quiet_see_threshold))
+            if (!SEE(ss->board, curr_move, quiet_see_threshold))
                 curr_move.score += BAD_QUIET_MALUS;
 
             // check killer moves
