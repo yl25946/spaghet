@@ -49,5 +49,5 @@ public:
 
     bool has_next();
 
-    void score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold);
+    void score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int noisy_see_threshold, int quiet_see_threshold);
 };

@@ -130,7 +130,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107, -107);
 
     while (move_picker.has_next())
     {
@@ -349,7 +349,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         // scores moves to order them
         MovePicker move_picker(captures_and_promotions);
-        move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+        move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107, -107);
 
         while (move_picker.has_next())
         {
@@ -397,7 +397,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107, -107);
 
     const int original_alpha = alpha;
 

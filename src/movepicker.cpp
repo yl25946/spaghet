@@ -33,7 +33,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     moves_remaining = move_list.size();
 }
 
-void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int threshold)
+void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, bool has_tt_move, int noisy_see_threshold, int quiet_see_threshold)
 {
 
     // just compare the info because they are different objects
@@ -63,7 +63,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, move_list[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, move_list[i], noisy_see_threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -86,7 +86,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                     promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
             }
 
-            curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, curr_move, noisy_see_threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
@@ -94,6 +94,10 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         else
         {
             curr_move.score = get_quiet_history_score(ss, thread_data, move_list.moves[i]);
+
+            // give a huge malus if it isn't a good see move
+            if (SEE(ss->board, curr_move, quiet_see_threshold))
+                curr_move.score += BAD_QUIET_MALUS;
 
             // check killer moves
             for (int j = 0; j < ss->killers.size(); ++j)

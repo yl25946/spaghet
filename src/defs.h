@@ -89,6 +89,7 @@ constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
 constexpr int64_t CAPTURE_BONUS = 1LL << 21;
 // same as max history
 constexpr int64_t PROMOTION_BONUS = 1 << 14;
+constexpr int64_t BAD_QUIET_MALUS = -(1 << 29);
 
 // this is a clamp value used for history
 constexpr int64_t MAX_HISTORY = 1 << 14;
