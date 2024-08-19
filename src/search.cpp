@@ -74,6 +74,9 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 template <bool inPV>
 int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 {
+    if (nodes >= max_nodes)
+        return 0;
+
     // return evaluate(board);
 
     if (stopped)
@@ -83,6 +86,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         seldepth = ss->ply;
 
     ++nodes;
+
     if (!(nodes & 4095))
         if (get_time() >= max_stop_time)
         {
@@ -205,6 +209,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 template <bool inPV>
 int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack *ss)
 {
+    if (nodes >= max_nodes)
+        return 0;
+
     ++nodes;
 
     if (stopped)
@@ -809,7 +816,7 @@ void Searcher::search()
             std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
-        if (nodes > max_nodes)
+        if (nodes >= max_nodes)
             break;
 
         if (best_move == previous_best_move)
