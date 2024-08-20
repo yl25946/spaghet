@@ -285,6 +285,14 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         improving = true;
     }
 
+    // Razoring: If the evaluation is really poor, we use qsearch to check if we can exceed alpha. If we cannot exceed alpha, we fail low
+    if (!ss->in_check && ss->static_eval < alpha - 500 - 300 * depth * depth)
+    {
+        int razoring_score = quiescence_search<nonPV>(alpha - 1, alpha, ss);
+        if (razoring_score < alpha && std::abs(razoring_score) < MAX_MATE_SCORE)
+            return razoring_score;
+    }
+
     // apply reverse futility pruning
     if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && ss->static_eval - 80 * (depth - improving) >= beta)
         return beta + (ss->static_eval - beta) / 3;
