@@ -537,6 +537,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         int reduction = 0;
         int current_score;
 
+        if (!tt_move.is_quiet())
+            reduction += 1;
+
         if (cutnode)
             reduction += 1;
 
