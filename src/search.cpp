@@ -342,6 +342,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     {
         // only stores queen promotions
         MoveList captures_and_promotions;
+        MoveList noises_searched;
         int score = -INF - 1;
 
         generate_queen_promotions(board, captures_and_promotions);
@@ -367,6 +368,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             if (curr_move.score < 0)
                 break;
 
+            noises_searched.insert(curr_move);
+
             // updates the search stack
             ss->move_played = curr_move;
             (ss + 1)->board = copy;
@@ -383,6 +386,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             {
                 // update tranposition table
                 transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
+
+                // update capthist
+                thread_data.capthist.update(board, noises_searched, curr_move, depth - 3);
 
                 return score;
             }
