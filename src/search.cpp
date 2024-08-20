@@ -663,9 +663,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // Bonus for prior move if there was a fail low
-    if (alpha <= original_alpha && !in_root && (ss - 1)->move_played.is_quiet())
+    if (alpha <= original_alpha && !in_root && (ss - 1)->null_moved && (ss - 1)->move_played.is_quiet())
     {
-
         thread_data.main_history.update((ss - 1)->move_played, depth, (ss - 1)->board.side_to_move, true);
         thread_data.pawnhist.update((ss - 1)->board, (ss - 1)->move_played, depth, true);
 
