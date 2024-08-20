@@ -71,7 +71,7 @@ inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
 
 // used for UCI options
 constexpr int MAX_THREADS = 1024;
-constexpr int MAX_HASH = 131072;
+constexpr int MAX_HASH = 1'048'576;
 
 // highest possible score in engine
 constexpr int16_t INF = 32000;
