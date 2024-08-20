@@ -452,7 +452,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (is_quiet)
             quiet_moves.insert(curr_move);
-        else if (!curr_move.is_promotion())
+        else
             noises.insert(curr_move);
 
         int new_depth = depth - 1;
