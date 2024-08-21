@@ -258,16 +258,12 @@ bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
 
     // attacks by sliding pieces
     uint64_t blocking_pieces = blockers();
-    // attacked by bishop
-    if (get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[BISHOP]))
+    // diagonal attacks from bishop or queens
+    if (get_bishop_attacks(square, blocking_pieces) & (colors[side_attacking] & (pieces[BISHOP] | pieces[QUEEN])))
         return true;
 
-    // attacked by rooks
-    if (get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[ROOK]))
-        return true;
-
-    // attacked by queens
-    if (get_queen_attacks(square, blocking_pieces) & (colors[side_attacking] & pieces[QUEEN]))
+    // straight attacks from rooks or queens
+    if (get_rook_attacks(square, blocking_pieces) & (colors[side_attacking] & (pieces[ROOK] | pieces[QUEEN])))
         return true;
 
     return false;
