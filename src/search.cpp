@@ -245,7 +245,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
-    TT_Entry &tt_entry = transposition_table.probe(board);
+    TT_Entry tt_entry = transposition_table.probe(board);
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
