@@ -6,7 +6,7 @@ CXX         := g++
 CLEAN       := rm -rf
 NOOP		:=:
 NULL 	    := /dev/null
-TARGET      := Spaghet
+TARGET      := spaghet
 WARNINGS     = -Wall -Wcast-qual -Wextra -Wshadow -Wdouble-promotion -Wformat=2 -Wnull-dereference -Wlogical-op -Wold-style-cast -Wundef -pedantic
 CXXFLAGS    :=  -funroll-loops -O3 -flto -fno-exceptions -std=c++20 -DNDEBUG $(WARNINGS)
 NATIVE       = -march=native
