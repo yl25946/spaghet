@@ -87,7 +87,7 @@ TranspositionTable::TranspositionTable(uint64_t size)
     // size is now 0
     hashtable.clear();
 
-    this->hashtable.resize(tt_entry_count, TT_Entry());
+    this->hashtable.resize(tt_entry_count);
 }
 
 void TranspositionTable::resize(uint64_t size)

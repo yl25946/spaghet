@@ -32,7 +32,11 @@ public:
     void go(Board &board, std::vector<Move> &move_list, Time &time);
     // clears thread data and resizes to new number of threads
     void resize(int new_thread_count);
-    void ucinewgame() { resize(thread_data.size()); }
+    void ucinewgame()
+    {
+        options.transposition_table.clear();
+        resize(thread_data.size());
+    }
     void resize_tt(int new_hash_size) { options.resize(new_hash_size); }
 
     uint64_t get_nodes();
