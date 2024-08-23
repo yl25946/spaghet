@@ -64,7 +64,8 @@ void ThreadManager::join()
     nodes = get_nodes();
 
     for (std::jthread &thread : threads)
-        thread.join();
+        if (thread.joinable())
+            thread.join();
 
     searching = false;
 }
@@ -80,7 +81,8 @@ void ThreadManager::terminate()
         searcher.stopped = true;
 
     for (std::jthread &thread : threads)
-        thread.join();
+        if (thread.joinable())
+            thread.join();
 
     searching = false;
 }
