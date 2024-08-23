@@ -88,6 +88,9 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     Board &board = ss->board;
 
+    if (board.is_material_draw())
+        return 0;
+
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
@@ -232,9 +235,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return 0;
 
     // if there's a threefold draw
-    if (!in_root && twofold(board))
+    if (!in_root && (twofold(board) || board.is_material_draw()))
     {
-        // std::cout << "threefold repetition" << "\n";
         return 0;
     }
 

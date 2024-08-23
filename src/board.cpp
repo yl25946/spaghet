@@ -419,6 +419,15 @@ bool Board::was_legal() const
     return !(is_square_attacked(lsb(bitboard(WHITE_KING + (side_to_move ^ 1))), side_to_move));
 }
 
+bool Board::is_material_draw() const
+{
+    uint64_t minor_pieces = pieces[KNIGHT] | pieces[BISHOP];
+    uint64_t other_pieces = pieces[PAWN] | pieces[ROOK] | pieces[QUEEN];
+
+    // if we only have 1 minor piece and no other pieces
+    return (other_pieces == 0) && (count_bits(minor_pieces & colors[WHITE]) == 1) && (count_bits(minor_pieces & colors[BLACK]) == 1);
+}
+
 bool Board::only_pawns(uint8_t side_to_move) const
 {
     uint64_t bitboard = 0;

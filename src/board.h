@@ -132,6 +132,8 @@ public:
     // returns true if the current move's king is in check
     bool is_in_check();
 
+    bool is_material_draw() const;
+
     // checks if there's only pawns (and king) on the board for the side to move
     // used as a rudimentary check for zugzwang
     bool only_pawns(uint8_t side_to_move) const;
