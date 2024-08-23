@@ -19,11 +19,11 @@ Searcher::Searcher(Board board, const std::vector<Move> &move_list, Transpositio
     nodes_spent_table.fill(0);
 
     this->board = board;
+    thread_data.search_stack[4].updated_accumulator = true;
 
     thread_data.search_stack[4].board = board;
     thread_data.search_stack[4].in_check = board.is_in_check();
     thread_data.accumulators[0] = Accumulator(board);
-    thread_data.search_stack[4].updated_accumulator = true;
 
     this->age = age;
     this->is_main_thread = is_main_thread;
@@ -842,4 +842,8 @@ void Searcher::search()
 
         thread_manager.stop();
     }
+    // wait for main thread
+    // joinable is a sanity check
+    else if (thread_manager.threads[0].joinable())
+        thread_manager.threads[0].join();
 }
