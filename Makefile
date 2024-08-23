@@ -15,7 +15,7 @@ BMI2FLAGS    = -DUSE_AVX2 -DUSE_SIMD -mavx2 -mbmi -mbmi2
 AVX512FLAGS  = -DUSE_AVX512 -DUSE_SIMD -mavx512f -mavx512bw
 
 # engine name
-NAME        := Spaghet
+NAME        := spaghet
 
 TMPDIR = .tmp
 
