@@ -109,6 +109,9 @@ constexpr int CORRHIST_LIMIT = 1024;
 // number of pawn entries in pawnhist
 constexpr int PAWNHIST_SIZE = 16384;
 
+// how many conthists we have
+constexpr int conthist_indices[] = {1, 2};
+
 // SEE values
 constexpr int SEEValue[7] = {
     100,
