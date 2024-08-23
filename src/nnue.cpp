@@ -138,6 +138,28 @@ void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_pie
     const int nnue_sub_white_input_index = 64 * nnue_sub_white_piece + white_sub_square;
     const int nnue_sub_black_input_index = 64 * nnue_sub_black_piece + black_sub_square;
 
+#if defined(USE_SIMD)
+    constexpr int chunk_size = sizeof(vepi16) / sizeof(int16_t);
+
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[WHITE][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add_white_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub_white_input_index][i]));
+
+        store_epi16(&accumulator[WHITE][i], accumulator_vepi16);
+    }
+
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[BLACK][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add_black_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub_black_input_index][i]));
+
+        store_epi16(&accumulator[BLACK][i], accumulator_vepi16);
+    }
+#else
+
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
         accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
@@ -149,6 +171,8 @@ void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_pie
         accumulator[BLACK][i] += net.feature_weights[nnue_add_black_input_index][i];
         accumulator[BLACK][i] -= net.feature_weights[nnue_sub_black_input_index][i];
     }
+
+#endif
 }
 
 void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
@@ -174,6 +198,31 @@ void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub
     const int nnue_sub2_white_input_index = 64 * nnue_sub2_white_piece + white_sub2_square;
     const int nnue_sub2_black_input_index = 64 * nnue_sub2_black_piece + black_sub2_square;
 
+#if defined(USE_SIMD)
+    constexpr int chunk_size = sizeof(vepi16) / sizeof(int16_t);
+
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[WHITE][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add_white_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub1_white_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub2_white_input_index][i]));
+
+        store_epi16(&accumulator[WHITE][i], accumulator_vepi16);
+    }
+
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[BLACK][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add_black_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub1_black_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub2_black_input_index][i]));
+
+        store_epi16(&accumulator[BLACK][i], accumulator_vepi16);
+    }
+
+#else
+
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
         accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
@@ -187,6 +236,7 @@ void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub
         accumulator[BLACK][i] -= net.feature_weights[nnue_sub1_black_input_index][i];
         accumulator[BLACK][i] -= net.feature_weights[nnue_sub2_black_input_index][i];
     }
+#endif
 }
 
 void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8_t add2_piece, uint8_t add2_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
@@ -219,43 +269,29 @@ void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8
     const int nnue_sub2_black_input_index = 64 * nnue_sub2_black_piece + black_sub2_square;
 
 #if defined(USE_SIMD)
-    vepi32 sum = zero_epi32();
-
     constexpr int chunk_size = sizeof(vepi16) / sizeof(int16_t);
-    // our perspective
+
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
     {
-        const vepi16 accumulator = load_epi16(&accumulator[WHITE][i]);
-        accumulator = add_epi16(accumulator, load_epi16(&net.feature_weights[nnue_add1_white_input_index][i]));
-        accumulator = add_epi16(accumulator, load_epi16(&net.feature_weights[nnue_add1_white_input_index][i]));
-        }
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[WHITE][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add1_white_input_index][i]));
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add2_white_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub1_white_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub2_white_input_index][i]));
 
-    // their perspective
-    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
-    {
-        // load in the data from the weights
-
-        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i]);
-
-        const vepi16 weights = load_epi16(&net.output_weights[bucket][1][i]);
-
-        // clip
-        const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
-
-        // multiply with weights
-        // still int16s, will not overflow
-        const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
-
-        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
-        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
-
-        // add the result we have to the running sum
-        sum = add_epi32(sum, result);
+        store_epi16(&accumulator[WHITE][i], accumulator_vepi16);
     }
 
-    // finally reduce
-    eval = reduce_add_epi32(sum);
+    for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
+    {
+        vepi16 accumulator_vepi16 = load_epi16(&accumulator[BLACK][i]);
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add1_black_input_index][i]));
+        accumulator_vepi16 = add_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_add2_black_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub1_black_input_index][i]));
+        accumulator_vepi16 = sub_epi16(accumulator_vepi16, load_epi16(&net.feature_weights[nnue_sub2_black_input_index][i]));
 
+        store_epi16(&accumulator[BLACK][i], accumulator_vepi16);
+    }
 #else
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)

@@ -20,7 +20,9 @@ inline vepi32 set_epi32(int num) { return _mm512_set1_epi32(num); };
 inline void store_epi16(void *memory_address, vepi16 vector) { _mm512_store_si512(memory_address, vector); }
 inline vepi16 add_epi16(vepi32 v1, vepi32 v2) { return _mm512_add_epi16(v1, v2); }
 inline vepi32 add_epi32(vepi32 v1, vepi32 v2) { return _mm512_add_epi32(v1, v2); }
-inline vepi16 multiply_epi16(vepi16 v1, vepi16 v2) { return _mm512_mullo_epi16(v1, v2); }
+// a - b
+inline vepi16 sub_epi16(vepi16 a, vepi16 b) { return _mm512_add_epi16(a, b); }
+inline vepi16 multiply_epi16(vepi16 v1, vepi16 v2) { return _ mm512_mullo_epi16(v1, v2); }
 // multiplies the two vectors together using intermediate int32, and then adds adjacent int32s
 inline vepi32 multiply_add_epi16(vepi16 v1, vepi16 v2) { return _mm512_madd_epi16(v1, v2); }
 
@@ -39,10 +41,12 @@ inline vepi32 load_epi32(const int32_t *memory_address) { return _mm256_load_si2
 // this function puts num as every value in the vector
 inline vepi16 set_epi16(int num) { return _mm256_set1_epi16(num); };
 inline vepi32 set_epi32(int num) { return _mm256_set1_epi32(num); };
-// inline void store_epi16(void *memory_address, vepi16 vector) { _mm256_store_si256(memory_address, vector); }
+inline void store_epi16(void *memory_address, vepi16 vector) { _mm256_store_si256(memory_address, vector); }
 
 inline vepi16 add_epi16(vepi32 v1, vepi32 v2) { return _mm256_add_epi16(v1, v2); }
 inline vepi32 add_epi32(vepi32 v1, vepi32 v2) { return _mm256_add_epi32(v1, v2); }
+// a - b
+inline vepi16 sub_epi16(vepi16 a, vepi16 b) { return _mm256_add_epi16(a, b); }
 inline vepi16 multiply_epi16(vepi16 v1, vepi16 v2) { return _mm256_mullo_epi16(v1, v2); }
 // multiplies the two vectors together using intermediate int32, and then adds adjacent int32s
 inline vepi32 multiply_add_epi16(vepi16 v1, vepi16 v2) { return _mm256_madd_epi16(v1, v2); }
