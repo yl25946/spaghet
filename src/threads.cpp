@@ -30,7 +30,7 @@ void ThreadManager::go(Board &board, std::vector<Move> &move_list, Time &time)
     searchers.push_back(main_thread);
 
     // time manager used for non main threads, on non main threads we keep searching until we stop
-    Time non_main_time("go depth 1");
+    Time non_main_time("go depth 255");
 
     for (int i = 1; i < options.threads; ++i)
     {
