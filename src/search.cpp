@@ -450,6 +450,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 move_picker.skip_quiets();
                 continue;
             }
+
+            // History Pruning: if we have a history score that is low enough, we can safely prune this move
+            if (is_quiet && ss->static_eval < alpha && get_quiet_history_score(ss, thread_data, curr_move) < -4096 * depth)
+            {
+                move_picker.skip_quiets();
+                continue;
+            }
         }
 
         const uint64_t nodes_before_search = nodes;
