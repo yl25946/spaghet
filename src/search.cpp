@@ -1,8 +1,5 @@
 #include "search.h"
 
-// how many conthists we have
-constexpr int conthist_indices[] = {1, 2};
-
 Searcher::Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread) : board(board), transposition_table(transposition_table), thread_data(thread_data), thread_manager(thread_manager)
 {
     // reserves enough space so we don't have to resize
@@ -65,9 +62,13 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 {
     int ply = ss->ply;
 
-    for (int conthist_index : conthist_indices)
-        if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
-            thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played, depth);
+    // updates followup move history
+    if (ply >= 2 && !(ss - 2)->null_moved)
+        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
+
+    // updates counter move history
+    if (ply >= 1 && !(ss - 1)->null_moved)
+        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 1)->board, (ss - 1)->move_played, depth);
 }
 
 template <bool inPV>
@@ -447,7 +448,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             }
 
             // History Pruning: if we have a history score that is low enough, we can safely prune this move
-            if (is_quiet && get_quiet_history_score(ss, thread_data, curr_move) < -4096 * depth)
+            if (is_quiet && ss->static_eval < alpha && get_quiet_history_score(ss, thread_data, curr_move) < -4096 * depth)
             {
                 move_picker.skip_quiets();
                 continue;
@@ -554,9 +555,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (is_quiet)
             reduction -= get_quiet_history_score(ss, thread_data, curr_move) / 10'000;
-
-        if (inPV)
-            reduction -= 1;
 
         // Late Move Reduction: we've ordered the move in order of importance. We reduce the
         // the depths of later moves because they are less important
@@ -669,17 +667,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         {
             return 0;
         }
-    }
-
-    // Bonus for prior move if there was a fail low
-    if (alpha <= original_alpha && !in_root && !(ss - 1)->null_moved && (ss - 1)->move_played.is_quiet())
-    {
-        thread_data.main_history.update((ss - 1)->move_played, depth, (ss - 1)->board.side_to_move, true);
-        thread_data.pawnhist.update((ss - 1)->board, (ss - 1)->move_played, depth, true);
-
-        for (int conthist_index : conthist_indices)
-            if ((ss - 1)->ply >= conthist_index && !(ss - conthist_index - 1)->null_moved)
-                thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - conthist_index - 1)->board, (ss - conthist_index - 1)->move_played, depth, true);
     }
 
     // add to TT if we aren't in singular search
