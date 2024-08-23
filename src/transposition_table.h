@@ -38,17 +38,16 @@ class TranspositionTable
 
 public:
     // Size of TT in MB
-    TranspositionTable(uint64_t size);
+    TranspositionTable(size_t size);
     // clears the transposition table
-    void resize(uint64_t size);
+    void resize(size_t size);
     void prefetch(const Board &board);
     void insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
     void clear();
     // prints out permille what percent of the hashtable is full
     int hash_full();
-    // bool contains(uint64_t hash);
     TT_Entry &probe(const Board &board);
 
 private:
-    inline int index(const Board &board) { return board.hash % hashtable.size(); };
+    inline size_t index(const Board &board) { return board.hash % hashtable.size(); };
 };

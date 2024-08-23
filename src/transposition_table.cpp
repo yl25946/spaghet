@@ -78,11 +78,11 @@ int16_t TT_Entry::usable_score(int ply) const
     return score;
 }
 
-TranspositionTable::TranspositionTable(uint64_t size)
+TranspositionTable::TranspositionTable(size_t size)
 {
-    uint64_t entry_size = sizeof(TT_Entry);
+    size_t entry_size = sizeof(TT_Entry);
 
-    uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
+    size_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
     // size is now 0
     hashtable.clear();
@@ -90,11 +90,11 @@ TranspositionTable::TranspositionTable(uint64_t size)
     this->hashtable.resize(tt_entry_count);
 }
 
-void TranspositionTable::resize(uint64_t size)
+void TranspositionTable::resize(size_t size)
 {
-    uint64_t entry_size = sizeof(TT_Entry);
+    size_t entry_size = sizeof(TT_Entry);
 
-    uint64_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
+    size_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
 
     // std::cout << tt_entry_count << "\n";
 
@@ -106,7 +106,7 @@ void TranspositionTable::resize(uint64_t size)
 
 void TranspositionTable::prefetch(const Board &board)
 {
-    const uint64_t hash_location = index(board);
+    const size_t hash_location = index(board);
     __builtin_prefetch(&hashtable[hash_location]);
 }
 
@@ -151,14 +151,14 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
 
 TT_Entry &TranspositionTable::probe(const Board &board)
 {
-    uint64_t hash_location = index(board);
+    size_t hash_location = index(board);
 
     return hashtable[hash_location];
 }
 
 void TranspositionTable::clear()
 {
-    uint64_t original_size = hashtable.size();
+    size_t original_size = hashtable.size();
 
     hashtable.clear();
 
