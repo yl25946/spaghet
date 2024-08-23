@@ -262,12 +262,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
     const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    int eval = ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     // tt score in certain circumstances can be used as static eval
     // we use logical & here because if it's exact bound we don't care
     if (tt_entry.score != SCORE_NONE && (tt_entry.flag() & (tt_entry.score > ss->static_eval ? BOUND::FAIL_HIGH : BOUND::FAIL_LOW)))
-        ss->static_eval = tt_entry.score;
+        eval = tt_entry.score;
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
@@ -290,8 +290,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // apply reverse futility pruning
-    if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && ss->static_eval - 80 * (depth - improving) >= beta)
-        return beta + (ss->static_eval - beta) / 3;
+    if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && eval - 80 * (depth - improving) >= beta)
+        return beta + (eval - beta) / 3;
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
@@ -300,7 +300,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     (ss + 1)->killers.clear();
 
     // applies null move pruning
-    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !ss->in_check && !board.only_pawns(board.side_to_move) && ss->static_eval >= beta)
+    if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !ss->in_check && !board.only_pawns(board.side_to_move) && eval >= beta)
     {
         int r = depth / 3 + 4;
 
@@ -445,7 +445,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 continue;
 
             // applies futility pruning
-            if (depth <= 8 && !ss->in_check && is_quiet && ss->static_eval + futility_margin < alpha)
+            if (depth <= 8 && !ss->in_check && is_quiet && eval + futility_margin < alpha)
             {
                 move_picker.skip_quiets();
                 continue;
@@ -699,7 +699,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
-    // // update corrhist if we're not in check
+    //  update corrhist if we're not in check
     if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
         thread_data.corrhist.update(board, depth, best_score, ss->static_eval);
 
