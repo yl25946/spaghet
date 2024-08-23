@@ -264,6 +264,11 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
     ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
+    // tt score in certain circumstances can be used as static eval
+    // we use logical & here because if it's exact bound we don't care
+    if (tt_entry.score != SCORE_NONE && (tt_entry.flag() & (tt_entry.score > ss->static_eval ? BOUND::FAIL_HIGH : BOUND::FAIL_LOW)))
+        ss->static_eval = tt_entry.score;
+
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
 
