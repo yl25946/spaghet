@@ -1,8 +1,5 @@
 #include "search.h"
 
-// how many conthists we have
-constexpr int conthist_indices[] = {1, 2};
-
 Searcher::Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread) : board(board), transposition_table(transposition_table), thread_data(thread_data), thread_manager(thread_manager)
 {
     // reserves enough space so we don't have to resize
