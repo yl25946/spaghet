@@ -1,5 +1,8 @@
 #include "search.h"
 
+// how many conthists we have
+constexpr int conthist_indices[] = {1, 2};
+
 Searcher::Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread) : board(board), transposition_table(transposition_table), thread_data(thread_data), thread_manager(thread_manager)
 {
     // reserves enough space so we don't have to resize
@@ -62,13 +65,9 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 {
     int ply = ss->ply;
 
-    // updates followup move history
-    if (ply >= 2 && !(ss - 2)->null_moved)
-        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 2)->board, (ss - 2)->move_played, depth);
-
-    // updates counter move history
-    if (ply >= 1 && !(ss - 1)->null_moved)
-        thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - 1)->board, (ss - 1)->move_played, depth);
+    for (int conthist_index : conthist_indices)
+        if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
+            thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played, depth);
 }
 
 template <bool inPV>
@@ -245,7 +244,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
-    TT_Entry tt_entry = transposition_table.probe(board);
+    TT_Entry &tt_entry = transposition_table.probe(board);
 
     bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
@@ -671,13 +670,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         thread_data.main_history.update((ss - 1)->move_played, depth, (ss - 1)->board.side_to_move, true);
         thread_data.pawnhist.update((ss - 1)->board, (ss - 1)->move_played, depth, true);
 
-        // updates followup move history
-        if ((ss - 1)->ply >= 2 && !(ss - 3)->null_moved)
-            thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - 3)->board, (ss - 3)->move_played, depth, true);
-
-        // updates counter move history
-        if ((ss - 1)->ply >= 1 && !(ss - 2)->null_moved)
-            thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - 2)->board, (ss - 2)->move_played, depth, true);
+        for (int conthist_index : conthist_indices)
+            if ((ss - 1)->ply >= conthist_index && !(ss - conthist_index - 1)->null_moved)
+                thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - conthist_index - 1)->board, (ss - conthist_index - 1)->move_played, depth, true);
     }
 
     // add to TT if we aren't in singular search
