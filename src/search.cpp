@@ -94,7 +94,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
-    bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
 
     // tt cutoff
@@ -105,8 +105,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     }
 
     // creates a baseline
-    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    const int stand_pat = has_tt_entry ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    const int uncorrected_static_eval = tt_hit ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    const int stand_pat = tt_hit ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -129,7 +129,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+    move_picker.score(ss, thread_data, tt_move, tt_hit, -107);
 
     while (move_picker.has_next())
     {
@@ -246,7 +246,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // we check if the TT has seen this before
     TT_Entry &tt_entry = transposition_table.probe(board);
 
-    bool has_tt_entry = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
     bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
 
@@ -261,8 +261,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return quiescence_search<inPV>(alpha, beta, ss);
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
-    const int uncorrected_static_eval = has_tt_entry ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    const int uncorrected_static_eval = tt_hit ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
+    int eval = ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+
+    // tt score in certain circumstances can be used as static eval
+    // we use logical & here because if it's exact bound we don't care
+    if (tt_hit && tt_entry.score != SCORE_NONE && (tt_entry.flag() & (tt_entry.score > eval ? BOUND::FAIL_HIGH : BOUND::FAIL_LOW)))
+        eval = tt_entry.score;
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
     bool improving = false;
@@ -285,8 +290,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     // apply reverse futility pruning
-    if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && ss->static_eval - 80 * (depth - improving) >= beta)
-        return beta + (ss->static_eval - beta) / 3;
+    if (!inPV && !ss->exclude_tt_move && !ss->in_check && depth <= 6 && eval - 80 * (depth - improving) >= beta)
+        return beta + (eval - beta) / 3;
 
     // bailout
     if (ss->ply >= MAX_PLY - 1)
@@ -337,7 +342,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (!inPV && !ss->in_check && depth > 3 && !is_mate_score(beta) &&
         // If the value from the transposition table is lower than probcut beta, don't probcut because there's a chance that the transposition table
         // cuts off
-        !(has_tt_entry && tt_entry.depth >= depth - 3 && tt_entry.score < probcut_beta))
+        !(tt_hit && tt_entry.depth >= depth - 3 && tt_entry.score < probcut_beta))
     {
         // only stores queen promotions
         MoveList captures_and_promotions;
@@ -348,7 +353,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         // scores moves to order them
         MovePicker move_picker(captures_and_promotions);
-        move_picker.score(ss, thread_data, tt_move, has_tt_entry, 107);
+        move_picker.score(ss, thread_data, tt_move, tt_hit, 107);
 
         while (move_picker.has_next())
         {
@@ -396,7 +401,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // scores moves to order them
     MovePicker move_picker(move_list);
-    move_picker.score(ss, thread_data, tt_move, has_tt_entry, -107);
+    move_picker.score(ss, thread_data, tt_move, tt_hit, -107);
 
     const int original_alpha = alpha;
 
@@ -694,7 +699,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
-    // // update corrhist if we're not in check
+    //  update corrhist if we're not in check
     if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
         thread_data.corrhist.update(board, depth, best_score, ss->static_eval);
 
