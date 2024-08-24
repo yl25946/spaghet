@@ -91,5 +91,5 @@ public:
     // returns true if there is a draw
     bool twofold(Board &board);
 
-    void scale_time(int best_move_stability_factor);
+    void scale_time(int best_move_stability_factor, int current_search_score, int previous_search_score);
 };
