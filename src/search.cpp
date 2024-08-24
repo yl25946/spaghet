@@ -823,7 +823,7 @@ void Searcher::search()
 
         // std::cout << "previous best move: " << previous_best_move.to_string() << "\n";
 
-        if (root_depth > 7 && time_set)
+        if (root_depth > 4 && time_set)
         {
             scale_time(best_move_stability_factor);
         }
