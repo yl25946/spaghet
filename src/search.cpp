@@ -724,9 +724,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
 void Searcher::search()
 {
-    int best_score = -INF;
-    Move previous_best_move(a8, a8, 0);
+    int root_score = -INF;
+    int previous_root_score = -INF;
     Move best_move(a8, a8, 0);
+    Move previous_best_move(a8, a8, 0);
     int best_move_stability_factor = 0;
     uint64_t time_elapsed;
     int alpha = -INF;
@@ -770,8 +771,8 @@ void Searcher::search()
 
         // if (root_depth > 5)
         // {
-        alpha = std::max<int>(best_score - delta, -INF);
-        beta = std::min<int>(best_score + delta, INF);
+        alpha = std::max<int>(root_score - delta, -INF);
+        beta = std::min<int>(root_score + delta, INF);
         // }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
@@ -784,19 +785,19 @@ void Searcher::search()
             int adjusted_depth = std::max(1, root_depth - failed_high_count);
             int root_delta = beta - alpha;
             // we start at 4 beacuse of conthist
-            best_score = negamax<PV>(alpha, beta, adjusted_depth, false, &thread_data.search_stack[4]);
+            root_score = negamax<PV>(alpha, beta, adjusted_depth, false, &thread_data.search_stack[4]);
 
             if (stopped)
                 break;
 
-            if (best_score <= alpha)
+            if (root_score <= alpha)
             {
                 beta = (alpha + beta) / 2;
-                alpha = std::max<int>(best_score - delta, -INF);
+                alpha = std::max<int>(root_score - delta, -INF);
             }
-            else if (best_score >= beta)
+            else if (root_score >= beta)
             {
-                beta = std::min<int>(best_score + delta, INF);
+                beta = std::min<int>(root_score + delta, INF);
                 ++failed_high_count;
             }
             else
@@ -820,11 +821,11 @@ void Searcher::search()
 
         uint64_t all_thread_node_count = thread_manager.get_nodes();
 
-        if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+        if (is_mate_score(root_score))
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(root_score) << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << root_score << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
         if (nodes > max_nodes)
@@ -844,13 +845,14 @@ void Searcher::search()
 
         if (root_depth > 7 && time_set)
         {
-            scale_time(best_move_stability_factor);
+            scale_time(best_move_stability_factor, root_score, previous_root_score);
         }
 
         if (get_time() > optimum_stop_time)
             break;
 
-        average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
+        average_score = average_score != -INF ? (2 * root_score + average_score) / 3 : root_score;
+        previous_root_score = root_score;
     }
 
     if (is_main_thread)
