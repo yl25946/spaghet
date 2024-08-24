@@ -91,12 +91,12 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
-    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.can_use_score(alpha, beta))
+    if (!inPV && !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.can_use_score(alpha, beta))
     {
         return tt_entry.usable_score(ss->ply);
     }
@@ -241,15 +241,15 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // bool inPV = beta - alpha > 1;
 
     // we check if the TT has seen this before
-    TT_Entry &tt_entry = transposition_table.probe(board);
+    TT_Entry tt_entry = transposition_table.probe(board);
 
-    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash == board.hash && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
-    if (!inPV && !ss->exclude_tt_move && tt_entry.hash == board.hash && tt_entry.can_use_score(alpha, beta) && tt_entry.depth >= depth)
+    if (!inPV && !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.can_use_score(alpha, beta) && tt_entry.depth >= depth)
     {
         return tt_entry.usable_score(ss->ply);
     }
