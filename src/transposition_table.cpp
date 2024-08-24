@@ -14,7 +14,7 @@ TT_Entry::TT_Entry()
 
 TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
 {
-    this->hash = board.hash;
+    this->hash = static_cast<uint16_t>(board.hash);
     this->best_move = best_move;
     this->static_eval = static_eval;
     this->depth = depth;
@@ -34,8 +34,6 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t st
     {
         this->score = score;
     }
-
-    // std::cout << this->score << "\n";
 
     // basically mod 64
     uint8_t modular_age = age & 63;
@@ -120,7 +118,8 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     if (board.hash == entry.hash && flag != BOUND::EXACT && depth <= entry.depth - 4)
         return;
 
-    entry.hash = board.hash;
+    // Takes the last 16 bits
+    entry.hash = static_cast<uint16_t>(board.hash);
     entry.score = best_score;
     entry.static_eval = static_eval;
     entry.depth = depth;

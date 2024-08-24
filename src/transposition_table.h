@@ -4,14 +4,11 @@
 #include "board.h"
 #include "move.h"
 
-// allows us to convert mate scores into a usable format that we can use to detect checkmates
-int ttscore_to_score(uint16_t tt_score, int ply);
-
 class TT_Entry
 {
 public:
-    // hash of the board state
-    uint64_t hash;
+    // last 16 bits of the hash
+    uint16_t hash;
     Move best_move;
     int16_t score;
     uint8_t depth;
@@ -25,6 +22,7 @@ public:
     uint8_t flag() const;
     // moded to 64
     uint8_t age() const;
+    inline bool hash_equals(const Board &board) const { return static_cast<uint16_t>(board.hash) == hash; }
     bool can_use_score(int alpha, int beta) const;
     // converts the score into the TT into a score that can used to detect and play mates
     int16_t usable_score(int ply) const;
@@ -49,5 +47,5 @@ public:
     TT_Entry &probe(const Board &board);
 
 private:
-    inline size_t index(const Board &board) { return board.hash % hashtable.size(); };
+    inline size_t index(const Board &board) { return (static_cast<uint128_t>(board.hash) * static_cast<uint128_t>(hashtable.size())) >> 64; };
 };
