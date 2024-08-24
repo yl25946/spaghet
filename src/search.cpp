@@ -590,9 +590,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (ss->ttPV)
             --reduction;
 
-        if (inPV)
-            reduction -= 1;
-
         // Late Move Reduction: we've ordered the move in order of importance. We reduce the
         // the depths of later moves because they are less important
         if (move_picker.moves_seen() > 1)
