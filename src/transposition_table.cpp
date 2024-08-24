@@ -115,7 +115,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     TT_Entry &entry = hashtable[hash_location];
 
     // replacement policy
-    if (board.hash == entry.hash && flag != BOUND::EXACT && depth <= entry.depth - 4)
+    if (entry.hash_equals(board) && flag != BOUND::EXACT && depth <= entry.depth - 4)
         return;
 
     // Takes the last 16 bits
