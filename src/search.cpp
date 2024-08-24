@@ -204,11 +204,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             bound_flag = BOUND::FAIL_HIGH;
         }
 
-<<<<<<< HEAD
         transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, ttPV, bound_flag);
-        == == == =
-                     transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, inPV, bound_flag);
->>>>>>> fdad0ce (implements ttpv and a negative reduction)
     }
 
     // TODO: add check moves
@@ -263,10 +259,14 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV || (tt_hit && tt_entry.ttPV());
     == == == =
                  ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV && (tt_hit && tt_entry.ttPV());
 >>>>>>> fdad0ce (implements ttpv and a negative reduction)
+    == == == =
+                 ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV || (tt_hit && tt_entry.ttPV());
+>>>>>>> 5fe05c5 (this should work now right)
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
