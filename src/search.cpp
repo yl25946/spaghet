@@ -587,7 +587,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // full depth search
         else if (!inPV || move_picker.moves_seen() > 0)
         {
-            current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - (r > 3), !cutnode, ss + 1);
+            current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - (reduction > 3), !cutnode, ss + 1);
         }
 
         // if we are in a PV node, we do a full window search on the first move or a fail high
