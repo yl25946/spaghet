@@ -55,7 +55,7 @@ void Searcher::scale_time(int best_move_stability_factor, int current_search_sco
     const double node_scaling_factor = 1.0;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
     // we scale the time more if our score decreases from previous one
-    const double search_loss = 0.9 + 0.1 * (previous_search_score - current_search_score);
+    const double search_loss = 0.9 + 0.01 * (previous_search_score - current_search_score);
     const double search_stability_factor = std::clamp(search_loss, 0.8, 1.5);
     // scale the time based on how many nodes we spent ond how the best move changed
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor * search_stability_factor, max_stop_time);
