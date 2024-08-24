@@ -12,7 +12,7 @@ TT_Entry::TT_Entry()
     flag_and_age = BOUND::NONE;
 }
 
-TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
+TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, bool inPV, uint8_t flag)
 {
     this->hash = static_cast<uint16_t>(board.hash);
     this->best_move = best_move;
@@ -37,17 +37,23 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t st
 
     // basically mod 64
     uint8_t modular_age = age & 63;
-    this->flag_and_age = (modular_age << 2) | flag;
+    this->flag_and_age = (modular_age << 3) | inPV << 1 | flag;
 }
 
 uint8_t TT_Entry::flag() const
 {
-    return this->flag_and_age & 3;
+    return flag_and_age & 3;
+}
+
+bool TT_Entry::ttPV() const
+{
+    // gets the 3rd bit
+    return flag_and_age & 4;
 }
 
 uint8_t TT_Entry::age() const
 {
-    return this->flag_and_age >> 2;
+    return this->flag_and_age >> 3;
 }
 
 bool TT_Entry::can_use_score(int alpha, int beta) const
@@ -108,7 +114,7 @@ void TranspositionTable::prefetch(const Board &board)
     __builtin_prefetch(&hashtable[hash_location]);
 }
 
-void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
+void TranspositionTable::insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, bool inPV, uint8_t flag)
 {
     uint64_t hash_location = index(board);
 
@@ -144,8 +150,8 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
         entry.score = best_score;
     }
 
-    uint8_t modular_age = age & 63;
-    entry.flag_and_age = (modular_age << 2) | flag;
+    uint8_t modular_age = age & 31;
+    entry.flag_and_age = (modular_age << 3) | inPV << 1 | flag;
 }
 
 TT_Entry &TranspositionTable::probe(const Board &board)
