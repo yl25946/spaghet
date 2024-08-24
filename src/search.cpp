@@ -202,7 +202,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
             bound_flag = BOUND::FAIL_HIGH;
         }
 
-        transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, bound_flag);
+        transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, inPV, bound_flag);
     }
 
     // TODO: add check moves
@@ -249,14 +249,14 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         return 0;
     }
 
-    // bool inPV = beta - alpha > 1;
-
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
     bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
     bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
+
+    ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV && (tt_hit && tt_entry.ttPV());
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -403,8 +403,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
             if (score >= probcut_beta)
             {
-                // update tranposition table
-                transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
+                // update tranposition table (we are never in PV in probcut)
+                transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, nonPV, BOUND::FAIL_HIGH);
 
                 return score;
             }
@@ -577,6 +577,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         reduction -= history_score / 10'000;
 
+        if (ss->ttPV)
+            --reduction;
+
         if (inPV)
             reduction -= 1;
 
@@ -720,7 +723,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             bound_flag = BOUND::FAIL_LOW;
         }
         if (best_score != (-INF - 1))
-            transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
+            transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, inPV, bound_flag);
     }
 
     //  update corrhist if we're not in check

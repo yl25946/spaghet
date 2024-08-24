@@ -12,6 +12,7 @@ public:
     // used for lazy updates,
     bool updated_accumulator = false;
     bool in_check = false;
+    bool ttPV = false;
     int ply;
     Killers killers;
     MoveList pv;
