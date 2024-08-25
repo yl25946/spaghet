@@ -81,6 +81,13 @@ void init_lmr_reduction_tables()
     {
         for (int move_count = 0; move_count <= 255; ++move_count)
         {
+            // so we don't feed any 0 values into LMR
+            if (depth == 0 || move_count == 0)
+            {
+                quiet_lmr[depth][move_count] = 0;
+                noisy_lmr[depth][move_count] = 0;
+                continue;
+            }
             quiet_lmr[depth][move_count] = lmr_reduction_quiet(depth, move_count);
             noisy_lmr[depth][move_count] = lmr_reduction_captures_promotions(depth, move_count);
         }
