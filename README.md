@@ -1,5 +1,4 @@
-# spaghet
-(Credits to kan at TCEC for the logo)
+![spaghet-logo](https://github.com/user-attachments/assets/c4ecea73-5b38-4dcd-9023-a9becfde2209)
 
 # Testing
 https://chess.aronpetkovski.com/
