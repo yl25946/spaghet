@@ -22,11 +22,11 @@ uint8_t file(uint8_t square);
 uint8_t rank(uint8_t square);
 
 // TAKEN FROM WEISS:
-
-// obtains how much we should reduce the depth by for late move reduction
-// move_number is how far we've iterated in the movelist
-int lmr_reduction_quiet(int depth, int move_number);
-int lmr_reduction_captures_promotions(int depth, int move_number);
+// [depth][move count]
+extern int quiet_lmr[256][256];
+// [depth][move count]
+extern int noisy_lmr[256][256];
+void init_lmr_reduction_tables();
 
 bool is_mate_score(int score);
 int mate_score_to_moves(int score);
