@@ -587,6 +587,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // full depth search
         else if (!inPV || move_picker.moves_seen() > 0)
         {
+            // move ordering won't be as good, so we increase the reduction
+            if (!has_tt_move)
+                reduction += 1;
+
             current_score = -negamax<nonPV>(-alpha - 1, -alpha, new_depth - (reduction > 3), !cutnode, ss + 1);
         }
 
