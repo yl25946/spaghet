@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     init_leapers_attacks();
     init_sliders_attacks();
     init_zobrist_tables();
+    init_lmr_reduction_tables();
 
     std::cout << "\n\n\n";
 

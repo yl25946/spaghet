@@ -558,10 +558,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (move_picker.moves_seen() > 1)
         {
             if (is_quiet)
-                reduction += lmr_reduction_quiet(depth, move_picker.moves_seen());
+                reduction += quiet_lmr[depth][move_picker.moves_seen()];
             // noisy move
             else
-                reduction += lmr_reduction_captures_promotions(depth, move_picker.moves_seen());
+                reduction += noisy_lmr[depth][move_picker.moves_seen()];
 
             // makes sure that depth is always positive and if reduction is negative, we only extend once
             int reduced_depth = std::max(std::min(new_depth - reduction, new_depth + 1), 1);

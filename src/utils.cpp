@@ -62,6 +62,9 @@ uint8_t rank(uint8_t square)
     return 7 - (square >> 3);
 }
 
+int quiet_lmr[256][256];
+int noisy_lmr[256][256];
+
 int lmr_reduction_quiet(int depth, int move_number)
 {
     return 1.35 + ((std::log(depth) * std::log(move_number)) / 2.75);
@@ -70,6 +73,18 @@ int lmr_reduction_quiet(int depth, int move_number)
 int lmr_reduction_captures_promotions(int depth, int move_number)
 {
     return 0.2 + ((std::log(depth) * std::log(move_number)) / 3.35);
+}
+
+void init_lmr_reduction_tables()
+{
+    for (int depth = 0; depth <= MAX_PLY; ++depth)
+    {
+        for (int move_count = 0; move_count <= 255; ++move_count)
+        {
+            quiet_lmr[depth][move_count] = lmr_reduction_quiet(depth, move_count);
+            noisy_lmr[depth][move_count] = lmr_reduction_captures_promotions(depth, move_count);
+        }
+    }
 }
 
 bool is_mate_score(int score)
