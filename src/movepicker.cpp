@@ -83,7 +83,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                     promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
             }
 
-            curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            curr_move.score += 7 * (captured_piece_value + promotion_piece_value) + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
