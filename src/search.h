@@ -86,6 +86,7 @@ public:
     int negamax(int alpha, int beta, int depth, bool cutnode, SearchStack *ss);
 
     void update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth);
+    int correct_static_eval(const Board &board, int uncorrected_static_eval);
 
     // checks if there's a threefold draw
     // returns true if there is a draw
