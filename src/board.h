@@ -114,6 +114,8 @@ public:
     // gets WHITE_PAWN, BLACK_PAWN, etc.
     uint64_t bitboard(uint8_t piece) const;
 
+    uint64_t material_hash() const;
+
     // help method to get all the possible attacks from a certain side
     // uint64_t get_attack_mask(uint8_t side_attacking);
 
