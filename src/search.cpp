@@ -150,6 +150,10 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
         if (curr_move.score < 0)
             break;
 
+        // Quiescence Search Late Moves Pruning: Our move ordering is so good that we don't need to search the later moves
+        if (move_picker.moves_seen() > 2)
+            break;
+
         (ss + 1)->board = copy;
         (ss + 1)->updated_accumulator = false;
         (ss)->move_played = curr_move;
