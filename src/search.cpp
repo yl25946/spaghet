@@ -67,6 +67,17 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
             thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played, depth);
 }
 
+int Searcher::correct_static_eval(const Board &board, int uncorrected_static_eval)
+{
+    int corrected_eval = uncorrected_static_eval;
+
+    corrected_eval += thread_data.pawn_corrhist.correction(board);
+
+    corrected_eval += thread_data.material_corrhist.correction(board);
+
+    return std::clamp(corrected_eval, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+}
+
 template <bool inPV>
 int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 {
@@ -103,7 +114,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // creates a baseline
     const int uncorrected_static_eval = tt_hit ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    const int stand_pat = tt_hit ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    const int stand_pat = tt_hit ? tt_entry.score : correct_static_eval(board, uncorrected_static_eval);
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
@@ -259,7 +270,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // have this dummy variable here so it doesn't get overwritten when we store it in the TT
     const int uncorrected_static_eval = tt_hit ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    int eval = ss->static_eval = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    int eval = ss->static_eval = correct_static_eval(board, uncorrected_static_eval);
 
     // tt score in certain circumstances can be used as static eval
     // we use logical & here because if it's exact bound we don't care
@@ -714,7 +725,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     //  update corrhist if we're not in check
     if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
-        thread_data.corrhist.update(board, depth, best_score, ss->static_eval);
+    {
+        thread_data.pawn_corrhist.update(board, depth, best_score, ss->static_eval);
+        thread_data.material_corrhist.update(board, depth, best_score, ss->static_eval);
+    }
 
     return best_score;
 }
