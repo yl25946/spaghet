@@ -244,6 +244,7 @@ uint64_t Board::material_hash() const
 {
     uint64_t material_hash = 0;
     uint64_t piece_bitboard;
+
     for (int piece = WHITE_PAWN; piece <= BLACK_QUEEN; ++piece)
     {
         piece_bitboard = bitboard(piece);
