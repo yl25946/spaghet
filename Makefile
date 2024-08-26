@@ -177,9 +177,7 @@ EXE	    := $(NAME)$(SUFFIX)
 
 all: $(TARGET)
 clean:
-	@$(CLEAN) *.o  $(DEPENDS) *.d $(EXE) 2> $(NULL) || $(NOOP)
-	@rmdir $(TMPDIR)\src 2> $(NULL) || $(NOOP)
-	@rmdir $(TMPDIR) 2> $(NULL) || $(NOOP)
+	rm -rf $(TMPDIR) $(EXE)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(NATIVE) -MMD -MP -o $(EXE) $^ $(FLAGS)

@@ -13,7 +13,8 @@ public:
     PawnHistory pawnhist;
     CaptureHistory capthist;
     ContinuationHistory conthist;
-    CorrectionHistory corrhist;
+    PawnCorrectionHistory pawn_corrhist;
+    MaterialCorrectionHistory material_corrhist;
 
     ThreadData() : accumulators(MAX_PLY + 4)
     {
