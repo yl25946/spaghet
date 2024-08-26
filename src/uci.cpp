@@ -90,13 +90,6 @@ void UCI_loop()
     std::vector<Move> move_list;
     ThreadManager threads;
 
-    std::cout
-        << "id name Spaghet BologNNese 1.0\n"
-        << "id author Li Ying\n"
-        << "option name Hash type spin default 16 min 1 max " << MAX_HASH << "\n"
-        << "option name Threads type spin default 1 min 1 max " << MAX_THREADS << "\n"
-        << "uciok" << std::endl;
-
     while (true)
     {
         std::getline(std::cin, line);

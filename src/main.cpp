@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout << NAME << "\n\n\n\n";
+    std::cout << NAME;
 
     // initialize precalculated lookup tables
     init_leapers_attacks();
