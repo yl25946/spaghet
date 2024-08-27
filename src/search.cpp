@@ -103,7 +103,11 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
 
     // creates a baseline
     const int uncorrected_static_eval = tt_hit ? tt_entry.static_eval : evaluate(board, thread_data.accumulators, ss);
-    const int stand_pat = tt_hit ? tt_entry.score : thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+    int stand_pat = thread_data.corrhist.correct_eval(board, uncorrected_static_eval);
+
+    // tt score can be used as a better static eval
+    if (std::abs(tt_entry.score) < MAX_MATE_SCORE && (tt_entry.flag() & (tt_entry.score > stand_pat ? BOUND::FAIL_HIGH : BOUND::FAIL_LOW)))
+        stand_pat = tt_entry.score;
 
     if (ss->ply >= MAX_PLY - 1)
         return stand_pat;
