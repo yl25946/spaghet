@@ -288,7 +288,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // Razoring: If alpha is way lower than our evaluation, then we step into qsearch, if it fails low, we do a speculative fail low
     // Too low of a margin will mess with the matefinding
-    if (!ss->in_check && !ss->exclude_tt_move && depth <= 3 && eval < alpha - 800 * depth)
+    if (!ss->in_check && !ss->exclude_tt_move && depth <= 3 && eval < alpha - 500 - 300 * depth * depth)
     {
         int razoring_score = quiescence_search<nonPV>(alpha - 1, alpha, ss);
 
