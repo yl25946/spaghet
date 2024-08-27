@@ -290,9 +290,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // Too low of a margin will mess with the matefinding
     if (!ss->in_check && !ss->exclude_tt_move && depth <= 3 && eval < alpha - 800 * depth)
     {
-        int razoring_score = quiescence_search<nonPV>(alpha - 1, alpha, ss);
+        int razoring_score = quiescence_search<nonPV>(alpha, alpha + 1, ss);
 
-        if (razoring_score < alpha)
+        if (razoring_score <= alpha)
             return razoring_score;
     }
 
