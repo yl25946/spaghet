@@ -637,18 +637,15 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 if (alpha >= beta)
                 {
 
-                    // std::cout << (int)curr_move.move_flag() << "\n";
-                    // we update the history table if it's not a capture
                     if (is_quiet)
-                    {
-                        update_conthist(ss, quiet_moves, curr_move, depth);
-                        thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
-                        thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
                         ss->killers.insert(curr_move);
-                    }
 
                     // we update capthists regardless if it's a quiet or a noisy
                     thread_data.capthist.update(board, noises, curr_move, depth);
+
+                    update_conthist(ss, quiet_moves, curr_move, depth);
+                    thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
+                    thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
 
                     break;
                 }
