@@ -907,5 +907,6 @@ int evaluate(const Board &board, const Accumulator &accumulator)
 
     eval = eval * (200 - board.fifty_move_counter) / 200;
 
-    return eval;
+    // Evaluation can never return a mate score
+    return std::clamp(eval, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
 }
