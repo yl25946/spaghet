@@ -510,7 +510,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // Negative Extensions: if there is a fail high without TT move but singular beta is not high enough for the seacrh to fail high,
                 // it's better to search other moves
                 else if (tt_entry.score >= beta)
-                    extensions -= 2;
+                    extensions -= 3;
 
                 // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
                 else if (cutnode)
