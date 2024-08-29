@@ -515,6 +515,10 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 // if we're in a cut node, we expect it to fail high, so we can reduce the depth using a negative extension
                 else if (cutnode)
                     extensions -= 2;
+
+                // if the TT move is noisy and it fails low, it must be really bad, so we give a negative extensions
+                else if (tt_entry.best_move.is_capture())
+                    extensions -= 1;
             }
         }
 
