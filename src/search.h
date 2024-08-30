@@ -58,7 +58,7 @@ public:
     int max_depth = 255;
 
     // current deth for iterative deepening
-    int curr_depth = 0;
+    int root_depth = 1;
 
     // use for tracking seldepth
     int seldepth = 0;

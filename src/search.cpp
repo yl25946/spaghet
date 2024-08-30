@@ -479,13 +479,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // Singular Extensions: If a TT move exists and its score is accurate enough
         // (close enough in depth), we perform a reduced-depth search with the TT
         // move excluded to see if any other moves can beat it.
-        if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
+        if (!in_root && depth >= 4 && curr_move == tt_move && !ss->exclude_tt_move && ss->ply < 2 * root_depth)
         {
             const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
 
             if (is_accurate_tt_score)
             {
-                const int reduced_depth = (depth - 1) / 2;
+                const int reduced_depth = depth / 2;
                 const int singular_beta = tt_entry.score - depth * 2;
 
                 ss->exclude_tt_move = true;
@@ -751,9 +751,8 @@ void Searcher::search()
         }
     }
 
-    for (int root_depth = 1; root_depth <= max_depth; ++root_depth)
+    for (; root_depth <= max_depth; ++root_depth)
     {
-        this->curr_depth = root_depth;
         this->seldepth = 0;
 
         // STOCKFISH IMPLEMENTATION OF ASPIRATION WINDOWS
