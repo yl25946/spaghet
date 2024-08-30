@@ -246,14 +246,14 @@ void MaterialCorrectionHistory::update(const Board &board, int depth, int score,
 
     const int delta = score - static_eval;
     const int bonus = std::clamp(delta * depth / 8, -CORRHIST_LIMIT / 4, CORRHIST_LIMIT / 4);
-    const int hash_location = board.material_hash() % MATERIAL_CORRHIST_SIZE;
+    const int hash_location = board.material_hash % MATERIAL_CORRHIST_SIZE;
 
     table[board.side_to_move][hash_location] += bonus - (table[board.side_to_move][hash_location] * abs(bonus) / CORRHIST_LIMIT);
 }
 
 int MaterialCorrectionHistory::correction(const Board &board)
 {
-    const int hash_location = board.material_hash() % MATERIAL_CORRHIST_SIZE;
+    const int hash_location = board.material_hash % MATERIAL_CORRHIST_SIZE;
 
     const int raw_correction = table[board.side_to_move][hash_location];
     const int correction = raw_correction * std::abs(raw_correction) / 5'000;

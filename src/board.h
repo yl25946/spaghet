@@ -91,6 +91,7 @@ public:
 
     uint64_t hash = 0;
     uint64_t pawn_hash = 0;
+    uint64_t material_hash = 0;
 
     // checks 50 move rule, counts in plys
     uint8_t fifty_move_counter = 0;
@@ -113,8 +114,6 @@ public:
 
     // gets WHITE_PAWN, BLACK_PAWN, etc.
     uint64_t bitboard(uint8_t piece) const;
-
-    uint64_t material_hash() const;
 
     // help method to get all the possible attacks from a certain side
     // uint64_t get_attack_mask(uint8_t side_attacking);
