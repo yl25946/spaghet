@@ -63,6 +63,13 @@ Board::Board(const std::string &fen)
         }
     }
 
+    // creates the material hash
+    for (int piece = WHITE_PAWN; piece <= BLACK_QUEEN; ++piece)
+    {
+        uint64_t piece_bitboard = bitboard(piece);
+        material_hash ^= zobrist_pieces[piece][count_bits(piece_bitboard)];
+    }
+
     ++char_it;
 
     // checks who moves
@@ -238,20 +245,6 @@ uint64_t Board::bitboard(uint8_t piece) const
 uint64_t Board::blockers() const
 {
     return colors[WHITE] | colors[BLACK];
-}
-
-uint64_t Board::material_hash() const
-{
-    uint64_t material_hash = 0;
-    uint64_t piece_bitboard;
-
-    for (int piece = WHITE_PAWN; piece <= BLACK_QUEEN; ++piece)
-    {
-        piece_bitboard = bitboard(piece);
-        material_hash ^= zobrist_pieces[piece][count_bits(piece_bitboard)];
-    }
-
-    return material_hash;
 }
 
 bool Board::is_square_attacked(uint8_t square, uint8_t side_attacking) const
@@ -470,6 +463,9 @@ void Board::make_move(Move move)
         // side_to_move ^ 1 represent the opposite move's pawn
         hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
         pawn_hash ^= zobrist_pieces[side_to_move ^ 1][remove_square];
+        // we already removed a pawn so we should add 1
+        int pawn_count_after_capture = count_bits(bitboard(uncolored_to_colored(PAWN, side_to_move ^ 1)));
+        material_hash ^= zobrist_pieces[uncolored_to_colored(PAWN, side_to_move ^ 1)][pawn_count_after_capture + 1] ^ zobrist_pieces[uncolored_to_colored(PAWN, side_to_move ^ 1)][pawn_count_after_capture];
     }
     else if (move_flag & CAPTURES)
     {
@@ -489,6 +485,10 @@ void Board::make_move(Move move)
 
         if (uncolored_captured_piece == BITBOARD_PIECES::PAWN)
             pawn_hash ^= zobrist_pieces[captured_piece][target_square];
+
+        // we already removed a piece so we should add 1
+        int captured_piece_count_after = count_bits(bitboard(captured_piece));
+        material_hash ^= zobrist_pieces[captured_piece][captured_piece_count_after + 1] ^ zobrist_pieces[captured_piece][captured_piece_count_after];
     }
 
     // moves the piece
@@ -525,6 +525,13 @@ void Board::make_move(Move move)
 
         // remove the pawn from the pawnhash
         pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
+
+        int promotion_piece_count_before = count_bits(bitboard(promotion_piece));
+        material_hash ^= zobrist_pieces[promotion_piece][promotion_piece_count_before] ^ zobrist_pieces[promotion_piece][promotion_piece_count_before + 1];
+
+        // we already removed a pawn so we should add 1
+        int pawn_count_after_promotion = count_bits(bitboard(uncolored_to_colored(PAWN, side_to_move)));
+        material_hash ^= zobrist_pieces[uncolored_to_colored(PAWN, side_to_move)][pawn_count_after_promotion + 1] ^ zobrist_pieces[uncolored_to_colored(PAWN, side_to_move)][pawn_count_after_promotion];
     }
 
     // double pawn push, basically updating the en_passant square
