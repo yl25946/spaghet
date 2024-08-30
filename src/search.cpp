@@ -50,7 +50,7 @@ void Searcher::scale_time(int best_move_stability_factor, int eval_stability_fac
 
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    constexpr double eval_stability_scale[5] = {1.25, 1.1, 1.0, 0.8, 0.75};
+    constexpr double eval_stability_scale[5] = {1.25, 1.15, 1.00, 0.95, 0.9};
     const Move best_move = thread_data.search_stack[4].pv[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     // const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
