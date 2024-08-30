@@ -46,17 +46,18 @@ bool Searcher::twofold(Board &board)
     return false;
 }
 
-void Searcher::scale_time(int best_move_stability_factor, int current_search_score, int previous_search_score)
+void Searcher::scale_time(int best_move_stability_factor, int eval_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
+    constexpr double eval_stability_scale[5] = {1.25, 1.1, 1.0, 0.8, 0.75};
     const Move best_move = thread_data.search_stack[4].pv[0];
     const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
     // const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double node_scaling_factor = 1.0;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
     // we scale the time more if our score decreases from previous one
-    const double search_loss = 0.9 + 0.01 * (previous_search_score - current_search_score);
-    const double search_stability_factor = std::clamp(search_loss, 0.8, 1.5);
+    // const double search_loss = 0.9 + 0.01 * (previous_search_score - current_search_score);
+    // const double search_stability_factor = std::clamp(search_loss, 0.8, 1.5);
     // scale the time based on how many nodes we spent ond how the best move changed
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor * search_stability_factor, max_stop_time);
 }
@@ -729,6 +730,7 @@ void Searcher::search()
     Move best_move(a8, a8, 0);
     Move previous_best_move(a8, a8, 0);
     int best_move_stability_factor = 0;
+    int eval_stability_factor = 0;
     uint64_t time_elapsed;
     int alpha = -INF;
     int beta = INF;
@@ -841,11 +843,16 @@ void Searcher::search()
             previous_best_move = best_move;
         }
 
+        if (std::abs(root_score - average_score) < 10)
+            eval_stability_factor = std::min(eval_stability_factor + 1, 4);
+        else
+            eval_stability_factor = 0;
+
         // std::cout << "previous best move: " << previous_best_move.to_string() << "\n";
 
         if (root_depth > 7 && time_set)
         {
-            scale_time(best_move_stability_factor, root_score, previous_root_score);
+            scale_time(best_move_stability_factor, );
         }
 
         if (get_time() > optimum_stop_time)
