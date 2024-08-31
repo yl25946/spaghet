@@ -91,6 +91,7 @@ public:
 
     uint64_t hash = 0;
     uint64_t pawn_hash = 0;
+    uint64_t material_hash = 0;
 
     // checks 50 move rule, counts in plys
     uint8_t fifty_move_counter = 0;
