@@ -36,8 +36,8 @@ TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t st
     }
 
     // basically mod 64
-    uint8_t modular_age = age & 63;
-    this->flag_and_age = (modular_age << 3) | inPV << 1 | flag;
+    uint8_t modular_age = age & 31;
+    this->flag_and_age = (modular_age << 3) | (inPV << 2) | flag;
 }
 
 uint8_t TT_Entry::flag() const
