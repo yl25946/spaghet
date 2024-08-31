@@ -151,7 +151,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     }
 
     uint8_t modular_age = age & 31;
-    entry.flag_and_age = (modular_age << 3) | inPV << 1 | flag;
+    entry.flag_and_age = (modular_age << 3) | (inPV << 2) | flag;
 }
 
 TT_Entry &TranspositionTable::probe(const Board &board)
