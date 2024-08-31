@@ -523,12 +523,9 @@ void Board::make_move(Move move)
         hash ^= zobrist_pieces[move_piece_type][target_square];
         hash ^= zobrist_pieces[promotion_piece][target_square];
 
-<<<<<<< HEAD
         // remove the pawn from the pawnhash
         pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
 
-=======
->>>>>>> 57ca9f2fda2be0751b0abcde8a77baf25d5bae28
         int promotion_piece_count_before = count_bits(bitboard(promotion_piece));
         material_hash ^= zobrist_pieces[promotion_piece][promotion_piece_count_before] ^ zobrist_pieces[promotion_piece][promotion_piece_count_before + 1];
 

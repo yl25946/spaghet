@@ -69,13 +69,13 @@ void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail
 
 int Searcher::correct_static_eval(const Board &board, int uncorrected_static_eval)
 {
-    int corrected_eval = uncorrected_static_eval;
+    const int pawn_correction = thread_data.pawn_corrhist.correction(board);
 
-    corrected_eval += thread_data.pawn_corrhist.correction(board);
+    const int material_correction = thread_data.material_corrhist.correction(board);
 
-    corrected_eval += thread_data.material_corrhist.correction(board);
+    const int correction = (2 * pawn_correction + material_correction) / 3;
 
-    return std::clamp(corrected_eval, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+    return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
 }
 
 template <bool inPV>
