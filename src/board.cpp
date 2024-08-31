@@ -508,6 +508,9 @@ void Board::make_move(Move move)
         // removes the pawn from the bb and adds in the promotion piece
         hash ^= zobrist_pieces[move_piece_type][target_square];
         hash ^= zobrist_pieces[promotion_piece][target_square];
+
+        // remove the pawn from the pawnhash
+        pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
     }
 
     // double pawn push, basically updating the en_passant square
