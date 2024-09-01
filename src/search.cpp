@@ -707,16 +707,16 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // add to TT if we aren't in singular search
     if (!ss->exclude_tt_move)
     {
-        uint8_t bound_flag = BOUND::EXACT;
+        // just assume that search failed low
+        uint8_t bound_flag = BOUND::FAIL_LOW;
 
-        if (alpha >= beta)
+        if (best_score >= beta)
         {
             // beta cutoff, fail high
             bound_flag = BOUND::FAIL_HIGH;
         }
-        else if (alpha <= original_alpha)
+        else if (inPV && alpha > original_alpha)
         {
-            // failed to raise alpha, fail low
             bound_flag = BOUND::FAIL_LOW;
         }
         if (best_score != (-INF - 1))
