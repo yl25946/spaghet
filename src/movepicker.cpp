@@ -64,11 +64,10 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                 continue;
             }
 
-            uint8_t source_square = curr_move.from_square();
             uint8_t target_square = curr_move.to_square();
 
             // use mvv to find the move value
-            int captured_piece_value = mvv_values[ss->board.mailbox[source_square]];
+            int captured_piece_value = mvv_values[ss->board.mailbox[target_square]];
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
