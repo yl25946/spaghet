@@ -51,24 +51,23 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
 
         if (!move_list[i].is_quiet())
         {
-
-            curr_move.score += thread_data.capthist.move_value(ss->board, move_list.moves[i]);
-            // if (capthist.move_value(board, move_list.moves[i]) > 0)
-            //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
+            // used for modifiying SEE formula, don't include bonuses like for promotions
+            int move_score = thread_data.capthist.move_value(ss->board, move_list.moves[i]);
 
             // we just deal with this specific case and die
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, move_list[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                move_score += mvv_values[PIECES::WHITE_PAWN];
+
+                curr_move.score += move_score + (SEE(ss->board, move_list[i], get_see_threshold(move_score)) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
-            uint8_t source_square = curr_move.from_square();
             uint8_t target_square = curr_move.to_square();
 
             // use mvv to find the move value
-            int captured_piece_value = mvv_values[ss->board.mailbox[source_square]];
+            int captured_piece_value = mvv_values[ss->board.mailbox[target_square]];
 
             // apply a promotion bonus if necessary
             int promotion_piece_value = 0;
@@ -78,12 +77,20 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
 
                 // if the piece is a queen or a knight, we apply it's promotion value
                 if (promotion_piece == BITBOARD_PIECES::QUEEN)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN] + PROMOTION_BONUS;
+                {
+                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN];
+                    curr_move.score += PROMOTION_BONUS;
+                }
                 else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT] + PROMOTION_BONUS;
+                {
+                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT];
+                    curr_move.score += PROMOTION_BONUS;
+                }
             }
 
-            curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            move_score += captured_piece_value + promotion_piece_value;
+
+            curr_move.score += move_score + (SEE(ss->board, move_list.moves[i], get_see_threshold(move_score)) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }

@@ -14,6 +14,11 @@ class QuietHistory;
 
 extern int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move quiet_move);
 
+inline int get_see_threshold(int score)
+{
+    return score / 32 + 236;
+}
+
 class MovePicker
 {
 public:
