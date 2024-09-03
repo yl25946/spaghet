@@ -901,9 +901,20 @@ int evaluate(const Board &board, const Accumulator &accumulator)
 {
     int eval = NNUE::eval(board, accumulator);
 
-    int phase = 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 10 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+    int stm_phase = 0;
+    int nstm_phase = 0;
 
-    eval = eval * (206 + phase) / 256;
+    for (int piece = BITBOARD_PIECES::KNIGHT; piece <= BITBOARD_PIECES::QUEEN; ++piece)
+    {
+        stm_phase += count_bits(board.bitboard(uncolored_to_colored(piece, board.side_to_move)));
+        nstm_phase += count_bits(board.bitboard(uncolored_to_colored(piece, board.side_to_move ^ 1)));
+    }
+
+    // total material scale
+    eval = eval * (206 + stm_phase + nstm_phase) / 256;
+
+    // stm material scale - basically the bigger the difference in material, the more we increase the eval by
+    eval = eval * 48 / (48 - std::abs(stm_phase - nstm_phase));
 
     eval = eval * (200 - board.fifty_move_counter) / 200;
 
