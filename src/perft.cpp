@@ -73,17 +73,15 @@ void perft_driver(const std::string &fen, uint8_t depth)
 
     // board.print();.
 
-    std::cout << "\nPERFT: ";
-
-    auto start = std::chrono::system_clock::now();
+    uint64_t start_time = get_time();
 
     uint64_t nodes = perft(board, depth);
 
-    auto end = std::chrono::system_clock::now();
+    uint64_t end_time = get_time();
 
-    std::chrono::duration<double> elapsed_seconds = end - start;
+    uint64_t time = end_time - start_time;
 
-    std::cout << "Total Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second\n";
+    std::cout << "info nodes " << nodes << " time " << time << " nps " << 1000 * nodes / time << "\n";
 }
 
 void perft_debug_driver(const std::string &fen, uint8_t depth)
@@ -92,17 +90,15 @@ void perft_debug_driver(const std::string &fen, uint8_t depth)
 
     // board.print();.
 
-    std::cout << "PERFT: \n";
-
-    auto start = std::chrono::system_clock::now();
+    uint64_t start_time = get_time();
 
     uint64_t nodes = perft_debug(board, depth, depth);
 
-    auto end = std::chrono::system_clock::now();
+    uint64_t end_time = get_time();
 
-    std::chrono::duration<double> elapsed_seconds = end - start;
+    uint64_t time = end_time - start_time;
 
-    std::cout << "Total Nodes Searched: " << nodes << "\nTotal Time: " << elapsed_seconds.count() << "\nNodes Per Second: " << nodes / (elapsed_seconds.count()) / 1000000 << " million nodes per second\n";
+    std::cout << "info nodes " << nodes << " time " << time << " nps " << 1000 * nodes / time << "\n";
 }
 
 void captures_perft_driver(const std::string &fen, uint8_t depth)
