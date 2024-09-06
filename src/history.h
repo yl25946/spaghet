@@ -63,7 +63,8 @@ public:
 class ContinuationHistory
 {
 public:
-    int16_t table[13][64][13][64];
+    // [capture?][piece][to][capture?][piece][to]
+    int16_t table[2][13][64][2][13][64];
 
     ContinuationHistory();
 
