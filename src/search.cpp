@@ -258,15 +258,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
     bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV || (tt_hit && tt_entry.ttPV());
-    == == == =
-                 ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV && (tt_hit && tt_entry.ttPV());
->>>>>>> fdad0ce (implements ttpv and a negative reduction)
-    == == == =
-                 ss->ttPV = ss->exclude_tt_move ? ss->ttPV : inPV || (tt_hit && tt_entry.ttPV());
->>>>>>> 5fe05c5 (this should work now right)
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -587,7 +579,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         reduction -= history_score / 10'000;
 
-        if (ss->ttPV)
+        if (inPV)
             --reduction;
 
         // Late Move Reduction: we've ordered the move in order of importance. We reduce the
