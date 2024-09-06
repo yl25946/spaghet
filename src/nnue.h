@@ -13,9 +13,9 @@ constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
 // used for calculating output buckets
-inline uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
+constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
 
-constexpr int calculate_bucket(const Board &board)
+inline int calculate_bucket(const Board &board)
 {
     int active_neurons = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
 
