@@ -12,8 +12,8 @@ constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
-// used for calculating buckets
-constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
+// used for calculating output buckets
+inline uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
 
 constexpr int calculate_bucket(const Board &board)
 {
