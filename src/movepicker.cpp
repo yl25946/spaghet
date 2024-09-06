@@ -1,20 +1,27 @@
 #include "movepicker.h"
 
-int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move quiet_move)
+int64_t get_history_score(SearchStack *ss, ThreadData &thread_data, Move move)
 {
-
     int ply = ss->ply;
+    int64_t history_score = 0;
 
-    int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move);
+    if (move.is_quiet())
+    {
+        history_score = thread_data.main_history.move_value(move, ss->board.side_to_move);
 
-    quiet_move_score += thread_data.pawnhist.move_value(ss->board, quiet_move);
+        history_score += thread_data.pawnhist.move_value(ss->board, move);
+    }
+    else
+    {
+        history_score = thread_data.capthist.move_value(ss->board, move);
+    }
 
     // how many moves we look backwards
     for (int conthist_index : conthist_indices)
         if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
-            quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played);
+            history_score += thread_data.conthist.move_value(ss->board, move, (ss - conthist_index)->board, (ss - conthist_index)->move_played);
 
-    return quiet_move_score;
+    return history_score;
 }
 
 MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
@@ -52,7 +59,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         if (!move_list[i].is_quiet())
         {
 
-            curr_move.score += thread_data.capthist.move_value(ss->board, move_list.moves[i]);
+            curr_move.score += get_history_score(ss, thread_data, curr_move);
             // if (capthist.move_value(board, move_list.moves[i]) > 0)
             //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
 
@@ -70,7 +77,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             int captured_piece_value = mvv_values[ss->board.mailbox[target_square]];
 
             // apply a promotion bonus if necessary
-            int promotion_piece_value = 0;
+            int64_t promotion_piece_value = 0;
             if (move_list[i].is_promotion())
             {
                 uint8_t promotion_piece = move_list[i].promotion_piece();
@@ -89,7 +96,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         // not a capture, use history tables
         else
         {
-            curr_move.score = get_quiet_history_score(ss, thread_data, move_list.moves[i]);
+            curr_move.score = get_history_score(ss, thread_data, move_list.moves[i]);
         }
     }
 }

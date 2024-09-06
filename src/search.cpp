@@ -474,12 +474,12 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (is_quiet)
         {
             quiet_moves.insert(curr_move);
-            history_score = get_quiet_history_score(ss, thread_data, curr_move);
+            history_score = get_history_score(ss, thread_data, curr_move);
         }
         else
         {
             noises.insert(curr_move);
-            history_score = thread_data.capthist.move_value(board, curr_move);
+            history_score = get_history_score(ss, thread_data, curr_move);
         }
 
         int new_depth = depth - 1;

@@ -89,11 +89,11 @@ constexpr int16_t MAX_MATE_SCORE = MATE - MAX_PLY;
 // used for move ordering
 constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
 constexpr int64_t CAPTURE_BONUS = 1LL << 21;
-// same as max history
-constexpr int64_t PROMOTION_BONUS = 1 << 14;
+// even if we have the worst possible history score, we can override that
+constexpr int64_t PROMOTION_BONUS = 1LL << 19;
 
 // this is a clamp value used for history
-constexpr int64_t MAX_HISTORY = 1 << 14;
+constexpr int64_t MAX_HISTORY = 1LL << 14;
 constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
 // used for counting the number of buckets
