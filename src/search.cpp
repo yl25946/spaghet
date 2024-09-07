@@ -315,7 +315,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     if (ss->ply >= MAX_PLY - 1)
         return uncorrected_static_eval;
 
-    (ss + 1)->killers.clear();
+    (ss + 1)->killer = NO_MOVE;
 
     // applies null move pruning
     if (!(ss - 1)->null_moved && !inPV && !ss->exclude_tt_move && !ss->in_check && !board.only_pawns(board.side_to_move) && eval >= beta && ss->static_eval >= beta - 20 * depth + 200)
@@ -569,7 +569,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (cutnode)
             reduction += 1;
 
-        if (curr_move == ss->killers[0] || curr_move == ss->killers[1])
+        if (curr_move == ss->killer)
             --reduction;
 
         if (!improving)
@@ -665,7 +665,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                         update_conthist(ss, quiet_moves, curr_move, depth);
                         thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
                         thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
-                        ss->killers.insert(curr_move);
+                        update_killer(ss, curr_move);
                     }
 
                     // we update capthists regardless if it's a quiet or a noisy

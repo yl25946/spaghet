@@ -107,23 +107,3 @@ public:
     // only returns the correction, not the evaluation
     int correction(const Board &board);
 };
-
-class Killers
-{
-public:
-    Move killers[2];
-
-    Killers() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
-
-    Move operator[](int index)
-    {
-        return killers[index];
-    }
-
-    void insert(Move move);
-    void clear() { killers[0] = NO_MOVE, killers[1] = NO_MOVE; };
-
-    // Move get_killer(int ply) const;;
-
-    size_t size() const { return 2; };
-};
