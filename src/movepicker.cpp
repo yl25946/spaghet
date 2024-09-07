@@ -90,9 +90,6 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         else
         {
             curr_move.score = get_quiet_history_score(ss, thread_data, move_list.moves[i]);
-
-            if (curr_move == ss->killer)
-                curr_move.score = MAX_KILLERS;
         }
     }
 }
