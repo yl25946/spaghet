@@ -96,9 +96,6 @@ constexpr int64_t PROMOTION_BONUS = 1 << 14;
 constexpr int64_t MAX_HISTORY = 1 << 14;
 constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
-// this is the move ordering value for killers, make sure it's above histories
-constexpr int64_t MAX_KILLERS = 1 << 20;
-
 // used for counting the number of buckets
 // PLEASE USE POWERS OF TWO
 constexpr int KING_BUCKETS_SIZE = 4;

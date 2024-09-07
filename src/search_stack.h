@@ -13,7 +13,6 @@ public:
     bool updated_accumulator = false;
     bool in_check = false;
     int ply;
-    Move killer;
     MoveList pv;
 
     Board board;
