@@ -16,7 +16,7 @@ inline int calculate_bucket(const Board &board)
 {
     int piece_count = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
 
-    return std::max((63 - piece_count) * (32 - piece_count) / 255, 7);
+    return std::min((63 - piece_count) * (32 - piece_count) / 225, 7);
 }
 
 class Accumulator
