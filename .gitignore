@@ -6,5 +6,7 @@
 *.pdb
 *.o
 *.d
+*.bin
+*.nnue
 Spaghet*
 spaghet*

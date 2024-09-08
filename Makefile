@@ -1,7 +1,8 @@
-NETWORK_NAME = 2048-8.bin
+DEFAULT_NET := master0000.bin
+DEFAULT_NET_LOCATION := https://github.com/yl25946/vault/raw/main/master0000.bin
+EVALFILE ?= $(DEFAULT_NET)
 _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 _ROOT       := $(_THIS)
-EVALFILE     = $(NETWORK_NAME)
 CXX         := g++
 CLEAN       := rm -rf
 NOOP		:=:
@@ -15,10 +16,9 @@ BMI2FLAGS    = -DUSE_AVX2 -DUSE_SIMD -mavx2 -mbmi -mbmi2
 AVX512FLAGS  = -DUSE_AVX512 -DUSE_SIMD -mavx512f -mavx512bw
 
 # engine name
-NAME        := Spaghet
+NAME        := spaghet
 
 TMPDIR = .tmp
-
 
 # Detect Clang
 ifeq ($(CXX), clang++)
@@ -164,7 +164,7 @@ ifneq ($(findstring clang, $(CCX)),)
 endif
 
 # Add network name and Evalfile
-CXXFLAGS += -DNETWORK_NAME=\"$(NETWORK_NAME)\" -DEVALFILE=\"$(EVALFILE)\"
+CXXFLAGS +=-DEVALFILE=\"$(EVALFILE)\"
 
 SOURCES := $(wildcard src/*.cpp)
 OBJECTS := $(patsubst %.cpp,$(TMPDIR)/%.o,$(SOURCES))
@@ -175,7 +175,7 @@ else
 endif
 EXE	    := $(NAME)$(SUFFIX)
 
-all: $(TARGET)
+all: net $(TARGET) 
 clean:
 	rm -rf $(TMPDIR) $(EXE)
 
@@ -189,6 +189,12 @@ $(TMPDIR):
 	$(MKDIR) "$(TMPDIR)" "$(TMPDIR)/src"
 
 -include $(DEPENDS)
+
+net: 
+	@if [ ! -f $(EVALFILE) ]; then \
+    echo "Network file not found, downloading default network..."; \
+        wget -O $(EVALFILE) $(DEFAULT_NET_LOCATION); \
+    fi
 
 
 # Usual disservin yoink for makefile related stuff
