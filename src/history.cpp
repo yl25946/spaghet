@@ -260,13 +260,3 @@ int MaterialCorrectionHistory::correction(const Board &board)
 
     return correction;
 }
-
-void Killers::insert(Move move)
-{
-    // don't want to insert multiple of the same moves into killers
-    if (move == killers[0])
-        return;
-
-    killers[1] = killers[0];
-    killers[0] = move;
-}
