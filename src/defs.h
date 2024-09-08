@@ -113,7 +113,7 @@ constexpr int CORRHIST_LIMIT = 1024;
 constexpr int PAWNHIST_SIZE = 16384;
 
 // how many conthists we have
-constexpr int conthist_indices[] = {1, 2};
+constexpr int conthist_indices[] = {1, 2, 4};
 
 // SEE values
 constexpr int SEEValue[7] = {
