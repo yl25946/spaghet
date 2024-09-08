@@ -1,6 +1,6 @@
 DEFAULT_NET := master0000.bin
-DEFAULT_NET_LOCATION := https://github.com/yl25946/vault/raw/main/master0000.bin
 EVALFILE ?= $(DEFAULT_NET)
+NET_LOCATION := https://github.com/yl25946/vault/raw/main/$(EVALFILE)
 _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 _ROOT       := $(_THIS)
 CXX         := g++
@@ -193,7 +193,7 @@ $(TMPDIR):
 net: 
 	@if [ ! -f $(EVALFILE) ]; then \
     echo "Network file not found, downloading default network..."; \
-        wget -O $(EVALFILE) $(DEFAULT_NET_LOCATION); \
+        wget -O $(EVALFILE) $(NET_LOCATION); \
     fi
 
 
