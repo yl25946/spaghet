@@ -6,20 +6,17 @@
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
-constexpr int HIDDEN_SIZE = 2048;
+constexpr int HIDDEN_SIZE = 128;
 constexpr int OUTPUT_BUCKETS = 8;
 constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
-// used for calculating output buckets
-constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
-
 inline int calculate_bucket(const Board &board)
 {
-    int active_neurons = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
+    int piece_count = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
 
-    return (active_neurons - 2) / BUCKET_DIVISOR;
+    return std::max((63 - piece_count) * (32 - piece_count) / 255, 7);
 }
 
 class Accumulator
