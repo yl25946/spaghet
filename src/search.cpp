@@ -476,7 +476,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             quiet_moves.insert(curr_move);
             history_score = get_quiet_history_score(ss, thread_data, curr_move);
         }
-        else
+        else if (!curr_move.is_promotion())
         {
             noises.insert(curr_move);
             history_score = thread_data.capthist.move_value(board, curr_move);
@@ -570,7 +570,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (!improving)
             ++reduction;
 
-        reduction -= history_score / (is_quiet ? 12'000 : 10'000);
+        reduction -= history_score / 10'000;
 
         if (inPV)
             reduction -= 1;
