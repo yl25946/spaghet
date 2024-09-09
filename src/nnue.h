@@ -6,11 +6,13 @@
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
-constexpr int HIDDEN_SIZE = 128;
+constexpr int HIDDEN_SIZE = 512;
 constexpr int OUTPUT_BUCKETS = 8;
 constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
+
+constexpr int PAIRWISE_OFFSET = HIDDEN_SIZE / 2;
 
 inline int calculate_bucket(const Board &board)
 {
