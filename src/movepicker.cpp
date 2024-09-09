@@ -5,15 +5,15 @@ int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move q
 
     int ply = ss->ply;
 
-    int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move);
+    int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move) / 2;
 
     quiet_move_score += thread_data.pawnhist.move_value(ss->board, quiet_move);
 
     if (ply >= 1 && !(ss - 1)->null_moved)
-        quiet_move_score += 2 * thread_data.conthist.move_value(ss->board, quiet_move, (ss - 1)->board, (ss - 1)->move_played);
+        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 1)->board, (ss - 1)->move_played);
 
     if (ply >= 2 && !(ss - 2)->null_moved)
-        quiet_move_score += 2 * thread_data.conthist.move_value(ss->board, quiet_move, (ss - 2)->board, (ss - 2)->move_played);
+        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 2)->board, (ss - 2)->move_played);
 
     return quiet_move_score;
 }

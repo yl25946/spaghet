@@ -570,7 +570,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (!improving)
             ++reduction;
 
-        reduction -= history_score / (is_quiet ? 15'000 : 10'000);
+        reduction -= history_score / 10'000;
 
         if (inPV)
             reduction -= 1;
