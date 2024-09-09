@@ -13,7 +13,7 @@ int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move q
         quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 1)->board, (ss - 1)->move_played);
 
     if (ply >= 2 && !(ss - 2)->null_moved)
-        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 2)->board, (ss - 2)->move_played);
+        quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - 2)->board, (ss - 2)->move_played) / 2;
 
     return quiet_move_score;
 }
