@@ -370,22 +370,21 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     // our perspective
     for (int i = 0; i < HIDDEN_SIZE / 2; i += chunk_size)
     {
-        // load in the data from the weights
+        // load in the data from the accumulators
         const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move][i]);
+        const vepi16 pairwise_accumulator_data = load_epi16(&accumulator[board.side_to_move][i + PAIRWISE_OFFSET]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][0][i]);
-        const vepi16 pairwise_weights = load_epi16(&net.output_weights[bucket][0][i + PAIRWISE_OFFSET]);
 
-        // clip
+        // crelu
         const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+        const vepi16 clipped_pairwise_accumulator = clip(pairwise_accumulator_data, L1Q);
 
         // multiply with weights
         // still int16s, will not overflow
         const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
-        // multiply them by the pairwise weights
-        const vepi16 pairwise_intermediate = multiply_epi16(intermediate, pairwise_weights);
 
-        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
-        const vepi32 result = multiply_add_epi16(pairwise_intermediate, clipped_accumulator);
+        // we multiply with pairwise clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
 
         // add the result we have to the running sum
         sum = add_epi32(sum, result);
@@ -394,23 +393,21 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     // their perspective
     for (int i = 0; i < HIDDEN_SIZE / 2; i += chunk_size)
     {
-        // load in the data from the weights
+        // load in the data from the accumulators
         const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i]);
-
+        const vepi16 pairwise_accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i + PAIRWISE_OFFSET]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][1][i]);
-        const vepi16 pairwise_weights = load_epi16(&net.output_weights[bucket][1][i + PAIRWISE_OFFSET]);
 
-        // clip
+        // crelu
         const vepi16 clipped_accumulator = clip(accumulator_data, L1Q);
+        const vepi16 clipped_pairwise_accumulator = clip(pairwise_accumulator_data, L1Q);
 
         // multiply with weights
         // still int16s, will not overflow
         const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
-        // multiply them by the pairwise weights
-        const vepi16 pairwise_intermediate = multiply_epi16(intermediate, pairwise_weights);
 
-        // we multiply with clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
-        const vepi32 result = multiply_add_epi16(pairwise_intermediate, clipped_accumulator);
+        // we multiply with pairwise clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
 
         // add the result we have to the running sum
         sum = add_epi32(sum, result);
@@ -421,12 +418,15 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
 
 #else
     // feed everything forward to get the final value
+
+    // using Crelu activation function
     for (int i = 0; i < HIDDEN_SIZE / 2; ++i)
-        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[bucket][0][i] * net.output_weights[bucket][0][i + PAIRWISE_OFFSET];
+        eval += std::clamp<int32_t>(accumulator[board.side_to_move][i], 0, L1Q) * std::clamp<int32_t>(accumulator[board.side_to_move][i + PAIRWISE_OFFSET], 0, L1Q) * net.output_weights[bucket][0][i];
 
     for (int i = 0; i < HIDDEN_SIZE / 2; ++i)
-        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i] * net.output_weights[bucket][1][i + PAIRWISE_OFFSET];
+        eval += std::clamp<int32_t>(accumulator[board.side_to_move ^ 1][i], 0, L1Q) * std::clamp<int32_t>(accumulator[board.side_to_move ^ 1][i + PAIRWISE_OFFSET], 0, L1Q) * net.output_weights[bucket][1][i];
 #endif
+    // we divide by an extra Q1 because of pairwise (which acts as a screlu)
     eval /= L1Q;
     eval += net.output_bias[bucket];
     eval = (eval * SCALE) / (L1Q * OutputQ);

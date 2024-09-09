@@ -12,7 +12,14 @@ constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
+/**
+ * Pairwise Multiplication Inference: Instead of feeding forward the entire network from L1,
+ * you only feed forward half the number of neurons. You activate the the i and i + L1_SIZE/2,
+ * multiply them together, and multiply the i-th L1 weight
+ */
 constexpr int PAIRWISE_OFFSET = HIDDEN_SIZE / 2;
+// how many bits we want to shift to the right during pairwise mul
+constexpr int FEATURE_SHIFT = 20;
 
 inline int calculate_bucket(const Board &board)
 {
@@ -54,7 +61,7 @@ struct Network
 {
     alignas(64) int16_t feature_weights[INPUT_WEIGHTS][HIDDEN_SIZE];
     alignas(64) int16_t feature_bias[HIDDEN_SIZE];
-    alignas(64) int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE];
+    alignas(64) int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE / 2];
     alignas(64) int16_t output_bias[OUTPUT_BUCKETS];
 };
 
