@@ -298,7 +298,7 @@ void NNUE::init(const char *file)
     FILE *nn = fopen(file, "rb");
 
     // this format will be [stm][hl neuron][bucket]
-    int16_t untransposed_output_weights[2][HIDDEN_SIZE][OUTPUT_BUCKETS];
+    int16_t untransposed_output_weights[2][HIDDEN_SIZE / 2][OUTPUT_BUCKETS];
 
     // if it's not invalid read the config values from it
     if (nn)
@@ -310,7 +310,7 @@ void NNUE::init(const char *file)
 
         read += fread(net.feature_weights, sizeof(int16_t), INPUT_WEIGHTS * HIDDEN_SIZE, nn);
         read += fread(net.feature_bias, sizeof(int16_t), HIDDEN_SIZE, nn);
-        read += fread(untransposed_output_weights, sizeof(int16_t), HIDDEN_SIZE * 2 * OUTPUT_BUCKETS, nn);
+        read += fread(untransposed_output_weights, sizeof(int16_t), HIDDEN_SIZE * OUTPUT_BUCKETS, nn);
         read += fread(net.output_bias, sizeof(int16_t), OUTPUT_BUCKETS, nn);
 
         if (read != objectsExpected)
@@ -331,13 +331,13 @@ void NNUE::init(const char *file)
         memoryIndex += INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t);
         std::memcpy(net.feature_bias, &gEVALData[memoryIndex], HIDDEN_SIZE * sizeof(int16_t));
         memoryIndex += HIDDEN_SIZE * sizeof(int16_t);
-        std::memcpy(untransposed_output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2);
-        memoryIndex += HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2;
+        std::memcpy(untransposed_output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t));
+        memoryIndex += HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t);
         std::memcpy(net.output_bias, &gEVALData[memoryIndex], OUTPUT_BUCKETS * sizeof(int16_t));
     }
 
     for (int stm = 0; stm < 2; ++stm)
-        for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
+        for (int weight = 0; weight < HIDDEN_SIZE / 2; ++weight)
             for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
                 net.output_weights[bucket][stm][weight] = untransposed_output_weights[stm][weight][bucket];
 }
@@ -384,7 +384,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
         const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
 
         // we multiply with pairwise clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
-        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_pairwise_accumulator);
 
         // add the result we have to the running sum
         sum = add_epi32(sum, result);
@@ -407,7 +407,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
         const vepi16 intermediate = multiply_epi16(clipped_accumulator, weights);
 
         // we multiply with pairwise clipped acumulator weights, which will overflow, so we use multiply_add and turn them into int32s
-        const vepi32 result = multiply_add_epi16(intermediate, clipped_accumulator);
+        const vepi32 result = multiply_add_epi16(intermediate, clipped_pairwise_accumulator);
 
         // add the result we have to the running sum
         sum = add_epi32(sum, result);
