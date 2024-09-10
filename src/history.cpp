@@ -142,7 +142,7 @@ ContinuationHistory::ContinuationHistory()
         for (int j = 0; j < 64; ++j)
             for (int k = 0; k < 13; ++k)
                 for (int l = 0; l < 64; ++l)
-                    table[0][i][j][0][k][l] = table[0][i][j][1][k][l] = table[1][i][j][0][k][l] = table[1][i][j][1][k][l] = 0;
+                    table[0][i][j][k][l] = table[1][i][j][k][l] = 0;
 }
 
 void ContinuationHistory::clear()
@@ -151,7 +151,7 @@ void ContinuationHistory::clear()
         for (int j = 0; j < 64; ++j)
             for (int k = 0; k < 13; ++k)
                 for (int l = 0; l < 64; ++l)
-                    table[0][i][j][0][k][l] = table[0][i][j][1][k][l] = table[1][i][j][0][k][l] = table[1][i][j][1][k][l] = 0;
+                    table[0][i][j][k][l] = table[1][i][j][k][l] = 0;
 }
 
 void ContinuationHistory::update()
@@ -165,7 +165,6 @@ void ContinuationHistory::update()
 
 void ContinuationHistory::update(const Board &board, Move move, const Board &previous_board, Move previous_move, int depth, bool good)
 {
-    bool previous_capture = previous_move.is_capture();
     bool current_capture = move.is_capture();
     uint8_t piece = board.mailbox[move.from_square()];
     uint8_t to_square = move.to_square();
@@ -175,7 +174,7 @@ void ContinuationHistory::update(const Board &board, Move move, const Board &pre
     const int delta = std::clamp(good ? 170 * depth : -450 * depth, -1500, 1500);
 
     // gravity formula
-    table[current_capture][piece][to_square][previous_capture][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[current_capture][piece][to_square][previous_capture][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
+    table[current_capture][piece][to_square][previous_piece][previous_to_square] += delta - (static_cast<int64_t>(table[current_capture][piece][to_square][previous_piece][previous_to_square]) * abs(delta) / MAX_HISTORY);
 }
 
 void ContinuationHistory::update(const Board &board, MoveList &move_list, Move best_move, const Board &previous_board, Move previous_move, int depth)
@@ -191,10 +190,9 @@ void ContinuationHistory::update(const Board &board, MoveList &move_list, Move b
 
 int64_t ContinuationHistory::move_value(const Board &board, Move move, const Board &previous_board, Move previous_move)
 {
-    bool previous_capture = previous_move.is_capture();
     bool current_capture = move.is_capture();
 
-    return table[current_capture][board.mailbox[move.from_square()]][move.to_square()][previous_capture][previous_board.mailbox[previous_move.from_square()]][previous_move.to_square()];
+    return table[current_capture][board.mailbox[move.from_square()]][move.to_square()][previous_board.mailbox[previous_move.from_square()]][previous_move.to_square()];
 }
 
 PawnCorrectionHistory::PawnCorrectionHistory()
