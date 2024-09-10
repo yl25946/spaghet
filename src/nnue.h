@@ -7,21 +7,94 @@
 
 constexpr int INPUT_WEIGHTS = 768;
 constexpr int HIDDEN_SIZE = 512;
+constexpr int KING_BUCKETS = 4;
 constexpr int OUTPUT_BUCKETS = 8;
 constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
-inline int calculate_bucket(const Board &board)
+/*
+.input(inputs::ChessBucketsMirrored::new([
+            0, 0, 1, 1,
+            0, 2, 2, 2,
+            3, 3, 3, 3,
+            3, 3, 3, 3,
+            3, 3, 3, 3,
+            3, 3, 3, 3,
+            3, 3, 3, 3,
+            3, 3, 3, 3,
+        ]))
+*/
+constexpr int buckets[] = {
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    1,
+    1,
+};
+
+constexpr uint64_t flipped_bitmask = 0xf0f0f0f0f0f0f0f;
+
+constexpr bool should_hm(const Board &board, uint8_t side_to_move)
+{
+    return board.bitboard(uncolored_to_colored(BITBOARD_PIECES::KING, side_to_move)) & flipped_bitmask;
+}
+
+inline int
+calculate_output_bucket(const Board &board)
 {
     int piece_count = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
 
     return std::min((63 - piece_count) * (32 - piece_count) / 225, 7);
 }
 
+inline int get_king_bucket(const Board &board, uint8_t side_to_move)
+{
+    uint64_t king_bitboard = board.bitboard(uncolored_to_colored(BITBOARD_PIECES::KING, side_to_move));
+    uint8_t king_square = lsb(king_bitboard);
+
+    if (side_to_move == BLACK)
+        king_square = flip(king_square);
+
+    if (should_hm(board, side_to_move))
+        king_square = horizontally_flip(king_square);
+
+    return king_buckets[king_square];
+}
+
 class Accumulator
 {
 public:
+    // all indexed stm
+    std::array<int, 2> king_bucket;
+    std::array<int, 2> horizontal_flipped;
     alignas(64) std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
 
     Accumulator() {};
@@ -50,8 +123,8 @@ public:
 
 struct Network
 {
-    alignas(64) int16_t feature_weights[INPUT_WEIGHTS][HIDDEN_SIZE];
-    alignas(64) int16_t feature_bias[HIDDEN_SIZE];
+    alignas(64) int16_t feature_weights[KING_BUCKETS][INPUT_WEIGHTS][HIDDEN_SIZE];
+    alignas(64) int16_t feature_bias[KING_BUCKETS][HIDDEN_SIZE];
     alignas(64) int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE];
     alignas(64) int16_t output_bias[OUTPUT_BUCKETS];
 };

@@ -62,6 +62,11 @@ inline uint8_t flip(uint8_t square)
     return square ^ 56;
 }
 
+inline uint8_t horizontally_flip(uint8_t square)
+{
+    return square ^ 7;
+}
+
 inline uint8_t colored_to_uncolored(uint8_t piece)
 {
     return piece >> 1;
