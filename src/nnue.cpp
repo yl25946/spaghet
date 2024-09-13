@@ -31,44 +31,7 @@ inline int colored_to_nnue(int piece)
 
 Accumulator::Accumulator(const Board &board)
 {
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[0][i] = net.feature_bias[i];
-
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[1][i] = net.feature_bias[i];
-
-    for (int color = 0; color < 2; ++color)
-    {
-        for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
-        {
-            uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
-            while (bitboard)
-            {
-                // board uses a8 = 0, while we want a1 = 0, so we flip the white square
-                int black_square = lsb(bitboard);
-                int white_square = flip(black_square);
-                int nnue_white_piece = uncolored_to_nnue(piece, color);
-
-                int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
-
-                int nnue_white_input_index = 64 * nnue_white_piece + white_square;
-                int nnue_black_input_index = 64 * nnue_black_piece + black_square;
-
-                // std::cout << color << " " << piece << "\n";
-
-                // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
-
-                // updates all the pieces in the accumulators
-                for (int i = 0; i < HIDDEN_SIZE; ++i)
-                    accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
-
-                for (int i = 0; i < HIDDEN_SIZE; ++i)
-                    accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
-
-                pop_bit(bitboard);
-            }
-        }
-    }
+    refresh(board);
 }
 
 void Accumulator::add(uint8_t piece, uint8_t square)
@@ -76,8 +39,13 @@ void Accumulator::add(uint8_t piece, uint8_t square)
     // board uses a8 = 0, while we want a1 = 0, so we flip the white square
     int black_square = square;
     int white_square = flip(black_square);
-    int nnue_white_piece = colored_to_nnue(piece);
 
+    if (horizontally_mirrored[WHITE])
+        white_square = horizontally_flip(white_square);
+    if (horizontally_mirrored[BLACK])
+        black_square = horizontally_flip(black_square);
+
+    int nnue_white_piece = colored_to_nnue(piece);
     int nnue_black_piece = colored_to_nnue(piece ^ 1);
 
     // std::cout << static_cast<int>(piece ^ 1) << " " << nnue_black_piece << " ";
@@ -91,10 +59,10 @@ void Accumulator::add(uint8_t piece, uint8_t square)
 
     // updates all the pieces in the accumulators
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_white_input_index][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_black_input_index][i];
 }
 
 void Accumulator::remove(uint8_t piece, uint8_t square)
@@ -102,6 +70,11 @@ void Accumulator::remove(uint8_t piece, uint8_t square)
     // board uses a8 = 0, while we want a1 = 0, so we flip the white square
     int black_square = square;
     int white_square = flip(black_square);
+
+    if (horizontally_mirrored[WHITE])
+        white_square = horizontally_flip(white_square);
+    if (horizontally_mirrored[BLACK])
+        black_square = horizontally_flip(black_square);
 
     int nnue_white_piece = colored_to_nnue(piece);
     int nnue_black_piece = colored_to_nnue(piece ^ 1);
@@ -113,20 +86,31 @@ void Accumulator::remove(uint8_t piece, uint8_t square)
 
     // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
 
-    // updates all the pieces in the accumulators
+    // // updates all the pieces in the accumulators
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[WHITE][i] -= net.feature_weights[nnue_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_white_input_index][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[BLACK][i] -= net.feature_weights[nnue_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_black_input_index][i];
 }
 
 void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_piece, uint8_t sub_square)
 {
-    const int black_add_square = add_square;
-    const int white_add_square = flip(black_add_square);
-    const int black_sub_square = sub_square;
-    const int white_sub_square = flip(black_sub_square);
+    int black_add_square = add_square;
+    int white_add_square = flip(black_add_square);
+    int black_sub_square = sub_square;
+    int white_sub_square = flip(black_sub_square);
+
+    if (horizontally_mirrored[WHITE])
+    {
+        white_add_square = horizontally_flip(white_add_square);
+        white_sub_square = horizontally_flip(white_sub_square);
+    }
+    if (horizontally_mirrored[BLACK])
+    {
+        black_add_square = horizontally_flip(black_add_square);
+        black_sub_square = horizontally_flip(black_sub_square);
+    }
 
     const int nnue_add_white_piece = colored_to_nnue(add_piece);
     const int nnue_add_black_piece = colored_to_nnue(add_piece ^ 1);
@@ -140,25 +124,38 @@ void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_pie
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[nnue_sub_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[nnue_add_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[nnue_sub_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub_black_input_index][i];
     }
 }
 
 void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
 {
-    const int black_add_square = add_square;
-    const int white_add_square = flip(black_add_square);
-    const int black_sub1_square = sub1_square;
-    const int white_sub1_square = flip(black_sub1_square);
-    const int black_sub2_square = sub2_square;
-    const int white_sub2_square = flip(black_sub2_square);
+    int black_add_square = add_square;
+    int white_add_square = flip(black_add_square);
+    int black_sub1_square = sub1_square;
+    int white_sub1_square = flip(black_sub1_square);
+    int black_sub2_square = sub2_square;
+    int white_sub2_square = flip(black_sub2_square);
+
+    if (horizontally_mirrored[WHITE])
+    {
+        white_add_square = horizontally_flip(white_add_square);
+        white_sub1_square = horizontally_flip(white_sub1_square);
+        white_sub2_square = horizontally_flip(white_sub2_square);
+    }
+    if (horizontally_mirrored[BLACK])
+    {
+        black_add_square = horizontally_flip(black_add_square);
+        black_sub1_square = horizontally_flip(black_sub1_square);
+        black_sub2_square = horizontally_flip(black_sub2_square);
+    }
 
     const int nnue_add_white_piece = colored_to_nnue(add_piece);
     const int nnue_add_black_piece = colored_to_nnue(add_piece ^ 1);
@@ -176,29 +173,44 @@ void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[nnue_add_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[nnue_sub1_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[nnue_sub2_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub2_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[nnue_add_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[nnue_sub1_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[nnue_sub2_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub2_black_input_index][i];
     }
 }
 
 void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8_t add2_piece, uint8_t add2_square, uint8_t sub1_piece, uint8_t sub1_square, uint8_t sub2_piece, uint8_t sub2_square)
 {
-    const int black_add1_square = add1_square;
-    const int white_add1_square = flip(black_add1_square);
-    const int black_add2_square = add2_square;
-    const int white_add2_square = flip(black_add2_square);
-    const int black_sub1_square = sub1_square;
-    const int white_sub1_square = flip(black_sub1_square);
-    const int black_sub2_square = sub2_square;
-    const int white_sub2_square = flip(black_sub2_square);
+    int black_add1_square = add1_square;
+    int white_add1_square = flip(black_add1_square);
+    int black_add2_square = add2_square;
+    int white_add2_square = flip(black_add2_square);
+    int black_sub1_square = sub1_square;
+    int white_sub1_square = flip(black_sub1_square);
+    int black_sub2_square = sub2_square;
+    int white_sub2_square = flip(black_sub2_square);
+
+    if (horizontally_mirrored[WHITE])
+    {
+        white_add1_square = horizontally_flip(white_add1_square);
+        white_add2_square = horizontally_flip(white_add2_square);
+        white_sub1_square = horizontally_flip(white_sub1_square);
+        white_sub2_square = horizontally_flip(white_sub2_square);
+    }
+    if (horizontally_mirrored[BLACK])
+    {
+        black_add1_square = horizontally_flip(black_add1_square);
+        black_add2_square = horizontally_flip(black_add2_square);
+        black_sub1_square = horizontally_flip(black_sub1_square);
+        black_sub2_square = horizontally_flip(black_sub2_square);
+    }
 
     const int nnue_add1_white_piece = colored_to_nnue(add1_piece);
     const int nnue_add1_black_piece = colored_to_nnue(add1_piece ^ 1);
@@ -220,18 +232,18 @@ void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[nnue_add1_white_input_index][i];
-        accumulator[WHITE][i] += net.feature_weights[nnue_add2_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[nnue_sub1_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[nnue_sub2_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add1_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add2_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub2_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[nnue_add1_black_input_index][i];
-        accumulator[BLACK][i] += net.feature_weights[nnue_add2_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[nnue_sub1_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[nnue_sub2_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add1_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add2_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub2_black_input_index][i];
     }
 }
 
@@ -286,6 +298,59 @@ void Accumulator::make_move(const Board &board, Move move)
     }
 }
 
+void Accumulator::refresh(const Board &board)
+{
+    int white_king_bucket = king_buckets[WHITE] = get_king_bucket(board, WHITE);
+    int black_king_bucket = king_buckets[BLACK] = get_king_bucket(board, BLACK);
+    bool white_hm = horizontally_mirrored[WHITE] = should_hm(board, WHITE);
+    bool black_hm = horizontally_mirrored[BLACK] = should_hm(board, BLACK);
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+        accumulator[WHITE][i] = net.feature_bias[white_king_bucket][i];
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+        accumulator[BLACK][i] = net.feature_bias[white_king_bucket][i];
+
+    for (int color = 0; color < 2; ++color)
+    {
+        for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
+        {
+            uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
+            while (bitboard)
+            {
+                // board uses a8 = 0, while we want a1 = 0, so we flip the white square
+                int black_square = lsb(bitboard);
+                int white_square = flip(black_square);
+
+                // flip the sqaures horizontally for hm
+                if (white_hm)
+                    white_square = horizontally_flip(white_square);
+                if (black_hm)
+                    black_square = horizontally_flip(black_square);
+
+                int nnue_white_piece = uncolored_to_nnue(piece, color);
+                int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
+
+                int nnue_white_input_index = 64 * nnue_white_piece + white_square;
+                int nnue_black_input_index = 64 * nnue_black_piece + black_square;
+
+                // std::cout << color << " " << piece << "\n";
+
+                // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
+
+                // updates all the pieces in the accumulators
+                for (int i = 0; i < HIDDEN_SIZE; ++i)
+                    accumulator[WHITE][i] += net.feature_weights[white_king_bucket][nnue_white_input_index][i];
+
+                for (int i = 0; i < HIDDEN_SIZE; ++i)
+                    accumulator[BLACK][i] += net.feature_weights[black_king_bucket][nnue_black_input_index][i];
+
+                pop_bit(bitboard);
+            }
+        }
+    }
+}
+
 inline int32_t screlu(int16_t value)
 {
     const int32_t clipped = std::clamp(static_cast<int32_t>(value), 0, L1Q);
@@ -308,8 +373,8 @@ void NNUE::init(const char *file)
         size_t fileSize = sizeof(Network);
         size_t objectsExpected = fileSize / sizeof(int16_t);
 
-        read += fread(net.feature_weights, sizeof(int16_t), INPUT_WEIGHTS * HIDDEN_SIZE, nn);
-        read += fread(net.feature_bias, sizeof(int16_t), HIDDEN_SIZE, nn);
+        read += fread(net.feature_weights, sizeof(int16_t), KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE, nn);
+        read += fread(net.feature_bias, sizeof(int16_t), KING_BUCKETS * HIDDEN_SIZE, nn);
         read += fread(untransposed_output_weights, sizeof(int16_t), HIDDEN_SIZE * 2 * OUTPUT_BUCKETS, nn);
         read += fread(net.output_bias, sizeof(int16_t), OUTPUT_BUCKETS, nn);
 
@@ -327,14 +392,17 @@ void NNUE::init(const char *file)
     {
         // if we don't find the nnue file we use the net embedded in the exe
         uint64_t memoryIndex = 0;
-        std::memcpy(net.feature_weights, &gEVALData[memoryIndex], INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t));
-        memoryIndex += INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t);
-        std::memcpy(net.feature_bias, &gEVALData[memoryIndex], HIDDEN_SIZE * sizeof(int16_t));
-        memoryIndex += HIDDEN_SIZE * sizeof(int16_t);
+        std::memcpy(net.feature_weights, &gEVALData[memoryIndex], KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t));
+        memoryIndex += KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t);
+        std::memcpy(net.feature_bias, &gEVALData[memoryIndex], KING_BUCKETS * HIDDEN_SIZE * sizeof(int16_t));
+        memoryIndex += KING_BUCKETS * HIDDEN_SIZE * sizeof(int16_t);
         std::memcpy(untransposed_output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2);
         memoryIndex += HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2;
         std::memcpy(net.output_bias, &gEVALData[memoryIndex], OUTPUT_BUCKETS * sizeof(int16_t));
     }
+
+    for (int i = 0; i < HIDDEN_SIZE; ++i)
+        std::cout << net.feature_weights[0][WHITE][i] << " ";
 
     for (int stm = 0; stm < 2; ++stm)
         for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
@@ -344,7 +412,7 @@ void NNUE::init(const char *file)
 
 int NNUE::eval(const Board &board)
 {
-    return eval(board, calculate_bucket(board));
+    return eval(board, calculate_output_bucket(board));
 }
 
 int NNUE::eval(const Board &board, int bucket)
@@ -356,7 +424,7 @@ int NNUE::eval(const Board &board, int bucket)
 
 int NNUE::eval(const Board &board, const Accumulator &accumulator)
 {
-    return eval(board, accumulator, calculate_bucket(board));
+    return eval(board, accumulator, calculate_output_bucket(board));
 }
 
 int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)

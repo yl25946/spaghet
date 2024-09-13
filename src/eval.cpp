@@ -871,30 +871,41 @@ int pesto_eval(Board &board)
 int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
     int counter = 0;
+
     SearchStack *ss_copy = ss;
 
     // we keep going until we have a clean, updated accumulator
-    while (!ss_copy->updated_accumulator)
+    while (!ss_copy->updated_accumulator && ss_copy->ply >= 0 && !accumulators[ss_copy->ply].is_clean(board))
     {
         ++counter;
         --ss_copy;
     }
 
-    int starting = ss_copy->ply;
-    const int ending = ss->ply;
+    // we don't have a valid accumulator, we refresh the accumulator completely
+    if (ss_copy->ply < 0)
+        accumulators[ss->ply] = Accumulator(board);
 
-    for (; starting < ending; ++starting, ++ss_copy)
+    // If we did find a valid accumulator, we update it in a chain
+    // NOTE: due to the implementation, we might have accumulators that have a king that's not in the king bucket,
+    // but is_clean() will never return true
+    else
     {
-        accumulators[starting + 1] = accumulators[starting];
-        (ss_copy + 1)->updated_accumulator = true;
+        int starting = ss_copy->ply;
+        const int ending = ss->ply;
 
-        if (ss_copy->null_moved)
-            continue;
+        for (; starting < ending; ++starting, ++ss_copy)
+        {
+            accumulators[starting + 1] = accumulators[starting];
+            (ss_copy + 1)->updated_accumulator = true;
 
-        accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+            if (ss_copy->null_moved)
+                continue;
+
+            accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+        }
     }
 
-    return evaluate(board, accumulators[ending]);
+    return evaluate(board, accumulators[ss->ply]);
 }
 
 int evaluate(const Board &board, const Accumulator &accumulator)

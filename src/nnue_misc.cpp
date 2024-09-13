@@ -109,7 +109,7 @@ void print_eval(Board &board)
               << "|   Bucket   | Evaluation |\n"
               << "+------------+------------+\n";
 
-    const int correct_bucket = calculate_bucket(board);
+    const int correct_bucket = calculate_output_bucket(board);
 
     for (int bucket = 0; bucket < OUTPUT_BUCKETS; ++bucket)
     {

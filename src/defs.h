@@ -34,44 +34,44 @@ extern std::string cmk_position;
 extern std::string repetitions;
 
 // bit macros
-inline void set_bit(uint64_t &bitboard, uint8_t square)
+constexpr void set_bit(uint64_t &bitboard, uint8_t square)
 {
     bitboard |= (1ULL << (square));
 }
-inline uint8_t get_bit(uint64_t bitboard, uint8_t square)
+constexpr uint8_t get_bit(uint64_t bitboard, uint8_t square)
 {
     return (bitboard & (1ULL << (square)));
 }
-inline void remove_bit(uint64_t &bitboard, uint8_t square)
+constexpr void remove_bit(uint64_t &bitboard, uint8_t square)
 {
     bitboard &= ~(1ULL << (square));
 }
-inline uint8_t count_bits(uint64_t bitboard)
+constexpr uint8_t count_bits(uint64_t bitboard)
 {
     return __builtin_popcountll(bitboard);
 }
 // Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
-inline uint8_t lsb(uint64_t bitboard)
+constexpr uint8_t lsb(uint64_t bitboard)
 {
     return __builtin_ffsll(bitboard) - 1;
 }
 #define pop_bit(bitboard) (bitboard &= (bitboard - 1))
 
-inline uint8_t flip(uint8_t square)
+constexpr uint8_t flip(uint8_t square)
 {
     return square ^ 56;
 }
 
-inline uint8_t horizontally_flip(uint8_t square)
+constexpr uint8_t horizontally_flip(uint8_t square)
 {
     return square ^ 7;
 }
 
-inline uint8_t colored_to_uncolored(uint8_t piece)
+constexpr uint8_t colored_to_uncolored(uint8_t piece)
 {
     return piece >> 1;
 }
-inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
+constexpr uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
 {
     return piece << 1 | color;
 }

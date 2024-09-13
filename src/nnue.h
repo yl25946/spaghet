@@ -62,7 +62,7 @@ constexpr int buckets[] = {
 
 constexpr uint64_t flipped_bitmask = 0xf0f0f0f0f0f0f0f;
 
-constexpr bool should_hm(const Board &board, uint8_t side_to_move)
+inline bool should_hm(const Board &board, uint8_t side_to_move)
 {
     return board.bitboard(uncolored_to_colored(BITBOARD_PIECES::KING, side_to_move)) & flipped_bitmask;
 }
@@ -93,8 +93,8 @@ class Accumulator
 {
 public:
     // all indexed stm
-    std::array<int, 2> king_bucket;
-    std::array<int, 2> horizontal_flipped;
+    std::array<int, 2> king_buckets;
+    std::array<int, 2> horizontally_mirrored;
     alignas(64) std::array<std::array<int16_t, HIDDEN_SIZE>, 2> accumulator;
 
     Accumulator() {};
@@ -109,7 +109,18 @@ public:
         return accumulator[i];
     }
 
+    // if it isn't clean that means we need to refresh
+    inline bool is_clean(const Board &board)
+    {
+        int white_king_bucket = get_king_bucket(board, board.side_to_move);
+        int black_king_bucket = get_king_bucket(board, board.side_to_move ^ 1);
+
+        return white_king_bucket == king_buckets[WHITE] && black_king_bucket == king_buckets[WHITE] && horizontally_mirrored[WHITE] == should_hm(board, WHITE) && horizontally_mirrored[BLACK] == should_hm(board, BLACK);
+    }
+
     void make_move(const Board &board, Move move);
+
+    void refresh(const Board &board);
 
     // automatically converts a colored piece to a nnue piece
     void add(uint8_t piece, uint8_t square);
