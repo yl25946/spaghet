@@ -135,7 +135,7 @@ public:
 struct Network
 {
     alignas(64) int16_t feature_weights[KING_BUCKETS][INPUT_WEIGHTS][HIDDEN_SIZE];
-    alignas(64) int16_t feature_bias[KING_BUCKETS];
+    alignas(64) int16_t feature_bias[HIDDEN_SIZE];
     alignas(64) int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE];
     alignas(64) int16_t output_bias[OUTPUT_BUCKETS];
 };
