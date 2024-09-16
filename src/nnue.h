@@ -60,7 +60,7 @@ constexpr int buckets[] = {
     1,
 };
 
-constexpr uint64_t flipped_bitmask = 0xf0f0f0f0f0f0f0f;
+constexpr uint64_t flipped_bitmask = 0xf0f0f0f0f0f0f0f0;
 
 inline bool should_hm(const Board &board, uint8_t side_to_move)
 {
@@ -135,7 +135,7 @@ public:
 struct Network
 {
     alignas(64) int16_t feature_weights[KING_BUCKETS][INPUT_WEIGHTS][HIDDEN_SIZE];
-    alignas(64) int16_t feature_bias[KING_BUCKETS][HIDDEN_SIZE];
+    alignas(64) int16_t feature_bias[KING_BUCKETS];
     alignas(64) int16_t output_weights[OUTPUT_BUCKETS][2][HIDDEN_SIZE];
     alignas(64) int16_t output_bias[OUTPUT_BUCKETS];
 };

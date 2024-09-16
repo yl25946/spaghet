@@ -306,10 +306,10 @@ void Accumulator::refresh(const Board &board)
     bool black_hm = horizontally_mirrored[BLACK] = should_hm(board, BLACK);
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[WHITE][i] = net.feature_bias[white_king_bucket][i];
+        accumulator[WHITE][i] = net.feature_bias[i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[BLACK][i] = net.feature_bias[white_king_bucket][i];
+        accumulator[BLACK][i] = net.feature_bias[i];
 
     for (int color = 0; color < 2; ++color)
     {
@@ -374,7 +374,7 @@ void NNUE::init(const char *file)
         size_t objectsExpected = fileSize / sizeof(int16_t);
 
         read += fread(net.feature_weights, sizeof(int16_t), KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE, nn);
-        read += fread(net.feature_bias, sizeof(int16_t), KING_BUCKETS * HIDDEN_SIZE, nn);
+        read += fread(net.feature_bias, sizeof(int16_t), HIDDEN_SIZE, nn);
         read += fread(untransposed_output_weights, sizeof(int16_t), HIDDEN_SIZE * 2 * OUTPUT_BUCKETS, nn);
         read += fread(net.output_bias, sizeof(int16_t), OUTPUT_BUCKETS, nn);
 
@@ -394,15 +394,12 @@ void NNUE::init(const char *file)
         uint64_t memoryIndex = 0;
         std::memcpy(net.feature_weights, &gEVALData[memoryIndex], KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t));
         memoryIndex += KING_BUCKETS * INPUT_WEIGHTS * HIDDEN_SIZE * sizeof(int16_t);
-        std::memcpy(net.feature_bias, &gEVALData[memoryIndex], KING_BUCKETS * HIDDEN_SIZE * sizeof(int16_t));
-        memoryIndex += KING_BUCKETS * HIDDEN_SIZE * sizeof(int16_t);
+        std::memcpy(net.feature_bias, &gEVALData[memoryIndex], HIDDEN_SIZE * sizeof(int16_t));
+        memoryIndex += HIDDEN_SIZE * sizeof(int16_t);
         std::memcpy(untransposed_output_weights, &gEVALData[memoryIndex], HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2);
         memoryIndex += HIDDEN_SIZE * OUTPUT_BUCKETS * sizeof(int16_t) * 2;
         std::memcpy(net.output_bias, &gEVALData[memoryIndex], OUTPUT_BUCKETS * sizeof(int16_t));
     }
-
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        std::cout << net.feature_weights[0][WHITE][i] << " ";
 
     for (int stm = 0; stm < 2; ++stm)
         for (int weight = 0; weight < HIDDEN_SIZE; ++weight)
