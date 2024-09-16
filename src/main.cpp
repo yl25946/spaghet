@@ -16,10 +16,6 @@ int main(int argc, char *argv[])
     NNUE::init("random stuff");
     // init_pesto_tables();
 
-    // for (int i = 0; i < INPUT_WEIGHTS; ++i)
-    //     for (int j = 0; j < HIDDEN_SIZE; ++j)
-    //         std::cout << net.feature_weights[i][j] << " ";
-
     // runs the bench test if we have a bench command
     if (argc >= 2)
     {

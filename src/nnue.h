@@ -112,8 +112,8 @@ public:
     // if it isn't clean that means we need to refresh
     inline bool is_clean(const Board &board)
     {
-        int white_king_bucket = get_king_bucket(board, board.side_to_move);
-        int black_king_bucket = get_king_bucket(board, board.side_to_move ^ 1);
+        int white_king_bucket = get_king_bucket(board, WHITE);
+        int black_king_bucket = get_king_bucket(board, BLACK);
 
         return white_king_bucket == king_buckets[WHITE] && black_king_bucket == king_buckets[WHITE] && horizontally_mirrored[WHITE] == should_hm(board, WHITE) && horizontally_mirrored[BLACK] == should_hm(board, BLACK);
     }
