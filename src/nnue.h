@@ -26,38 +26,14 @@ constexpr int OutputQ = 64;
         ]))
 */
 constexpr int buckets[] = {
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    0,
-    2,
-    2,
-    2,
-    0,
-    0,
-    1,
-    1,
+   3, 3, 3, 3, 3, 3, 3, 3,
+   3, 3, 3, 3, 3, 3, 3, 3,
+   3, 3, 3, 3, 3, 3, 3, 3,
+   3, 3, 3, 3, 3, 3, 3, 3,
+   3, 3, 3, 3, 3, 3, 3, 3, 
+   3, 3, 3, 3, 3, 3, 3, 3,
+   0, 2, 2, 2, 2, 2, 2, 0,
+   0, 0, 1, 1, 1, 1, 0, 0,
 };
 
 constexpr uint64_t flipped_bitmask = 0xf0f0f0f0f0f0f0f0;
@@ -86,7 +62,7 @@ inline int get_king_bucket(const Board &board, uint8_t side_to_move)
     if (should_hm(board, side_to_move))
         king_square = horizontally_flip(king_square);
 
-    return king_buckets[king_square];
+    return buckets[king_square];
 }
 
 class Accumulator
