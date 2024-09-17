@@ -136,7 +136,7 @@ ifeq ($(build), x86-64-avx512)
 endif
 
 ifeq ($(build), debug)
-	CXXFLAGS = -O3 -g3 -fsanitize=undefined,address -fno-omit-frame-pointer -std=gnu++2a
+	CXXFLAGS = -g -fsanitize=undefined,address -fno-omit-frame-pointer -std=gnu++2a
 	NATIVE   = -msse -msse3 -mpopcnt
 	FLAGS    = -lpthread -lstdc++
 	ifeq ($(ARCH_DETECTED), AVX512)

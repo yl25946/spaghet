@@ -75,6 +75,10 @@ calculate_output_bucket(const Board &board)
     return std::min((63 - piece_count) * (32 - piece_count) / 225, 7);
 }
 
+inline uint8_t get_king_bucket_square(uint8_t square){
+    return 4 * rank(square) + file(square);
+}
+
 inline int get_king_bucket(const Board &board, uint8_t side_to_move)
 {
     uint64_t king_bitboard = board.bitboard(uncolored_to_colored(BITBOARD_PIECES::KING, side_to_move));
@@ -86,7 +90,7 @@ inline int get_king_bucket(const Board &board, uint8_t side_to_move)
     if (should_hm(board, side_to_move))
         king_square = horizontally_flip(king_square);
 
-    return king_buckets[king_square];
+    return buckets[get_king_bucket_square(king_square)];
 }
 
 class Accumulator
