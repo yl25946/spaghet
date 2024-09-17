@@ -870,44 +870,48 @@ int pesto_eval(Board &board)
 
 int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
-    SearchStack *ss_copy = ss;
+    SearchStack *ss_copy = ss - 1;
+    Accumulator& curr_accumulator = accumulators[ss->ply];
 
-    // we keep going until we have a clean, updated accumulator
-    while (ss_copy->ply >= 0 && (!ss_copy->updated_accumulator || !accumulators[ss_copy->ply].is_clean(board)))
+   // updated acc, usually at root
+    if(ss->updated_accumulator)
     {
-        --ss_copy;
+
     }
-
-    // we don't have a valid accumulator, we refresh the accumulator completely
-    if (true){
-        accumulators[ss->ply].refresh(board);
-        ss->updated_accumulator = true;
-    }
-
-    // If we did find a valid accumulator, we update it in a chain
-    // NOTE: due to the implementation, we might have accumulators that have a king that's not in the king bucket,
-    // but is_clean() will never return true
-    else
-    {
-        int starting = ss_copy->ply;
-        const int ending = ss->ply;
-
-        for (; starting < ending; ++starting, ++ss_copy)
-        {
-            accumulators[starting + 1] = accumulators[starting];
-            (ss + 1)->updated_accumulator = true;
-
-            if (ss_copy->null_moved)
+    // we have a previously clean acc, we find the earliest this is possible and then ue
+    else{
+        // curr_accumulator.refresh(board);
+        for(int ply = ss->ply - 1; ply >= 0; --ply, --ss_copy){
+            if(!ss_copy->updated_accumulator)
                 continue;
 
-            accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+            // if the last acc isn't clean, we refresh it and ue along the way
+            if(!accumulators[ply].is_clean(board)){
+                curr_accumulator.refresh(board);
+                break;
+            }
+            // update everything in a chain
+            else{
+                for(; ply < ss->ply; ++ply, ++ss_copy){
+                     accumulators[ply + 1] = accumulators[ply];
+                    (ss_copy + 1)->updated_accumulator = accumulators[ply + 1].is_clean((ss_copy + 1)->board);
+
+                    if (ss_copy->null_moved)
+                        continue;
+
+                    accumulators[ply + 1].make_move(ss_copy->board, ss_copy->move_played);
+                }
+
+                break;
+            }
+
+
         }
     }
 
-    return evaluate(board, accumulators[ss->ply]);
+//     ss->updated_accumulator = true;
 
-    // Accumulator king_accumulator(board);
-    // return evaluate(board, king_accumulator);
+    return evaluate(board, curr_accumulator);
 }
 
 int evaluate(const Board &board, const Accumulator &accumulator)

@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
     // initialize psqt
     NNUE::init("random stuff");
     // init_pesto_tables();
-
     // runs the bench test if we have a bench command
     if (argc >= 2)
     {

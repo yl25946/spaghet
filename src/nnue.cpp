@@ -59,10 +59,10 @@ void Accumulator::add(uint8_t piece, uint8_t square)
 
     // updates all the pieces in the accumulators
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[this->king_buckets[WHITE]][nnue_white_input_index][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[this->king_buckets[BLACK]][nnue_black_input_index][i];
 }
 
 void Accumulator::remove(uint8_t piece, uint8_t square)
@@ -88,10 +88,10 @@ void Accumulator::remove(uint8_t piece, uint8_t square)
 
     // // updates all the pieces in the accumulators
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_white_input_index][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_black_input_index][i];
 }
 
 void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_piece, uint8_t sub_square)
@@ -124,14 +124,14 @@ void Accumulator::add_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub_pie
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[this->king_buckets[WHITE]][nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_sub_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[this->king_buckets[BLACK]][nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_sub_black_input_index][i];
     }
 }
 
@@ -173,16 +173,16 @@ void Accumulator::add_sub_sub(uint8_t add_piece, uint8_t add_square, uint8_t sub
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub1_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub2_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[this->king_buckets[WHITE]][nnue_add_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_sub2_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub1_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub2_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[this->king_buckets[BLACK]][nnue_add_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_sub2_black_input_index][i];
     }
 }
 
@@ -232,18 +232,18 @@ void Accumulator::add_sub_add_sub(uint8_t add1_piece, uint8_t add1_square, uint8
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add1_white_input_index][i];
-        accumulator[WHITE][i] += net.feature_weights[king_buckets[WHITE]][nnue_add2_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub1_white_input_index][i];
-        accumulator[WHITE][i] -= net.feature_weights[king_buckets[WHITE]][nnue_sub2_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[this->king_buckets[WHITE]][nnue_add1_white_input_index][i];
+        accumulator[WHITE][i] += net.feature_weights[this->king_buckets[WHITE]][nnue_add2_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_sub1_white_input_index][i];
+        accumulator[WHITE][i] -= net.feature_weights[this->king_buckets[WHITE]][nnue_sub2_white_input_index][i];
     }
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
     {
-        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add1_black_input_index][i];
-        accumulator[BLACK][i] += net.feature_weights[king_buckets[BLACK]][nnue_add2_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub1_black_input_index][i];
-        accumulator[BLACK][i] -= net.feature_weights[king_buckets[BLACK]][nnue_sub2_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[this->king_buckets[BLACK]][nnue_add1_black_input_index][i];
+        accumulator[BLACK][i] += net.feature_weights[this->king_buckets[BLACK]][nnue_add2_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_sub1_black_input_index][i];
+        accumulator[BLACK][i] -= net.feature_weights[this->king_buckets[BLACK]][nnue_sub2_black_input_index][i];
     }
 }
 
@@ -300,8 +300,8 @@ void Accumulator::make_move(const Board &board, Move move)
 
 void Accumulator::refresh(const Board &board)
 {
-    int white_king_bucket = king_buckets[WHITE] = get_king_bucket(board, WHITE);
-    int black_king_bucket = king_buckets[BLACK] = get_king_bucket(board, BLACK);
+    int white_king_bucket = this->king_buckets[WHITE] = get_king_bucket(board, WHITE);
+    int black_king_bucket = this->king_buckets[BLACK] = get_king_bucket(board, BLACK);
     bool white_hm = horizontally_mirrored[WHITE] = should_hm(board, WHITE);
     bool black_hm = horizontally_mirrored[BLACK] = should_hm(board, BLACK);
 
