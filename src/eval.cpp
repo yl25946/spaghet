@@ -871,29 +871,33 @@ int pesto_eval(Board &board)
 int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
     SearchStack *ss_copy = ss - 1;
-    Accumulator& curr_accumulator = accumulators[ss->ply];
+    Accumulator &curr_accumulator = accumulators[ss->ply];
 
-   // updated acc, usually at root
-    if(ss->updated_accumulator)
+    // updated acc, usually at root
+    if (ss->updated_accumulator)
     {
-
     }
     // we have a previously clean acc, we find the earliest this is possible and then ue
-    else{
+    else
+    {
         // curr_accumulator.refresh(board);
-        for(int ply = ss->ply - 1; ply >= 0; --ply, --ss_copy){
-            if(!ss_copy->updated_accumulator)
+        for (int ply = ss->ply - 1; ply >= 0; --ply, --ss_copy)
+        {
+            if (!ss_copy->updated_accumulator)
                 continue;
 
             // if the last acc isn't clean, we refresh it and ue along the way
-            if(!accumulators[ply].is_clean(board)){
+            if (!accumulators[ply].is_clean(board))
+            {
                 curr_accumulator.refresh(board);
                 break;
             }
             // update everything in a chain
-            else{
-                for(; ply < ss->ply; ++ply, ++ss_copy){
-                     accumulators[ply + 1] = accumulators[ply];
+            else
+            {
+                for (; ply < ss->ply; ++ply, ++ss_copy)
+                {
+                    accumulators[ply + 1] = accumulators[ply];
                     (ss_copy + 1)->updated_accumulator = accumulators[ply + 1].is_clean((ss_copy + 1)->board);
 
                     if (ss_copy->null_moved)
@@ -904,16 +908,12 @@ int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchS
 
                 break;
             }
-
-
         }
     }
 
-//     ss->updated_accumulator = true;
+    ss->updated_accumulator = true;
 
     return evaluate(board, curr_accumulator);
-
-    
 }
 
 int evaluate(const Board &board, const Accumulator &accumulator)
