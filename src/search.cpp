@@ -102,6 +102,8 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
+    tt_entry.clamp_scores();
+
     bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
 
@@ -253,6 +255,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
+
+    tt_entry.clamp_scores();
 
     bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;

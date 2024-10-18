@@ -26,6 +26,13 @@ public:
     bool can_use_score(int alpha, int beta) const;
     // converts the score into the TT into a score that can used to detect and play mates
     int16_t usable_score(int ply) const;
+    // used to combat race conditions writing weird stuff to static eval & score by clamping stuff
+    inline void clamp_scores()
+    {
+        // score can contain mate scores
+        score = std::clamp<int16_t>(score, -MATE, MATE);
+        static_eval = std::clamp<int16_t>(static_eval, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+    }
 };
 
 class TranspositionTable
