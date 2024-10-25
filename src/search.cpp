@@ -825,11 +825,27 @@ void Searcher::search()
 
         uint64_t all_thread_node_count = thread_manager.get_nodes();
 
+        // get WDL statistics
+        int win, draw, loss;
         if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+        {
+            win = mate_score_to_moves(best_score) >= 0 ? 1000 : 0;
+            draw = 0;
+            loss = 1000 - win;
+        }
+        else
+        {
+            win = win_rate_model(board, best_score);
+            // in a zero sum game, we assume that the opponents evaluation is the negation of oursS
+            loss = win_rate_model(board, -best_score);
+            draw = 1000 - win - loss;
+        }
+
+        if (is_mate_score(best_score))
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
         else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << best_score << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << normalize_eval(board, best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                       << std::endl;
 
         if (nodes > max_nodes)

@@ -5,6 +5,7 @@
 #include "eval.h"
 #include "movepicker.h"
 #include "movegen.h"
+#include "nnue_misc.h"
 #include "transposition_table.h"
 #include "threads.h"
 #include "see.h"
