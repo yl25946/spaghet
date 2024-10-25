@@ -76,7 +76,7 @@ void print_eval(Board &board)
 
     // We estimate the value of each piece by doing a differential evaluation from
     // the current base eval, simulating the removal of the piece from its square.
-    int base_eval = NNUE::eval(board);
+    int base_eval = normalize_eval(board, NNUE::eval(board));
     base_eval = board.side_to_move == WHITE ? base_eval : -base_eval;
 
     for (int square = 0; square < 64; ++square)
@@ -90,7 +90,7 @@ void print_eval(Board &board)
             Board copy = board;
             copy.remove_piece(square);
 
-            int new_eval = NNUE::eval(copy);
+            int new_eval = normalize_eval(copy, NNUE::eval(copy));
 
             piece_value = base_eval - new_eval;
         }
@@ -126,7 +126,7 @@ void print_eval(Board &board)
     std::cout << "+------------+------------+\n\n";
 
     int unscaled_eval = NNUE::eval(board);
-    int scaled_eval = evaluate(board, accumulator);
+    int scaled_eval = normalize_eval(board, evaluate(board, accumulator));
 
     unscaled_eval = board.side_to_move == WHITE ? unscaled_eval : -unscaled_eval;
     scaled_eval = board.side_to_move == WHITE ? scaled_eval : -scaled_eval;
@@ -135,4 +135,38 @@ void print_eval(Board &board)
     std::cout << "Final evaluation       " << 0.01 * scaled_eval << " (white side)";
     std::cout << " [with scaled NNUE, ...]";
     std::cout << "\n\n";
+}
+
+std::pair<double, double> win_rate_params(const Board &board)
+{
+    const int material = count_bits(board.pieces[BITBOARD_PIECES::PAWN]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 9 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+
+    // if we have any ridiculous positions with more material, we will clamp it to within the model
+    const double m = std::clamp<double>(material, 10, 78) / 58.0;
+
+    // Formula for normalizing the evaluation without clamping the material, where x is the material count
+    // p_a = ((as[0] * m / 58 + as[1]) * x / 58 + a[2]) * x / 58 + a[3]
+    // p_b = ((bs[0] * x / 58 + bs[1]) * x / 58 + bs[2]) * x / 58 + bs[3]
+    constexpr double as[] = {-176.00534621, 495.96704269, -487.21153840, 405.14842161};
+    constexpr double bs[] = {6.54377011, 34.14816513, -42.89469507, 61.12733160};
+
+    const double p_a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
+    const double p_b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+
+    return {p_a, p_b};
+}
+
+int win_rate_model(const Board &board, int eval)
+{
+    auto [p_a, p_b] = win_rate_params(board);
+
+    // returns the win rate in thousandths in integers
+    return static_cast<int>(0.5 + 1000 / (1 + std::exp((p_a - static_cast<double>(eval)) / p_b)));
+}
+
+int normalize_eval(const Board &board, int eval)
+{
+    auto [p_a, p_b] = win_rate_params(board);
+
+    return std::round(100 * eval / p_a);
 }
