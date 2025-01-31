@@ -25,6 +25,6 @@ Board parse_position(const std::string &line);
 void parse_moves(const std::string &line, std::vector<Move> &moves, Board board);
 
 // parses the file from the "relabel" command
-std::string parse_file(const std::string &line);
+std::pair<std::string, std::string> parse_relabel_files(const std::string &line);
 
 // Board &parse_position(const std::string &command);
