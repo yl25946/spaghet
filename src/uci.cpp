@@ -218,9 +218,21 @@ void UCI_loop()
         // relabels using evaluation
         else if (!line.compare(0, 12, "relabel eval"))
         {
+            uint64_t batch_size = 16;
+
             auto [input_file, output_file] = parse_relabel_files(line);
 
-            relabel_eval(input_file, output_file);
+            size_t batch_it = line.find("buffer");
+
+            size_t next_space = line.find(" ", batch_it);
+
+            if (next_space == std::string::npos)
+                next_space = line.size();
+
+            if (batch_it != std::string::npos)
+                batch_size = std::stoi(line.substr(batch_it, next_space - batch_it));
+
+            relabel_eval(input_file, output_file, batch_size);
         }
 
         else if (!line.compare(0, 25, "setoption name Hash value"))

@@ -9,4 +9,4 @@
 /**
  * Takes in a bulletformat file and then relabels it with the evaluation of the NNUE
  */
-void relabel_eval(const std::string &input_file, const std::string &output_file);
+void relabel_eval(const std::string &input_file, const std::string &output_file, uint64_t buffer);
