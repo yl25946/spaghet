@@ -107,7 +107,7 @@ std::pair<std::string, std::string> parse_relabel_files(const std::string &line)
 
     move_it += 7;
 
-    size_t next_space = line.find(' ', move_it);
+    next_space = line.find(' ', move_it);
 
     if (next_space == std::string::npos)
         next_space = line.size();
@@ -222,17 +222,7 @@ void UCI_loop()
 
             auto [input_file, output_file] = parse_relabel_files(line);
 
-            size_t batch_it = line.find("buffer");
-
-            size_t next_space = line.find(" ", batch_it);
-
-            if (next_space == std::string::npos)
-                next_space = line.size();
-
-            if (batch_it != std::string::npos)
-                batch_size = std::stoi(line.substr(batch_it, next_space - batch_it));
-
-            relabel_eval(input_file, output_file, batch_size);
+            relabel_eval(input_file, output_file);
         }
 
         else if (!line.compare(0, 25, "setoption name Hash value"))

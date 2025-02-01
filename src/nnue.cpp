@@ -19,6 +19,11 @@ int chunk_size = 1;
 
 Network net;
 
+inline int nnue_piece_flip(int nnue_piece)
+{
+    return (nnue_piece + 6) % 12;
+}
+
 inline int uncolored_to_nnue(int piece, int color)
 {
     return (piece + (color == WHITE ? 0 : 6));
@@ -31,11 +36,9 @@ inline int colored_to_nnue(int piece)
 
 Accumulator::Accumulator(const Board &board)
 {
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[0][i] = net.feature_bias[i];
+    std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
 
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[1][i] = net.feature_bias[i];
+    std::memcpy(&accumulator[1], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
 
     for (int color = 0; color < 2; ++color)
     {
@@ -69,6 +72,71 @@ Accumulator::Accumulator(const Board &board)
             }
         }
     }
+}
+
+Accumulator::Accumulator(const BulletFormat &position)
+{
+    std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
+
+    std::memcpy(&accumulator[1], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
+
+    uint64_t occ = position.occ;
+    uint8_t counter = count_bits(occ) - 1;
+
+    while (occ)
+    {
+        // both use a1= 0
+        int white_square = lsb(occ);
+        int black_square = flip(white_square);
+
+        int nnue_white_piece = position.pcs[counter];
+        int nnue_black_piece = nnue_piece_flip(nnue_white_piece);
+
+        int nnue_white_input_index = 64 * nnue_white_piece + white_square;
+        int nnue_black_input_index = 64 * nnue_black_piece + black_square;
+
+        // updates all the pieces in the accumulators
+        for (int i = 0; i < HIDDEN_SIZE; ++i)
+            memcpy(&accumulator[WHITE], &net.feature_weights[nnue_white_input_index], sizeof(int16_t) * HIDDEN_SIZE);
+
+        for (int i = 0; i < HIDDEN_SIZE; ++i)
+            accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
+
+        --counter;
+    }
+
+    // for (int color = 0; color < 2; ++color)
+    // {
+    //     for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
+    //     {
+    //         uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
+    //         while (bitboard)
+    //         {
+    //             // board uses a8 = 0, while we want a1 = 0, so we flip the white square
+    //             int black_square = lsb(bitboard);
+    //             int white_square = flip(black_square);
+    //             int nnue_white_piece = uncolored_to_nnue(piece, color);
+
+    //             int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
+
+    //             int nnue_white_input_index = 64 * nnue_white_piece + white_square;
+    //             int nnue_black_input_index = 64 * nnue_black_piece + black_square;
+
+    //             // std::cout << color << " " << piece << "\n";
+
+    //             // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
+
+    //             // updates all the pieces in the accumulators
+    //             for (int i = 0; i < HIDDEN_SIZE; ++i)
+    //                 accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
+
+    //             for (int i = 0; i < HIDDEN_SIZE; ++i)
+    //                 accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
+
+    //             pop_bit(bitboard);
+    //         }
+    //     }
+    // }
 }
 
 void Accumulator::add(uint8_t piece, uint8_t square)
@@ -361,6 +429,11 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
 
 int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
 {
+    return eval(accumulator, bucket, board.side_to_move);
+}
+
+int NNUE::eval(const Accumulator &accumulator, int bucket, uint8_t stm)
+{
     int eval = 0;
 
 #if defined(USE_SIMD)
@@ -371,7 +444,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
     {
         // load in the data from the weights
-        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[stm][i]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][0][i]);
 
         // clip
@@ -393,7 +466,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     {
         // load in the data from the weights
 
-        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[stm ^ 1][i]);
 
         const vepi16 weights = load_epi16(&net.output_weights[bucket][1][i]);
 
@@ -417,10 +490,10 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
 #else
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[bucket][0][i];
+        eval += screlu(accumulator[stm][i]) * net.output_weights[bucket][0][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
+        eval += screlu(accumulator[stm ^ 1][i]) * net.output_weights[bucket][1][i];
 
 #endif
 

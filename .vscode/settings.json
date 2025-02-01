@@ -80,6 +80,7 @@
         "span": "cpp",
         "variant": "cpp",
         "semaphore": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "fstream": "cpp"
     }
 }
