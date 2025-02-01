@@ -42,7 +42,8 @@ void relabel_eval(const std::string &input_file, const std::string &output_file)
 
             std::cout << "info nodes " << processed_positions << " time " << curr_time - start_time << " nps " << sample_positions / (curr_time - sample_time) << std::endl;
 
-            sample_time = sample_positions = 0;
+            sample_time = curr_time;
+            sample_positions = 0;
         }
     }
 
