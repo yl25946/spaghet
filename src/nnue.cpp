@@ -74,6 +74,9 @@ Accumulator::Accumulator(const Board &board)
     }
 }
 
+// get the piece out of the compressed bits
+uint8_t nnue_piece_mask = 0b1111;
+
 Accumulator::Accumulator(const BulletFormat &position)
 {
     std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
@@ -81,62 +84,37 @@ Accumulator::Accumulator(const BulletFormat &position)
     std::memcpy(&accumulator[1], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
 
     uint64_t occ = position.occ;
-    uint8_t counter = count_bits(occ) - 1;
+    // weird formula that surprisingly gives the correct number of pieces
+    uint8_t counter = count_bits(occ);
 
     while (occ)
     {
         // both use a1= 0
         int white_square = lsb(occ);
         int black_square = flip(white_square);
+        // weird formula that determines which pieces we should bitmask
+        int bullet_piece = (position.pcs[(counter - 1) / 2] >> 4 * (counter % 2)) & nnue_piece_mask;
+        int piece = bullet_piece & 0b111;
+        int color = (bullet_piece & 0b1000) >> 3;
 
-        int nnue_white_piece = position.pcs[counter];
-        int nnue_black_piece = nnue_piece_flip(nnue_white_piece);
+        int nnue_white_piece = uncolored_to_colored(piece, color);
+        int nnue_black_piece = uncolored_to_colored(piece, color ^ 1);
+
+        // std::cout << white_square << " " << bullet_piece << std::endl;
 
         int nnue_white_input_index = 64 * nnue_white_piece + white_square;
         int nnue_black_input_index = 64 * nnue_black_piece + black_square;
 
         // updates all the pieces in the accumulators
         for (int i = 0; i < HIDDEN_SIZE; ++i)
-            memcpy(&accumulator[WHITE], &net.feature_weights[nnue_white_input_index], sizeof(int16_t) * HIDDEN_SIZE);
+            accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
 
         for (int i = 0; i < HIDDEN_SIZE; ++i)
             accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
 
+        pop_bit(occ);
         --counter;
     }
-
-    // for (int color = 0; color < 2; ++color)
-    // {
-    //     for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
-    //     {
-    //         uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
-    //         while (bitboard)
-    //         {
-    //             // board uses a8 = 0, while we want a1 = 0, so we flip the white square
-    //             int black_square = lsb(bitboard);
-    //             int white_square = flip(black_square);
-    //             int nnue_white_piece = uncolored_to_nnue(piece, color);
-
-    //             int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
-
-    //             int nnue_white_input_index = 64 * nnue_white_piece + white_square;
-    //             int nnue_black_input_index = 64 * nnue_black_piece + black_square;
-
-    //             // std::cout << color << " " << piece << "\n";
-
-    //             // std::cout << nnue_white_input_index << " " << nnue_black_input_index << " ";
-
-    //             // updates all the pieces in the accumulators
-    //             for (int i = 0; i < HIDDEN_SIZE; ++i)
-    //                 accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
-
-    //             for (int i = 0; i < HIDDEN_SIZE; ++i)
-    //                 accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
-
-    //             pop_bit(bitboard);
-    //         }
-    //     }
-    // }
 }
 
 void Accumulator::add(uint8_t piece, uint8_t square)

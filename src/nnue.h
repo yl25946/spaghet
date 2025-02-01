@@ -4,7 +4,7 @@
 #include "board.h"
 #include "simd.h"
 // for bulletformat
-#include "datagen.h"
+#include "bulletformat.h"
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
