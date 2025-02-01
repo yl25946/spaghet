@@ -8,7 +8,7 @@
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
-constexpr int HIDDEN_SIZE = 2048;
+constexpr int HIDDEN_SIZE = 512;
 constexpr int OUTPUT_BUCKETS = 8;
 constexpr int SCALE = 400;
 constexpr int L1Q = 255;
