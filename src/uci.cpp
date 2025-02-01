@@ -83,6 +83,40 @@ void parse_moves(const std::string &line, std::vector<Move> &moves, Board board)
     return;
 }
 
+// returns a pair of [input, output]
+std::pair<std::string, std::string> parse_relabel_files(const std::string &line)
+{
+    size_t move_it = line.find("relabel eval");
+
+    if (move_it == std::string::npos)
+        return {"", ""};
+
+    move_it += 13;
+
+    size_t next_space = line.find(' ', move_it);
+
+    if (next_space == std::string::npos)
+        next_space = line.size();
+
+    std::string input_file = line.substr(move_it, next_space - move_it);
+
+    move_it = line.find("output");
+
+    if (move_it == std::string::npos)
+        return {input_file, ""};
+
+    move_it += 7;
+
+    next_space = line.find(' ', move_it);
+
+    if (next_space == std::string::npos)
+        next_space = line.size();
+
+    std::string output_file = line.substr(move_it, next_space - move_it);
+
+    return {input_file, output_file};
+}
+
 void UCI_loop()
 {
     std::string line;
@@ -179,6 +213,16 @@ void UCI_loop()
                 board.make_move(move);
 
             print_eval(board);
+        }
+
+        // relabels using evaluation
+        else if (!line.compare(0, 12, "relabel eval"))
+        {
+            uint64_t batch_size = 16;
+
+            auto [input_file, output_file] = parse_relabel_files(line);
+
+            relabel_eval(input_file, output_file);
         }
 
         else if (!line.compare(0, 25, "setoption name Hash value"))

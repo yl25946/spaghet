@@ -19,6 +19,7 @@
 #include <sstream>
 #include <memory>
 #include <iomanip>
+#include <fstream>
 
 __extension__ typedef unsigned __int128 uint128_t;
 
@@ -38,7 +39,7 @@ inline void set_bit(uint64_t &bitboard, uint8_t square)
 {
     bitboard |= (1ULL << (square));
 }
-inline uint8_t get_bit(uint64_t bitboard, uint8_t square)
+inline uint64_t get_bit(uint64_t bitboard, uint8_t square)
 {
     return (bitboard & (1ULL << (square)));
 }

@@ -3,6 +3,8 @@
 #include "defs.h"
 #include "board.h"
 #include "simd.h"
+// for bulletformat
+#include "bulletformat.h"
 #include "incbin/incbin.h"
 
 constexpr int INPUT_WEIGHTS = 768;
@@ -15,11 +17,14 @@ constexpr int OutputQ = 64;
 // used for calculating output buckets
 constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
 
+inline int calculate_bucket(uint64_t occ)
+{
+    return (count_bits(occ) - 2) / BUCKET_DIVISOR;
+}
+
 inline int calculate_bucket(const Board &board)
 {
-    int active_neurons = count_bits(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
-
-    return (active_neurons - 2) / BUCKET_DIVISOR;
+    return calculate_bucket(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
 }
 
 class Accumulator
@@ -29,6 +34,7 @@ public:
 
     Accumulator() {};
     Accumulator(const Board &board);
+    Accumulator(const BulletFormat &position);
     std::array<int16_t, HIDDEN_SIZE> &operator[](size_t i)
     {
         return accumulator[i];
@@ -70,6 +76,8 @@ public:
     static int eval(const Board &board);
     static int eval(const Board &board, int bucket);
     static int eval(const Board &board, const Accumulator &accumulator, int bucket);
+    // only one that actually calculates
+    static int eval(const Accumulator &accumulator, int bucket, uint8_t stm);
     static int eval(const Board &board, const Accumulator &accumulator);
     // void add(NNUE::accumulator &board_accumulator, const int piece, const int to);
     // // void update(NNUE::accumulator &board_accumulator, std::vector<NNUEIndices> &NNUEAdd, std::vector<NNUEIndices> &NNUESub);

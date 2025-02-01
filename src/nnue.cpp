@@ -19,6 +19,11 @@ int chunk_size = 1;
 
 Network net;
 
+inline int nnue_piece_flip(int nnue_piece)
+{
+    return (nnue_piece + 6) % 12;
+}
+
 inline int uncolored_to_nnue(int piece, int color)
 {
     return (piece + (color == WHITE ? 0 : 6));
@@ -31,11 +36,9 @@ inline int colored_to_nnue(int piece)
 
 Accumulator::Accumulator(const Board &board)
 {
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[0][i] = net.feature_bias[i];
+    std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
 
-    for (int i = 0; i < HIDDEN_SIZE; ++i)
-        accumulator[1][i] = net.feature_bias[i];
+    std::memcpy(&accumulator[1], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
 
     for (int color = 0; color < 2; ++color)
     {
@@ -68,6 +71,49 @@ Accumulator::Accumulator(const Board &board)
                 pop_bit(bitboard);
             }
         }
+    }
+}
+
+// get the piece out of the compressed bits
+uint8_t nnue_piece_mask = 0b1111;
+
+Accumulator::Accumulator(const BulletFormat &position)
+{
+    std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
+
+    std::memcpy(&accumulator[1], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
+
+    uint64_t occ = position.occ;
+    // weird formula that surprisingly gives the correct number of pieces
+    uint8_t counter = count_bits(occ);
+
+    while (occ)
+    {
+        // both use a1= 0
+        int white_square = lsb(occ);
+        int black_square = flip(white_square);
+        // weird formula that determines which pieces we should bitmask
+        int bullet_piece = (position.pcs[(counter - 1) / 2] >> 4 * (counter % 2)) & nnue_piece_mask;
+        int piece = bullet_piece & 0b111;
+        int color = (bullet_piece & 0b1000) >> 3;
+
+        int nnue_white_piece = uncolored_to_colored(piece, color);
+        int nnue_black_piece = uncolored_to_colored(piece, color ^ 1);
+
+        // std::cout << white_square << " " << bullet_piece << std::endl;
+
+        int nnue_white_input_index = 64 * nnue_white_piece + white_square;
+        int nnue_black_input_index = 64 * nnue_black_piece + black_square;
+
+        // updates all the pieces in the accumulators
+        for (int i = 0; i < HIDDEN_SIZE; ++i)
+            accumulator[WHITE][i] += net.feature_weights[nnue_white_input_index][i];
+
+        for (int i = 0; i < HIDDEN_SIZE; ++i)
+            accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
+
+        pop_bit(occ);
+        --counter;
     }
 }
 
@@ -361,6 +407,11 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator)
 
 int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
 {
+    return eval(accumulator, bucket, board.side_to_move);
+}
+
+int NNUE::eval(const Accumulator &accumulator, int bucket, uint8_t stm)
+{
     int eval = 0;
 
 #if defined(USE_SIMD)
@@ -371,7 +422,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     for (int i = 0; i < HIDDEN_SIZE; i += chunk_size)
     {
         // load in the data from the weights
-        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[stm][i]);
         const vepi16 weights = load_epi16(&net.output_weights[bucket][0][i]);
 
         // clip
@@ -393,7 +444,7 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
     {
         // load in the data from the weights
 
-        const vepi16 accumulator_data = load_epi16(&accumulator[board.side_to_move ^ 1][i]);
+        const vepi16 accumulator_data = load_epi16(&accumulator[stm ^ 1][i]);
 
         const vepi16 weights = load_epi16(&net.output_weights[bucket][1][i]);
 
@@ -417,10 +468,10 @@ int NNUE::eval(const Board &board, const Accumulator &accumulator, int bucket)
 #else
     // feed everything forward to get the final value
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move][i]) * net.output_weights[bucket][0][i];
+        eval += screlu(accumulator[stm][i]) * net.output_weights[bucket][0][i];
 
     for (int i = 0; i < HIDDEN_SIZE; ++i)
-        eval += screlu(accumulator[board.side_to_move ^ 1][i]) * net.output_weights[bucket][1][i];
+        eval += screlu(accumulator[stm ^ 1][i]) * net.output_weights[bucket][1][i];
 
 #endif
 
