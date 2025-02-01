@@ -40,7 +40,7 @@ void relabel_eval(const std::string &input_file, const std::string &output_file)
         {
             uint64_t curr_time = get_time();
 
-            std::cout << "info nodes " << processed_positions << " time " << curr_time - start_time << " nps " << sample_positions / (curr_time - sample_time) << std::endl;
+            std::cout << "info nodes " << processed_positions << " time " << curr_time - start_time << " nps " << 1000 * sample_positions / (curr_time - sample_time) << std::endl;
 
             sample_time = curr_time;
             sample_positions = 0;
