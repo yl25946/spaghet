@@ -32,13 +32,13 @@ void relabel_eval(const std::string &input_file, const std::string &output_file)
 
         Accumulator acc(position);
 
-        if (processed_positions < 100)
-            std::cout << (int)position.score << " ";
+        // if (processed_positions < 100)
+        //     std::cout << (int)position.score << " ";
 
         position.score = std::clamp(NNUE::eval(acc, calculate_bucket(position.occ), WHITE), MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
 
-        if (processed_positions < 100)
-            std::cout << (int)position.score << std::endl;
+        // if (processed_positions < 100)
+        //     std::cout << (int)position.score << std::endl;
 
         ostream.write(reinterpret_cast<const char *>(&position), sizeof(BulletFormat));
 
