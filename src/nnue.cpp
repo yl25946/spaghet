@@ -74,9 +74,6 @@ Accumulator::Accumulator(const Board &board)
     }
 }
 
-// get the piece out of the compressed bits
-uint8_t nnue_piece_mask = 0b1111;
-
 Accumulator::Accumulator(const BulletFormat &position)
 {
     std::memcpy(&accumulator[0], &net.feature_bias, sizeof(int16_t) * HIDDEN_SIZE);
@@ -85,20 +82,23 @@ Accumulator::Accumulator(const BulletFormat &position)
 
     uint64_t occ = position.occ;
     // weird formula that surprisingly gives the correct number of pieces
-    uint8_t counter = count_bits(occ);
+    uint8_t counter = 0;
 
+    // go from lsb to msb
     while (occ)
     {
-        // both use a1= 0
+        // both bulletformat and bullet uses a1 = 0, so we don't need to do the weird exchanging stuff we did above
         int white_square = lsb(occ);
         int black_square = flip(white_square);
         // weird formula that determines which pieces we should bitmask
-        int bullet_piece = (position.pcs[(counter - 1) / 2] >> 4 * (counter % 2)) & nnue_piece_mask;
+        int bullet_piece = (position.pcs[counter / 2] >> 4 * (counter % 2)) & 0b1111;
         int piece = bullet_piece & 0b111;
         int color = (bullet_piece & 0b1000) >> 3;
 
-        int nnue_white_piece = uncolored_to_colored(piece, color);
-        int nnue_black_piece = uncolored_to_colored(piece, color ^ 1);
+        // std::cout << ascii_pieces[uncolored_to_colored(piece, color)] << " " << square_to_coordinate[white_square] << std::endl;
+
+        int nnue_white_piece = uncolored_to_nnue(piece, color);
+        int nnue_black_piece = uncolored_to_nnue(piece, color ^ 1);
 
         // std::cout << white_square << " " << bullet_piece << std::endl;
 
@@ -113,7 +113,7 @@ Accumulator::Accumulator(const BulletFormat &position)
             accumulator[BLACK][i] += net.feature_weights[nnue_black_input_index][i];
 
         pop_bit(occ);
-        --counter;
+        ++counter;
     }
 }
 
