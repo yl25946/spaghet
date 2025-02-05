@@ -35,7 +35,7 @@ void relabel_eval(const std::string &input_file, const std::string &output_file)
         if (processed_positions < 100)
             std::cout << static_cast<int>(position.score) << " ";
 
-        position.score = std::clamp(NNUE::eval(acc, calculate_bucket(position.occ), WHITE), MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+        position.score = std::clamp(NNUE::eval(acc, calculate_bucket(position.occ), WHITE), TB_LOSS_IN_MAX_PLY + 1, TB_WIN_IN_MAX_PLY - 1);
 
         if (processed_positions < 100)
             std::cout << static_cast<int>(position.score) << std::endl;

@@ -75,7 +75,7 @@ int Searcher::correct_static_eval(const Board &board, int uncorrected_static_eva
 
     const int correction = (2 * pawn_correction + material_correction) / 3;
 
-    return std::clamp(uncorrected_static_eval + correction, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+    return std::clamp(uncorrected_static_eval + correction, TB_LOSS_IN_MAX_PLY + 1, TB_WIN_IN_MAX_PLY - 1);
 }
 
 template <bool inPV>
@@ -445,7 +445,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         is_quiet = curr_move.is_quiet();
 
-        if (!in_root && best_score > MIN_MATE_SCORE)
+        if (!in_root && best_score > TB_LOSS_IN_MAX_PLY)
         {
             // applies late move pruning
             if (is_quiet && move_picker.moves_seen() >= 3 + depth * depth / (2 - improving))
@@ -490,7 +490,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // move excluded to see if any other moves can beat it.
         if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
         {
-            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < MAX_MATE_SCORE;
+            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < TB_WIN_IN_MAX_PLY;
 
             if (is_accurate_tt_score)
             {
@@ -679,7 +679,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         if (ss->in_check)
         {
             // prioritize faster mates
-            return -MATE + ss->ply;
+            return -TB_WIN + ss->ply;
         }
         else
         {
@@ -775,8 +775,8 @@ void Searcher::search()
 
         // if (root_depth > 5)
         // {
-        alpha = std::max<int>(best_score - delta, -INF);
-        beta = std::min<int>(best_score + delta, INF);
+        alpha = std::max<int>(best_score - delta, -TB_WIN - 1);
+        beta = std::min<int>(best_score + delta, TB_WIN + 1);
         // }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore

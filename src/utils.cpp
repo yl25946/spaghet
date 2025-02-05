@@ -96,12 +96,12 @@ void init_lmr_reduction_tables()
 
 bool is_mate_score(int score)
 {
-    return score >= MAX_MATE_SCORE || score <= MIN_MATE_SCORE;
+    return score >= TB_WIN_IN_MAX_PLY || score <= TB_LOSS_IN_MAX_PLY;
 }
 
 int mate_score_to_moves(int score)
 {
-    int mate_ply = score > 0 ? MATE - score + 1 : -MATE - score;
+    int mate_ply = score > 0 ? TB_WIN - score + 1 : -TB_WIN - score;
 
     return mate_ply / 2;
 }
