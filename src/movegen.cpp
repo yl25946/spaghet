@@ -21,7 +21,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
 
     // generate pawn moves and capture moves
     uint64_t promotions;
-    uint64_t quiet_moves;
+    uint64_t quiets;
     uint64_t captures;
 
     if (board.side_to_move == WHITE)
@@ -32,7 +32,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         attacks = (bitboard >> 8) & ~blocking_pieces;
         // separates them into promotions and quiet moves
         promotions = attacks & white_promotion;
-        quiet_moves = attacks & ~white_promotion;
+        quiets = attacks & ~white_promotion;
         // generates promotion moves
         while (promotions)
         {
@@ -41,22 +41,22 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
             pop_bit(promotions);
         }
 
-        while (quiet_moves)
+        while (quiets)
         {
-            target_square = lsb(quiet_moves);
+            target_square = lsb(quiets);
             move_list.insert(target_square + 8, target_square, QUIET_MOVE);
-            pop_bit(quiet_moves);
+            pop_bit(quiets);
         }
 
         // generates double push moves
         // attacks here will be single pawn pushes
-        quiet_moves = ((attacks & rank_3) >> 8) & ~blocking_pieces;
+        quiets = ((attacks & rank_3) >> 8) & ~blocking_pieces;
 
-        while (quiet_moves)
+        while (quiets)
         {
-            target_square = lsb(quiet_moves);
+            target_square = lsb(quiets);
             move_list.insert(target_square + 16, target_square, DOUBLE_PAWN_PUSH);
-            pop_bit(quiet_moves);
+            pop_bit(quiets);
         }
 
         // generates all capture moves
@@ -119,7 +119,7 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
         attacks = (bitboard << 8) & ~blocking_pieces;
         // separates them into promotions and quiet moves
         promotions = attacks & black_promotion;
-        quiet_moves = attacks & ~black_promotion;
+        quiets = attacks & ~black_promotion;
         // generates promotion moves
         while (promotions)
         {
@@ -127,22 +127,22 @@ void generate_pawn_moves(Board &board, MoveList &move_list)
             generate_promotions(target_square - 8, target_square, false, move_list);
             pop_bit(promotions);
         }
-        while (quiet_moves)
+        while (quiets)
         {
-            target_square = lsb(quiet_moves);
+            target_square = lsb(quiets);
             move_list.insert(target_square - 8, target_square, QUIET_MOVE);
-            pop_bit(quiet_moves);
+            pop_bit(quiets);
         }
 
         // generates double push moves
         // attacks here will be single pawn pushes
-        quiet_moves = ((attacks & rank_6) << 8) & ~blocking_pieces;
+        quiets = ((attacks & rank_6) << 8) & ~blocking_pieces;
 
-        while (quiet_moves)
+        while (quiets)
         {
-            target_square = lsb(quiet_moves);
+            target_square = lsb(quiets);
             move_list.insert(target_square - 16, target_square, DOUBLE_PAWN_PUSH);
-            pop_bit(quiet_moves);
+            pop_bit(quiets);
         }
 
         // generates pawn capture moves
@@ -672,7 +672,7 @@ void generate_queen_promotions(const Board &board, MoveList &move_list)
 
     // generate pawn moves and capture moves
     uint64_t promotions;
-    uint64_t quiet_moves;
+    uint64_t quiets;
     uint64_t captures;
 
     if (board.side_to_move == WHITE)

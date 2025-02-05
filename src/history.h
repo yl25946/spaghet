@@ -6,77 +6,57 @@
 #include "movelist.h"
 // #include "movepicker.h"
 
-// class MoveList;
+inline int history_bonus(int depth) { return std::min(170 * depth, 1500); }
 
-class QuietHistory
+inline int history_malus(int depth) { return std::max(-450 * depth, -1500); }
+
+template <typename T, int limit, T starting_value>
+class HistoryEntry
 {
-public:
-    int16_t butterfly_table[2][64][64];
-
-    QuietHistory();
-
-    void clear();
-
-    // call this after completing a search or before the another search
-    // quarters the values in the table
-    void update();
-
-    // side_to_move is based on the side that is playing the move
-
-    // inserts a move into the butterfly tables
-    void update(Move move, int depth, uint8_t side_to_move, bool good);
-    void update(MoveList &move_list, Move best_move, int depth, uint8_t side_to_move);
-    int64_t move_value(Move move, uint8_t side_to_move);
-};
-
-class PawnHistory
-{
-    // [mod pawn hash][[piece][to]
-    int16_t table[PAWNHIST_SIZE][12][64];
+    T value = starting_value;
 
 public:
-    PawnHistory();
+    HistoryEntry &operator=(const T &v)
+    {
+        value = v;
+        return *this;
+    }
 
-    void update(const Board &board, const MoveList &move_list, Move fail_high_move, int depth);
-    void update(const Board &board, Move move, int depth, bool good);
-    int64_t move_value(const Board &board, Move move);
+    operator int() const
+    {
+        return value;
+    }
 
-private:
-    inline uint64_t pawn_index(const Board &board) { return board.pawn_hash % PAWNHIST_SIZE; }
+    // operator int64_t() const
+    // {
+    //     return value;
+    // }
+
+    // int64_t operator+=(int64_t lhs, const HistoryEntry history_value)
+    // {
+    //     return other_value + history_value.value;
+    // }
+
+    T operator&() const
+    {
+        return value;
+    }
+
+    void operator<<(int bonus)
+    {
+        int clamped_bonus = std::clamp(bonus, -limit, limit);
+        value += clamped_bonus - value * abs(clamped_bonus) / limit;
+    }
 };
 
-class CaptureHistory
-{
-public:
-    // [capturing piece][to][captured piece (uncolored)]
-    int16_t table[12][64][7];
-
-    CaptureHistory();
-
-    void clear();
-
-    void update(const Board &board, MoveList &move_list, Move failed_high_move, int depth);
-    void update(const Board &board, Move move, int depth, bool good);
-    int64_t move_value(const Board &board, Move move);
-};
-
-class ContinuationHistory
-{
-public:
-    int16_t table[13][64][13][64];
-
-    ContinuationHistory();
-
-    void clear();
-
-    // quarters the values in the table
-    void update();
-
-    // board should be the original board where the move has not been made
-    void update(const Board &board, Move move, const Board &previous_board, Move previous_move, int depth, bool good);
-    void update(const Board &board, MoveList &move_list, Move best_move, const Board &previous_board, Move previous_move, int depth);
-    int64_t move_value(const Board &board, Move move, const Board &previous_board, Move previous_move);
-};
+// [stm][from][to]
+using QuietHistory = std::array<std::array<std::array<HistoryEntry<int16_t, MAX_HISTORY, 0>, 64>, 64>, 2>;
+// [mod pawnhash][piece][to]
+using PawnHistory = std::array<std::array<std::array<HistoryEntry<int16_t, MAX_HISTORY, 0>, 64>, 12>, PAWNHIST_SIZE>;
+// [capturing piece][to][captured piece (uncolored)]
+using CaptureHistory = std::array<std::array<std::array<HistoryEntry<int16_t, MAX_HISTORY, 0>, 7>, 64>, 12>;
+// [previous piece][previous to][piece][to]
+using ContinuationHistory = std::array<std::array<std::array<std::array<HistoryEntry<int16_t, MAX_HISTORY, 0>, 64>, 13>, 64>, 13>;
 
 class PawnCorrectionHistory
 {
