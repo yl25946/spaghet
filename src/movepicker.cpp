@@ -5,15 +5,18 @@ int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move q
 
     int ply = ss->ply;
 
-    int64_t quiet_move_score = thread_data.main_history.move_value(quiet_move, ss->board.side_to_move);
+    int64_t quiet_move_score = thread_data.main_history[ss->board.side_to_move][quiet_move.from_square()][quiet_move.to_square()];
 
-    quiet_move_score += thread_data.pawnhist.move_value(ss->board, quiet_move);
+    quiet_move_score += thread_data.pawnhist[ss->board.pawn_hash % PAWNHIST_SIZE][ss->board.moving_piece(quiet_move)][quiet_move.to_square()];
 
     // how many moves we look backwards
     for (int conthist_index : conthist_indices)
         if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
-            quiet_move_score += thread_data.conthist.move_value(ss->board, quiet_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played);
-
+        {
+            Board &previous_board = (ss - conthist_index)->board;
+            Move previous_move = (ss - conthist_index)->move_played;
+            quiet_move_score += thread_data.conthist[previous_board.moving_piece(previous_move)][previous_move.to_square()][ss->board.moving_piece(quiet_move)][quiet_move.to_square()];
+        }
     return quiet_move_score;
 }
 
@@ -24,7 +27,7 @@ MovePicker::MovePicker(MoveList &move_list) : move_list(move_list)
     for (int i = 0; i < move_list.size(); ++i)
     {
         if (move_list[i].is_quiet())
-            ++quiet_moves;
+            ++quiets;
     }
 
     moves_remaining = move_list.size();
@@ -52,7 +55,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
         if (!move_list[i].is_quiet())
         {
 
-            curr_move.score += thread_data.capthist.move_value(ss->board, move_list.moves[i]);
+            curr_move.score += thread_data.capthist[ss->board.moving_piece(curr_move)][curr_move.to_square()][colored_to_uncolored(ss->board.captured_piece(curr_move))];
             // if (capthist.move_value(board, move_list.moves[i]) > 0)
             //  std::cout << capthist.move_value(board, move_list.moves[i]) << " ";
 
@@ -60,7 +63,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, move_list[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, curr_move, threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -123,7 +126,7 @@ OrderedMove MovePicker::next_move()
     --moves_remaining;
 
     if (move_list[left_swap_index].is_quiet())
-        --quiet_moves;
+        --quiets;
 
     // increments it
     return move_list.moves[left_swap_index++];

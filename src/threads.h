@@ -9,7 +9,6 @@
 #include "time.h"
 
 class Searcher;
-class QuietHistory;
 class UciOptions;
 class Time;
 

@@ -20,5 +20,5 @@ public:
     {
         for (int i = 0; i < MAX_PLY + 10; i++)
             search_stack.emplace_back(i - 4);
-    };
+    }
 };

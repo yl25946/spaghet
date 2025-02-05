@@ -9,8 +9,6 @@
 #include "movelist.h"
 #include "search_stack.h"
 
-class QuietHistory;
-
 extern int64_t get_quiet_history_score(SearchStack *ss, ThreadData &thread_data, Move quiet_move);
 
 class MovePicker
@@ -18,7 +16,7 @@ class MovePicker
 public:
     MoveList &move_list;
 
-    int quiet_moves = 0;
+    int quiets = 0;
     int moves_remaining;
 
     bool skip_quiet_moves = false;
@@ -33,8 +31,8 @@ public:
 
     void skip_quiets()
     {
-        moves_remaining -= quiet_moves;
-        quiet_moves = 0;
+        moves_remaining -= quiets;
+        quiets = 0;
         skip_quiet_moves = true;
     };
 
