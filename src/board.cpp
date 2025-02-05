@@ -695,7 +695,7 @@ void Board::print() const
     std::cout << "     Side:       " << (side_to_move == WHITE ? "white" : "black");
     std::cout << "\n     Enpassant:     " << ((en_passant_square == no_square) ? "no" : square_to_coordinate[en_passant_square]);
     std::cout << "\n     Castling:    " << ((rights & WHITE_KING_CASTLE) ? 'K' : '-') << ((rights & WHITE_QUEEN_CASTLE) ? 'Q' : '-') << ((rights & BLACK_KING_CASTLE) ? 'k' : '-') << ((rights & BLACK_QUEEN_CASTLE) ? 'q' : '-');
-    std::cout << "\n     50-move(ply):  " << (int)(fifty_move_counter);
+    std::cout << "\n     50-move(ply):  " << static_cast<int>(fifty_move_counter);
     std::cout << "\n     Total Moves:   " << (full_move_counter());
     std::cout << "\n";
 }

@@ -9,7 +9,7 @@ Move parse_move(const std::string &move_string, Board &board)
     uint8_t move_flag = promotion_piece != PAWN ? PROMOTION + promotion_piece - 1 : 0;
 
     // checks for double push
-    if (board.mailbox[from_square] / 2 == PAWN && abs((int)from_square - (int)to_square) == 16)
+    if (board.mailbox[from_square] / 2 == PAWN && abs(static_cast<int>(from_square - to_square)) == 16)
         return Move(from_square, to_square, DOUBLE_PAWN_PUSH);
 
     // checks for an en-passant capture
@@ -17,7 +17,7 @@ Move parse_move(const std::string &move_string, Board &board)
         return Move(from_square, to_square, EN_PASSANT_CAPTURE);
 
     // checks for castling
-    if (colored_to_uncolored(piece_moving) == KING && abs((int)from_square - (int)to_square) == 2)
+    if (colored_to_uncolored(piece_moving) == KING && abs(static_cast<int>(from_square - to_square)) == 2)
     {
         // checks if the king moves to the g file. If it is, that means we are king side castling
         return Move(from_square, to_square, (to_square & 7) == 6 ? KING_CASTLE : QUEEN_CASTLE);

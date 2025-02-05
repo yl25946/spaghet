@@ -220,7 +220,7 @@ uint64_t find_magic_number(uint8_t square, int relevant_bits, int bishop_flag)
         for (; !fail && index < occupancy_indices; ++index)
         {
             // initialze magic index, found on programming wiki
-            int magic_index = (int)((occupancies[index] * magic_number_candidate) >> (64 - relevant_bits));
+            int magic_index = static_cast<int>((occupancies[index] * magic_number_candidate) >> (64 - relevant_bits));
 
             // comparing magic_index in used_attacks to index because we already initialized attacks
             // if we find an empty index, we have no collision, put in to keep track of what we've already hashed
