@@ -80,12 +80,12 @@ constexpr int MAX_HASH = 1'048'576;
 constexpr int16_t INF = 32000;
 constexpr int16_t SCORE_NONE = INF + 1;
 // this constant is the baseline mate score where we use ply to ajdjust
-constexpr int16_t MATE = 30000;
+constexpr int16_t TB_WIN = 20000;
 constexpr int16_t MAX_PLY = 255;
 // the max the lowest a mate can reach
-constexpr int16_t MIN_MATE_SCORE = -MATE + MAX_PLY;
+constexpr int16_t TB_WIN_IN_MAX_PLY = TB_WIN - MAX_PLY;
 // the max the highest a mate can reach
-constexpr int16_t MAX_MATE_SCORE = MATE - MAX_PLY;
+constexpr int16_t TB_LOSS_IN_MAX_PLY = -TB_WIN + MAX_PLY;
 
 // used for move ordering
 constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
