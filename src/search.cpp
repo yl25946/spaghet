@@ -362,7 +362,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     {
         // only stores queen promotions
         MoveList captures_and_promotions;
-        int score = -INF - 1;
+        int score = -INF;
 
         generate_queen_promotions(board, captures_and_promotions);
         generate_capture_moves(board, captures_and_promotions);
@@ -422,7 +422,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     const int original_alpha = alpha;
 
     // get pvs here
-    int best_score = -INF - 1;
+    int best_score = -INF;
     Move best_move = NO_MOVE;
     bool is_quiet;
 
@@ -713,7 +713,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             // failed to raise alpha, fail low
             bound_flag = BOUND::FAIL_LOW;
         }
-        if (best_score != (-INF - 1))
+        if (best_score != -INF)
             transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
     }
 
@@ -734,8 +734,7 @@ void Searcher::search()
     Move best_move(a8, a8, 0);
     int best_move_stability_factor = 0;
     uint64_t time_elapsed;
-    int alpha = -INF;
-    int beta = INF;
+    int alpha, beta;
     int search_again_counter = 0;
 
     Board board = thread_data.search_stack[4].board;
@@ -770,14 +769,8 @@ void Searcher::search()
         int delta = 9 + average_score * average_score / 10182;
         // int delta = 25;
 
-        // alpha = -INF;
-        // beta = INF;
-
-        // if (root_depth > 5)
-        // {
         alpha = std::max<int>(best_score - delta, -TB_WIN - 1);
         beta = std::min<int>(best_score + delta, TB_WIN + 1);
-        // }
 
         // start with a small aspiration window and, in case of a fail high/low, re-search with a bigger window until we don't fail high/low anymore
         int failed_high_count = 0;
@@ -797,11 +790,11 @@ void Searcher::search()
             if (best_score <= alpha)
             {
                 beta = (alpha + beta) / 2;
-                alpha = std::max<int>(best_score - delta, -INF);
+                alpha = std::max<int>(best_score - delta, -TB_WIN - 1);
             }
             else if (best_score >= beta)
             {
-                beta = std::min<int>(best_score + delta, INF);
+                beta = std::min<int>(best_score + delta, TB_WIN + 1);
                 ++failed_high_count;
             }
             else
@@ -871,7 +864,7 @@ void Searcher::search()
         if (get_time() > optimum_stop_time)
             break;
 
-        average_score = average_score != -INF ? (2 * best_score + average_score) / 3 : best_score;
+        average_score = (average_score != -INF) ? (2 * best_score + average_score) / 3 : best_score;
     }
 
     if (is_main_thread)
