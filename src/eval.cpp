@@ -862,8 +862,8 @@ int pesto_eval(Board &board)
     int pesto_score = (mgScore * mgPhase + egScore * egPhase) / 24;
 
     // clamp for a sanity check
-    int actual_score = std::max(int(MIN_MATE_SCORE + 1), pesto_score);
-    actual_score = std::min(int(MAX_MATE_SCORE - 1), pesto_score);
+    int actual_score = std::max(int(TB_LOSS_IN_MAX_PLY + 1), pesto_score);
+    actual_score = std::min(int(TB_WIN_IN_MAX_PLY - 1), pesto_score);
 
     return actual_score;
 }
@@ -908,5 +908,5 @@ int evaluate(const Board &board, const Accumulator &accumulator)
     eval = eval * (200 - board.fifty_move_counter) / 200;
 
     // Evaluation can never return a mate score
-    return std::clamp(eval, MIN_MATE_SCORE + 1, MAX_MATE_SCORE - 1);
+    return std::clamp(eval, TB_LOSS_IN_MAX_PLY + 1, TB_WIN_IN_MAX_PLY - 1);
 }
