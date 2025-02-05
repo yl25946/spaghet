@@ -26,59 +26,13 @@ __extension__ typedef unsigned __int128 uint128_t;
 // toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
 
-// FEN dedug positions
-extern std::string empty_board;
-extern std::string start_position;
-extern std::string tricky_position;
-extern std::string killer_position;
-extern std::string cmk_position;
-extern std::string repetitions;
-
-// bit macros
-inline void set_bit(uint64_t &bitboard, uint8_t square)
-{
-    bitboard |= (1ULL << (square));
-}
-inline uint64_t get_bit(uint64_t bitboard, uint8_t square)
-{
-    return (bitboard & (1ULL << (square)));
-}
-inline void remove_bit(uint64_t &bitboard, uint8_t square)
-{
-    bitboard &= ~(1ULL << (square));
-}
-inline uint8_t count_bits(uint64_t bitboard)
-{
-    return __builtin_popcountll(bitboard);
-}
-// Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
-inline uint8_t lsb(uint64_t bitboard)
-{
-    return __builtin_ffsll(bitboard) - 1;
-}
-#define pop_bit(bitboard) (bitboard &= (bitboard - 1))
-
-inline uint8_t flip(uint8_t square)
-{
-    return square ^ 56;
-}
-
-inline uint8_t colored_to_uncolored(uint8_t piece)
-{
-    return piece >> 1;
-}
-inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
-{
-    return piece << 1 | color;
-}
-
 // used for UCI options
 constexpr int MAX_THREADS = 1024;
 constexpr int MAX_HASH = 1'048'576;
 
 // highest possible score in engine
-constexpr int16_t INF = 32000;
-constexpr int16_t SCORE_NONE = INF + 1;
+constexpr int16_t INF = 30000;
+constexpr int16_t SCORE_NONE = INF;
 // this constant is the baseline mate score where we use ply to ajdjust
 constexpr int16_t TB_WIN = 20000;
 constexpr int16_t MAX_PLY = 255;
@@ -134,6 +88,24 @@ constexpr int SEEValue[7] = {
 //     0,
 //     0,
 // };
+
+// used for mvv vla, takes in a colored piece value
+// tuned values from clarty
+constexpr uint16_t mvv_values[13] = {
+    91,
+    91,
+    401,
+    401,
+    502,
+    502,
+    736,
+    763,
+    1192,
+    1192,
+    0,
+    0,
+    0,
+};
 
 // board squares
 enum square
@@ -296,24 +268,6 @@ constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
 // convert ASCII character pieces to encoded constants
 extern std::map<char, uint8_t> char_pieces;
 
-// used for mvv vla, takes in a colored piece value
-// tuned values from clarty
-constexpr uint16_t mvv_values[13] = {
-    91,
-    91,
-    401,
-    401,
-    502,
-    502,
-    736,
-    763,
-    1192,
-    1192,
-    0,
-    0,
-    0,
-};
-
 // sides to move (colors)
 enum COLOR
 {
@@ -377,3 +331,49 @@ enum BOUND
     FAIL_HIGH,
     EXACT,
 };
+
+// FEN dedug positions
+extern std::string empty_board;
+extern std::string start_position;
+extern std::string tricky_position;
+extern std::string killer_position;
+extern std::string cmk_position;
+extern std::string repetitions;
+
+// bit macros
+inline void set_bit(uint64_t &bitboard, uint8_t square)
+{
+    bitboard |= (1ULL << (square));
+}
+inline uint64_t get_bit(uint64_t bitboard, uint8_t square)
+{
+    return (bitboard & (1ULL << (square)));
+}
+inline void remove_bit(uint64_t &bitboard, uint8_t square)
+{
+    bitboard &= ~(1ULL << (square));
+}
+inline uint8_t count_bits(uint64_t bitboard)
+{
+    return __builtin_popcountll(bitboard);
+}
+// Returns the index of the least significant 1-bit of bitboard (zero-indexed), or -1 if bitboard is 0
+inline uint8_t lsb(uint64_t bitboard)
+{
+    return __builtin_ffsll(bitboard) - 1;
+}
+#define pop_bit(bitboard) (bitboard &= (bitboard - 1))
+
+inline uint8_t flip(uint8_t square)
+{
+    return square ^ 56;
+}
+
+inline uint8_t colored_to_uncolored(uint8_t piece)
+{
+    return piece >> 1;
+}
+inline uint8_t uncolored_to_colored(uint8_t piece, uint8_t color)
+{
+    return piece << 1 | color;
+}
