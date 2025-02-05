@@ -49,7 +49,7 @@ constexpr int64_t PROMOTION_BONUS = 1 << 14;
 
 // this is a clamp value used for history
 constexpr int64_t MAX_HISTORY = 1 << 14;
-constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
+// constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
 
 // used for counting the number of buckets
 // PLEASE USE POWERS OF TWO

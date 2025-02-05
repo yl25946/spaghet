@@ -58,13 +58,37 @@ void Searcher::scale_time(int best_move_stability_factor)
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
 }
 
-void Searcher::update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth)
+void Searcher::update_conthist(SearchStack *ss, Move move, int bonus)
 {
-    int ply = ss->ply;
+    {
+        int ply = ss->ply;
 
-    for (int conthist_index : conthist_indices)
-        if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
-            thread_data.conthist.update(ss->board, quiet_moves, fail_high_move, (ss - conthist_index)->board, (ss - conthist_index)->move_played, depth);
+        for (int conthist_index : conthist_indices)
+            if (ply >= conthist_index && !(ss - conthist_index)->null_moved)
+            {
+                Board &previous_board = (ss - conthist_index)->board;
+                Move previous_move = (ss - conthist_index)->move_played;
+                thread_data.conthist[previous_board.moving_piece(previous_move)][previous_move.to_square()][ss->board.moving_piece(move)][move.to_square()] << bonus;
+            }
+    }
+}
+void Searcher::update_histories(SearchStack *ss, MoveList &noisies, MoveList &quiets, Move fail_high_move, int depth)
+{
+    for (Move noisy_move : noisies)
+    {
+        int bonus = (noisy_move == fail_high_move) ? history_bonus(depth) : history_malus(depth);
+
+        thread_data.capthist[ss->board.moving_piece(noisy_move)][noisy_move.to_square()][colored_to_uncolored(ss->board.captured_piece(noisy_move))] << bonus;
+    }
+    for (Move quiet_move : quiets)
+    {
+        int bonus = (quiet_move == fail_high_move) ? history_bonus(depth) : history_malus(depth);
+
+        update_conthist(ss, quiet_move, bonus);
+
+        thread_data.main_history[ss->board.side_to_move][quiet_move.from_square()][quiet_move.to_square()] << bonus;
+        thread_data.pawnhist[ss->board.pawn_hash % PAWNHIST_SIZE][ss->board.moving_piece(quiet_move)][quiet_move.to_square()] << bonus;
+    }
 }
 
 int Searcher::correct_static_eval(const Board &board, int uncorrected_static_eval)
@@ -410,8 +434,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     }
 
     MoveList move_list;
-    MoveList quiet_moves;
-    MoveList noises;
+    MoveList quiets;
+    MoveList noisies;
 
     generate_moves(board, move_list);
 
@@ -473,13 +497,13 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (is_quiet)
         {
-            quiet_moves.insert(curr_move);
+            quiets.insert(curr_move);
             history_score = get_quiet_history_score(ss, thread_data, curr_move);
         }
         else
         {
-            noises.insert(curr_move);
-            history_score = thread_data.capthist.move_value(board, curr_move);
+            noisies.insert(curr_move);
+            history_score = thread_data.capthist[board.moving_piece(curr_move)][curr_move.to_square()][colored_to_uncolored(board.captured_piece(curr_move))];
         }
 
         int new_depth = depth - 1;
@@ -653,17 +677,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                 if (alpha >= beta)
                 {
 
-                    // std::cout << (int)curr_move.move_flag() << "\n";
-                    // we update the history table if it's not a capture
-                    if (is_quiet)
-                    {
-                        update_conthist(ss, quiet_moves, curr_move, depth);
-                        thread_data.main_history.update(quiet_moves, curr_move, depth, board.side_to_move);
-                        thread_data.pawnhist.update(board, quiet_moves, curr_move, depth);
-                    }
-
-                    // we update capthists regardless if it's a quiet or a noisy
-                    thread_data.capthist.update(board, noises, curr_move, depth);
+                    update_histories(ss, noisies, quiets, best_move, depth);
 
                     break;
                 }
@@ -687,15 +701,18 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         }
     }
 
-    // Bonus for prior move if there was a fail low
+    // Bonus for prior countermove if there was a fail low
     if (alpha <= original_alpha && !in_root && !(ss - 1)->null_moved && (ss - 1)->move_played.is_quiet())
     {
-        thread_data.main_history.update((ss - 1)->move_played, depth, (ss - 1)->board.side_to_move, true);
-        thread_data.pawnhist.update((ss - 1)->board, (ss - 1)->move_played, depth, true);
+        Board &previous_board = (ss - 1)->board;
+        Move previous_move = (ss - 1)->move_played;
 
-        for (int conthist_index : conthist_indices)
-            if ((ss - 1)->ply >= conthist_index && !(ss - conthist_index - 1)->null_moved)
-                thread_data.conthist.update((ss - 1)->board, (ss - 1)->move_played, (ss - conthist_index - 1)->board, (ss - conthist_index - 1)->move_played, depth, true);
+        int bonus = history_bonus(depth);
+
+        update_conthist((ss - 1), previous_move, bonus);
+
+        thread_data.main_history[previous_board.side_to_move][previous_move.from_square()][previous_move.to_square()] << bonus;
+        thread_data.pawnhist[previous_board.pawn_hash % PAWNHIST_SIZE][previous_board.moving_piece(previous_move)][previous_move.to_square()] << bonus;
     }
 
     // add to TT if we aren't in singular search

@@ -14,7 +14,6 @@
 #include "thread_data.h"
 // #include "history.h"
 
-class QuietHistory;
 class ThreadManager;
 
 constexpr uint64_t check_count = 4096;
@@ -84,7 +83,8 @@ public:
     int quiescence_search(int alpha, int beta, SearchStack *ss);
     template <bool inPV>
     int negamax(int alpha, int beta, int depth, bool cutnode, SearchStack *ss);
-    void update_conthist(SearchStack *ss, MoveList &quiet_moves, Move fail_high_move, int depth);
+    void update_conthist(SearchStack *ss, Move move, int depth);
+    void update_histories(SearchStack *ss, MoveList &noisies, MoveList &quiets, Move fail_high_move, int depth);
     int correct_static_eval(const Board &board, int uncorrected_static_eval);
 
     // checks if there's a threefold draw
