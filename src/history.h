@@ -10,7 +10,7 @@ inline int history_bonus(int depth) { return std::min(170 * depth, 1500); }
 
 inline int history_malus(int depth) { return std::max(-450 * depth, -1500); }
 
-template <typename T, int limit, int starting_value>
+template <typename T, int limit, T starting_value>
 class HistoryEntry
 {
     T value = starting_value;
@@ -45,7 +45,7 @@ public:
     void operator<<(int bonus)
     {
         int clamped_bonus = std::clamp(bonus, -limit, limit);
-        value = clamped_bonus - value * abs(clamped_bonus) / limit;
+        value += clamped_bonus - value * abs(clamped_bonus) / limit;
     }
 };
 
