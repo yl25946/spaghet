@@ -50,15 +50,15 @@ bool SEE(const Board &board, Move move, int threshold)
     // manually adds in the ep attacks
     if (move_flag == MOVE_FLAG::DOUBLE_PAWN_PUSH)
     {
-        int en_passant_square = to_square + (board.side_to_move == COLOR::WHITE ? 8 : -8);
+        int en_passant_square = to_square + (board.side_to_move == Color::WHITE ? 8 : -8);
         attackers |= board.side_to_move == WHITE ? (pawn_attacks[BLACK][en_passant_square] & board.bitboard(WHITE_PAWN)) : (pawn_attacks[WHITE][en_passant_square] & board.bitboard(BLACK_PAWN));
         // we need to look a move ahead, so we use the same color
         attackers |= board.side_to_move == WHITE ? (pawn_attacks[WHITE][en_passant_square] & board.bitboard(BLACK_PAWN)) : (pawn_attacks[BLACK][en_passant_square] & board.bitboard(WHITE_PAWN));
     }
 
     // print_bitboard(attackers);
-    uint64_t bishops = board.pieces[BITBOARD_PIECES::BISHOP] | board.pieces[BITBOARD_PIECES::QUEEN];
-    uint64_t rooks = board.pieces[BITBOARD_PIECES::ROOK] | board.pieces[BITBOARD_PIECES::QUEEN];
+    uint64_t bishops = board.pieces[Bitboard_Pieces::BISHOP] | board.pieces[Bitboard_Pieces::QUEEN];
+    uint64_t rooks = board.pieces[Bitboard_Pieces::ROOK] | board.pieces[Bitboard_Pieces::QUEEN];
     attackers |= get_bishop_attacks(to_square, occupied) & bishops;
     attackers |= get_rook_attacks(to_square, occupied) & rooks;
 
@@ -80,7 +80,7 @@ bool SEE(const Board &board, Move move, int threshold)
 
         // picks the next least valuable piece to capture with
         int piece_type;
-        for (piece_type = BITBOARD_PIECES::PAWN; piece_type <= BITBOARD_PIECES::KING; ++piece_type)
+        for (piece_type = Bitboard_Pieces::PAWN; piece_type <= Bitboard_Pieces::KING; ++piece_type)
         {
             if (my_attackers & board.pieces[piece_type])
                 break;
@@ -92,11 +92,11 @@ bool SEE(const Board &board, Move move, int threshold)
 
         // std::cout << static_cast<int>(piece_type) << " " << static_cast<int>(rank(to_square)) << " " << static_cast<int>(to_square) << "\n";
 
-        // bool is_promotion = piece_type == PAWN && (side ^ 1 == COLOR::WHITE ? rank(to_square) == 0 : rank(to_square) == 7);
+        // bool is_promotion = piece_type == PAWN && (side ^ 1 == Color::WHITE ? rank(to_square) == 0 : rank(to_square) == 7);
 
         // if (is_promotion)
         // {
-        //     see_value = SEEValue[BITBOARD_PIECES::QUEEN] - SEEValue[BITBOARD_PIECES::PAWN];
+        //     see_value = SEEValue[Bitboard_Pieces::QUEEN] - SEEValue[Bitboard_Pieces::PAWN];
         // }
 
         // the -1 prioritizes moves that stop trading faster?
@@ -113,10 +113,10 @@ bool SEE(const Board &board, Move move, int threshold)
         // removed the used piece from the occupied
         occupied ^= 1ULL << (lsb(my_attackers & board.bitboard(uncolored_to_colored(piece_type, side ^ 1))));
 
-        if (piece_type == BITBOARD_PIECES::PAWN || piece_type == BITBOARD_PIECES::BISHOP || piece_type == BITBOARD_PIECES::QUEEN)
+        if (piece_type == Bitboard_Pieces::PAWN || piece_type == Bitboard_Pieces::BISHOP || piece_type == Bitboard_Pieces::QUEEN)
             attackers |= get_bishop_attacks(to_square, occupied) & bishops;
 
-        if (piece_type == BITBOARD_PIECES::ROOK || piece_type == BITBOARD_PIECES::QUEEN)
+        if (piece_type == Bitboard_Pieces::ROOK || piece_type == Bitboard_Pieces::QUEEN)
             attackers |= get_rook_attacks(to_square, occupied) & rooks;
     }
 

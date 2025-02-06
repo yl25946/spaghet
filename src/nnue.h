@@ -24,7 +24,7 @@ inline int calculate_bucket(uint64_t occ)
 
 inline int calculate_bucket(const Board &board)
 {
-    return calculate_bucket(board.colors[COLOR::WHITE] | board.colors[COLOR::BLACK]);
+    return calculate_bucket(board.colors[Color::WHITE] | board.colors[Color::BLACK]);
 }
 
 class Accumulator

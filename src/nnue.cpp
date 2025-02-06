@@ -42,7 +42,7 @@ Accumulator::Accumulator(const Board &board)
 
     for (int color = 0; color < 2; ++color)
     {
-        for (int piece = 0; piece <= BITBOARD_PIECES::KING; ++piece)
+        for (int piece = 0; piece <= Bitboard_Pieces::KING; ++piece)
         {
             uint64_t bitboard = board.bitboard(uncolored_to_colored(piece, color));
             while (bitboard)
@@ -315,7 +315,7 @@ void Accumulator::make_move(const Board &board, Move move)
         uint8_t rook_from = from + 3;
         uint8_t rook_to = to - 1;
 
-        add_sub_add_sub(moving_piece, to, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
+        add_sub_add_sub(moving_piece, to, uncolored_to_colored(Bitboard_Pieces::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(Bitboard_Pieces::ROOK, board.side_to_move), rook_from);
     }
     else if (move_flag == MOVE_FLAG::QUEEN_CASTLE)
     {
@@ -323,7 +323,7 @@ void Accumulator::make_move(const Board &board, Move move)
         uint8_t rook_from = from - 4;
         uint8_t rook_to = to + 1;
 
-        add_sub_add_sub(moving_piece, to, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(BITBOARD_PIECES::ROOK, board.side_to_move), rook_from);
+        add_sub_add_sub(moving_piece, to, uncolored_to_colored(Bitboard_Pieces::ROOK, board.side_to_move), rook_to, moving_piece, from, uncolored_to_colored(Bitboard_Pieces::ROOK, board.side_to_move), rook_from);
     }
     // quiet move
     else

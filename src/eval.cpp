@@ -844,12 +844,12 @@ int pesto_eval(Board &board)
     int egScore = eg[side_to_move] - eg[OTHER(side_to_move)];
 
     // gives a small bonus if we have two bishops and gives a bonus to the opponent if they have two bishops
-    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move))) == 2)
+    if (count_bits(board.bitboard(uncolored_to_colored(Bitboard_Pieces::BISHOP, board.side_to_move))) == 2)
     {
         mgScore += 25;
         egScore += 50;
     }
-    if (count_bits(board.bitboard(uncolored_to_colored(BITBOARD_PIECES::BISHOP, board.side_to_move ^ 1))) == 2)
+    if (count_bits(board.bitboard(uncolored_to_colored(Bitboard_Pieces::BISHOP, board.side_to_move ^ 1))) == 2)
     {
         mgScore -= 25;
         egScore -= 50;
@@ -901,7 +901,7 @@ int evaluate(const Board &board, const Accumulator &accumulator)
 {
     int eval = NNUE::eval(board, accumulator);
 
-    int phase = 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 10 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+    int phase = 3 * count_bits(board.pieces[Bitboard_Pieces::KNIGHT]) + 3 * count_bits(board.pieces[Bitboard_Pieces::BISHOP]) + 5 * count_bits(board.pieces[Bitboard_Pieces::ROOK]) + 10 * count_bits(board.pieces[Bitboard_Pieces::QUEEN]);
 
     eval = eval * (206 + phase) / 256;
 

@@ -63,7 +63,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, curr_move, threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                curr_move.score += mvv_values[Pieces::WHITE_PAWN] + (SEE(ss->board, curr_move, threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -79,10 +79,10 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                 uint8_t promotion_piece = move_list[i].promotion_piece();
 
                 // if the piece is a queen or a knight, we apply it's promotion value
-                if (promotion_piece == BITBOARD_PIECES::QUEEN)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_QUEEN];
-                else if (promotion_piece == BITBOARD_PIECES::KNIGHT)
-                    promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT];
+                if (promotion_piece == Bitboard_Pieces::QUEEN)
+                    promotion_piece_value = mvv_values[Pieces::WHITE_QUEEN];
+                else if (promotion_piece == Bitboard_Pieces::KNIGHT)
+                    promotion_piece_value = mvv_values[Pieces::WHITE_KNIGHT];
             }
 
             curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
