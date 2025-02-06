@@ -57,33 +57,3 @@ using ContinuationHistory = std::array<std::array<std::array<std::array<HistoryE
 using PawnCorrectionHistory = std::array<std::array<HistoryEntry<int16_t, CORRHIST_LIMIT, 0>, PAWN_CORRHIST_SIZE>, 2>;
 // [stm][mod material hash]
 using MaterialCorrectionHistory = std::array<std::array<HistoryEntry<int16_t, CORRHIST_LIMIT, 0>, MATERIAL_CORRHIST_SIZE>, 2>;
-
-// class PawnCorrectionHistory
-// {
-//     // [stm][mod pawn hash]
-//     std::array<std::array<int64_t, PAWN_CORRHIST_SIZE>, 2> table;
-
-// public:
-//     PawnCorrectionHistory();
-
-//     // filters out mate scores internally
-//     void update(const Board &board, int depth, int score, int static_eval);
-
-//     // only returns the correction, not the evaluation
-//     int correction(const Board &board);
-// };
-
-// class MaterialCorrectionHistory
-// {
-//     // [stm][mod of material hash]
-//     std::array<std::array<int64_t, MATERIAL_CORRHIST_SIZE>, 2> table;
-
-// public:
-//     MaterialCorrectionHistory();
-
-//     // filters out mate scores internally
-//     void update(const Board &board, int depth, int score, int static_eval);
-
-//     // only returns the correction, not the evaluation
-//     int correction(const Board &board);
-// };
