@@ -57,7 +57,7 @@ constexpr int KING_BUCKETS_SIZE = 4;
 constexpr int KING_BUCKET_SHIFT = 2;
 
 // number of entries in corrhist
-constexpr int PAWN_CORRHIST_SIZE = 4096;
+constexpr int PAWN_CORRHIST_SIZE = 16384;
 constexpr int MATERIAL_CORRHIST_SIZE = 32768;
 constexpr int CORRHIST_LIMIT = 1024;
 

@@ -60,8 +60,8 @@ using ContinuationHistory = std::array<std::array<std::array<std::array<HistoryE
 
 class PawnCorrectionHistory
 {
-    // [stm][white king bucket][black king bucket][mod pawn hash]
-    std::array<std::array<std::array<std::array<int64_t, PAWN_CORRHIST_SIZE>, KING_BUCKETS_SIZE>, KING_BUCKETS_SIZE>, 2> table;
+    // [stm][mod pawn hash]
+    std::array<std::array<int64_t, PAWN_CORRHIST_SIZE>, 2> table;
 
 public:
     PawnCorrectionHistory();
