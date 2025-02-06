@@ -23,9 +23,16 @@
 
 __extension__ typedef unsigned __int128 uint128_t;
 
+using Piece = uint8_t;
+// also uncolored
+using BitboardPiece = uint8_t;
+using Bitboard = uint64_t;
+using Square = uint8_t;
+using Score = int;
+using Depth = int;
+
 #define VERSION "Spaghet BologNNese 1.1.1"
 
-// toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
 
 // used for UCI options
@@ -33,15 +40,15 @@ constexpr int MAX_THREADS = 1024;
 constexpr int MAX_HASH = 1'048'576;
 
 // highest possible score in engine
-constexpr int16_t INF = 30000;
-constexpr int16_t SCORE_NONE = INF;
+constexpr Score INF = 30000;
+constexpr Score SCORE_NONE = INF;
 // this constant is the baseline mate score where we use ply to ajdjust
-constexpr int16_t TB_WIN = 20000;
+constexpr Score TB_WIN = 20000;
 constexpr int16_t MAX_PLY = 255;
 // the max the lowest a mate can reach
-constexpr int16_t TB_WIN_IN_MAX_PLY = TB_WIN - MAX_PLY;
+constexpr Score TB_WIN_IN_MAX_PLY = TB_WIN - MAX_PLY;
 // the max the highest a mate can reach
-constexpr int16_t TB_LOSS_IN_MAX_PLY = -TB_WIN + MAX_PLY;
+constexpr Score TB_LOSS_IN_MAX_PLY = -TB_WIN + MAX_PLY;
 
 // used for move ordering
 constexpr int64_t MAX_MOVE_ORDERING_SCORE = INT32_MAX;
@@ -52,11 +59,6 @@ constexpr int64_t PROMOTION_BONUS = 1 << 14;
 // this is a clamp value used for history
 constexpr int64_t MAX_HISTORY = 1 << 14;
 // constexpr int64_t MIN_HISTORY = -MAX_HISTORY;
-
-// used for counting the number of buckets
-// PLEASE USE POWERS OF TWO
-constexpr int KING_BUCKETS_SIZE = 4;
-constexpr int KING_BUCKET_SHIFT = 2;
 
 // number of entries in corrhist
 constexpr int PAWN_CORRHIST_SIZE = 16384;
@@ -179,7 +181,7 @@ enum square
     no_square,
 };
 
-enum CHAR_PIECES
+enum Char_Pieces
 {
     P,
     p,
@@ -271,7 +273,7 @@ constexpr char ascii_pieces[] = "PpNnBbRrQqKk";
 extern std::map<char, uint8_t> char_pieces;
 
 // sides to move (colors)
-enum COLOR
+enum Color
 {
     WHITE,
     BLACK,
@@ -279,7 +281,7 @@ enum COLOR
 };
 
 // used for accessing the bitboards
-enum BITBOARD_PIECES
+enum Bitboard_Pieces
 {
     PAWN,
     KNIGHT,
@@ -299,7 +301,7 @@ enum BITBOARD_PIECES
 
 // pieces for a mailbox implementation
 // NOTE: this enum and the char pieces enum are the same, it is okay to mix and match
-enum PIECES
+enum Pieces
 {
     WHITE_PAWN,
     BLACK_PAWN,
@@ -317,7 +319,7 @@ enum PIECES
 };
 
 // which side can castle
-enum CASTLING_RIGHTS
+enum Castling_Rights
 {
     WHITE_KING_CASTLE = 1,
     WHITE_QUEEN_CASTLE = 2,
@@ -326,7 +328,7 @@ enum CASTLING_RIGHTS
 };
 
 // used for TT
-enum BOUND
+enum Bound
 {
     NONE,
     FAIL_LOW,

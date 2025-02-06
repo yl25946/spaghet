@@ -44,7 +44,7 @@ Board::Board(const std::string &fen)
             hash ^= zobrist_pieces[piece][square];
 
             // if piece is a pawn we can update the pawn hash
-            if (bitboard_piece == BITBOARD_PIECES::PAWN)
+            if (bitboard_piece == Bitboard_Pieces::PAWN)
                 pawn_hash ^= zobrist_pieces[piece][square];
 
             ++square;
@@ -398,19 +398,19 @@ bool Board::is_pseudolegal(Move move) const
 
     switch (piece)
     {
-    case BITBOARD_PIECES::KNIGHT:
+    case Bitboard_Pieces::KNIGHT:
         return knight_attacks[source_square] & (1ULL << target_square);
 
-    case BITBOARD_PIECES::KING:
+    case Bitboard_Pieces::KING:
         return king_attacks[source_square] & (1ULL << target_square);
 
-    case BITBOARD_PIECES::BISHOP:
+    case Bitboard_Pieces::BISHOP:
         return get_bishop_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
-    case BITBOARD_PIECES::ROOK:
+    case Bitboard_Pieces::ROOK:
         return get_rook_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
-    case BITBOARD_PIECES::QUEEN:
+    case Bitboard_Pieces::QUEEN:
         return get_queen_attacks(source_square, blocking_pieces) & (1ULL << target_square);
 
     default:
@@ -430,7 +430,7 @@ bool Board::only_pawns(uint8_t side_to_move) const
 {
     uint64_t bitboard = 0;
 
-    for (int i = BITBOARD_PIECES::KNIGHT; i <= BITBOARD_PIECES::QUEEN; ++i)
+    for (int i = Bitboard_Pieces::KNIGHT; i <= Bitboard_Pieces::QUEEN; ++i)
     {
         bitboard |= pieces[i];
     }
@@ -483,7 +483,7 @@ void Board::make_move(Move move)
         // std::cout << (int)captured_piece << " " << move.to_string() << " " << this->fen() << '\n';
         hash ^= zobrist_pieces[captured_piece][target_square];
 
-        if (uncolored_captured_piece == BITBOARD_PIECES::PAWN)
+        if (uncolored_captured_piece == Bitboard_Pieces::PAWN)
             pawn_hash ^= zobrist_pieces[captured_piece][target_square];
 
         // we already removed a piece so we should add 1
@@ -505,7 +505,7 @@ void Board::make_move(Move move)
     hash ^= zobrist_pieces[move_piece_type][source_square];
     hash ^= zobrist_pieces[move_piece_type][target_square];
 
-    if (bitboard_piece_type == BITBOARD_PIECES::PAWN)
+    if (bitboard_piece_type == Bitboard_Pieces::PAWN)
     {
         pawn_hash ^= zobrist_pieces[move_piece_type][source_square];
         pawn_hash ^= zobrist_pieces[move_piece_type][target_square];
