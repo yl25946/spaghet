@@ -77,7 +77,7 @@ public:
     void remove_piece(uint8_t square);
 
     // no error checking, call before making move
-    uint8_t captured_piece(Move move) { return move.move_flag() == MOVE_FLAG::EN_PASSANT_CAPTURE ? BITBOARD_PIECES::PAWN : mailbox[move.to_square()]; }
+    uint8_t captured_piece(Move move) { return move.move_flag() == MOVE_FLAG::EN_PASSANT_CAPTURE ? Bitboard_Pieces::PAWN : mailbox[move.to_square()]; }
 
     // no error check, call before making move
     uint8_t moving_piece(Move move) { return mailbox[move.from_square()]; }
