@@ -14,12 +14,10 @@ constexpr int SCALE = 400;
 constexpr int L1Q = 255;
 constexpr int OutputQ = 64;
 
-// used for calculating output buckets
-constexpr uint8_t BUCKET_DIVISOR = (32 + OUTPUT_BUCKETS - 1) / OUTPUT_BUCKETS;
-
 inline int calculate_bucket(uint64_t occ)
 {
-    return (count_bits(occ) - 2) / BUCKET_DIVISOR;
+    auto count = count_bits(occ);
+    return std::min((63 - count) * (32 - count) / 225, 7);
 }
 
 inline int calculate_bucket(const Board &board)

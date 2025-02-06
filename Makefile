@@ -1,4 +1,4 @@
-DEFAULT_NET := master0000.bin
+DEFAULT_NET := master0001.bin
 EVALFILE ?= $(DEFAULT_NET)
 NET_LOCATION := https://github.com/yl25946/vault/raw/main/$(EVALFILE)
 _THIS       := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
