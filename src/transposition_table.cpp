@@ -9,7 +9,7 @@ TT_Entry::TT_Entry()
     static_eval = SCORE_NONE;
     depth = 0;
     best_move = NO_MOVE;
-    flag_and_age = BOUND::NONE;
+    flag_and_age = Bound::NONE;
 }
 
 TT_Entry::TT_Entry(const Board &board, Move best_move, int16_t score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag)
@@ -53,8 +53,8 @@ uint8_t TT_Entry::age() const
 bool TT_Entry::can_use_score(int alpha, int beta) const
 {
     uint8_t bound_flag = this->flag();
-    return ((bound_flag == BOUND::FAIL_LOW && score <= alpha) ||
-            (bound_flag == BOUND::FAIL_HIGH && score >= beta) || bound_flag == BOUND::EXACT);
+    return ((bound_flag == Bound::FAIL_LOW && score <= alpha) ||
+            (bound_flag == Bound::FAIL_HIGH && score >= beta) || bound_flag == Bound::EXACT);
 }
 
 int16_t TT_Entry::usable_score(int ply) const
@@ -115,7 +115,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     TT_Entry &entry = hashtable[hash_location];
 
     // replacement policy
-    if (entry.hash_equals(board) && flag != BOUND::EXACT && depth <= entry.depth - 4)
+    if (entry.hash_equals(board) && flag != Bound::EXACT && depth <= entry.depth - 4)
         return;
 
     // Takes the last 16 bits
@@ -125,7 +125,7 @@ void TranspositionTable::insert(const Board &board, Move best_move, int16_t best
     entry.depth = depth;
 
     // only time we will not have a tt move is with a fail low
-    if (flag != BOUND::FAIL_LOW)
+    if (flag != Bound::FAIL_LOW)
         entry.best_move = best_move;
 
     // treat mate scores so that they're relative to the position instead of the root
