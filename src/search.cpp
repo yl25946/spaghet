@@ -91,11 +91,24 @@ void Searcher::update_histories(SearchStack *ss, MoveList &noisies, MoveList &qu
     }
 }
 
+void Searcher::update_corrhists(const Board &board, int score, int static_eval, int depth)
+{
+    if (is_mate_score(score))
+        return;
+
+    const int bonus = corrhist_bonus(score, static_eval, depth);
+
+    thread_data.pawn_corrhist[board.side_to_move][board.pawn_hash % PAWN_CORRHIST_SIZE] << bonus;
+    thread_data.material_corrhist[board.side_to_move][board.material_hash % MATERIAL_CORRHIST_SIZE] << bonus;
+}
+
 int Searcher::correct_static_eval(const Board &board, int uncorrected_static_eval)
 {
-    const int pawn_correction = thread_data.pawn_corrhist.correction(board);
+    const int pawn_raw_correction = thread_data.pawn_corrhist[board.side_to_move][board.pawn_hash % PAWN_CORRHIST_SIZE];
+    const int pawn_correction = pawn_raw_correction * std::abs(pawn_raw_correction) / 5'000;
 
-    const int material_correction = thread_data.material_corrhist.correction(board);
+    const int material_raw_correction = thread_data.material_corrhist[board.side_to_move][board.material_hash % MATERIAL_CORRHIST_SIZE];
+    const int material_correction = material_raw_correction * std::abs(material_raw_correction) / 5'000;
 
     const int correction = (2 * pawn_correction + material_correction) / 3;
 
@@ -736,10 +749,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     //  update corrhist if we're not in check
     if (!ss->in_check && (best_move == NO_MOVE || !best_move.is_capture()) && !(best_score >= beta && best_score <= ss->static_eval) && !(best_move == NO_MOVE && best_score >= ss->static_eval))
-    {
-        thread_data.pawn_corrhist.update(board, depth, best_score, ss->static_eval);
-        thread_data.material_corrhist.update(board, depth, best_score, ss->static_eval);
-    }
+        update_corrhists(board, best_score, ss->static_eval, depth);
 
     return best_score;
 }
