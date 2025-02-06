@@ -68,7 +68,7 @@ void print_eval(Board &board)
         for (int i = 1; i < 3; ++i)
             char_board[y + i][x] = char_board[y + i][x + 8] = '|';
         char_board[y][x] = char_board[y][x + 8] = char_board[y + 3][x + 8] = char_board[y + 3][x] = '+';
-        if (colored_piece != PIECES::NO_PIECE)
+        if (colored_piece != Pieces::NO_PIECE)
             char_board[y + 1][x + 4] = ascii_pieces[colored_piece];
         if (value != SCORE_NONE)
             format_cp_compact(value, &char_board[y + 2][x + 2]);
@@ -85,7 +85,7 @@ void print_eval(Board &board)
         uint8_t colored_piece = board.mailbox[square];
         int piece_value = SCORE_NONE;
 
-        if (colored_piece != PIECES::NO_PIECE && colored_to_uncolored(colored_piece) != BITBOARD_PIECES::KING)
+        if (colored_piece != Pieces::NO_PIECE && colored_to_uncolored(colored_piece) != Bitboard_Pieces::KING)
         {
             Board copy = board;
             copy.remove_piece(square);
@@ -139,7 +139,7 @@ void print_eval(Board &board)
 
 std::pair<double, double> win_rate_params(const Board &board)
 {
-    const int material = count_bits(board.pieces[BITBOARD_PIECES::PAWN]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::KNIGHT]) + 3 * count_bits(board.pieces[BITBOARD_PIECES::BISHOP]) + 5 * count_bits(board.pieces[BITBOARD_PIECES::ROOK]) + 9 * count_bits(board.pieces[BITBOARD_PIECES::QUEEN]);
+    const int material = count_bits(board.pieces[Bitboard_Pieces::PAWN]) + 3 * count_bits(board.pieces[Bitboard_Pieces::KNIGHT]) + 3 * count_bits(board.pieces[Bitboard_Pieces::BISHOP]) + 5 * count_bits(board.pieces[Bitboard_Pieces::ROOK]) + 9 * count_bits(board.pieces[Bitboard_Pieces::QUEEN]);
 
     // if we have any ridiculous positions with more material, we will clamp it to within the model
     const double m = std::clamp<double>(material, 10, 78) / 58.0;

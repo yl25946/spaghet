@@ -91,3 +91,4 @@ public:
     // prints out all the squares that are attacked by a given side
     void print_attacked_squares(uint8_t side_attacking) const;
 };
+uci

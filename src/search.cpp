@@ -139,7 +139,7 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
-    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != Bound::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
 
     // tt cutoff
@@ -231,12 +231,12 @@ int Searcher::quiescence_search(int alpha, int beta, SearchStack *ss)
     // add to TT only if we aren't in SE
     if (!ss->exclude_tt_move)
     {
-        uint8_t bound_flag = BOUND::FAIL_LOW;
+        uint8_t bound_flag = Bound::FAIL_LOW;
 
         if (alpha >= beta)
         {
             // beta cutoff, fail high
-            bound_flag = BOUND::FAIL_HIGH;
+            bound_flag = Bound::FAIL_HIGH;
         }
 
         transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, 0, ss->ply, age, bound_flag);
@@ -291,9 +291,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // we check if the TT has seen this before
     TT_Entry tt_entry = transposition_table.probe(board);
 
-    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != BOUND::NONE;
+    bool tt_hit = !ss->exclude_tt_move && tt_entry.hash_equals(board) && tt_entry.flag() != Bound::NONE;
     Move tt_move = ss->exclude_tt_move ? NO_MOVE : tt_entry.best_move;
-    bool has_tt_move = tt_entry.flag() != BOUND::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
+    bool has_tt_move = tt_entry.flag() != Bound::NONE && tt_entry.hash_equals(board) && tt_entry.best_move != NO_MOVE;
 
     // tt cutoff
     // if the tt_entry matches, we can use the score, and the depth is the same or greater, we can just cut the search short
@@ -311,7 +311,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
     // tt score in certain circumstances can be used as static eval
     // we use logical & here because if it's exact bound we don't care
-    if (tt_hit && tt_entry.score != SCORE_NONE && (tt_entry.flag() & (tt_entry.score > eval ? BOUND::FAIL_HIGH : BOUND::FAIL_LOW)))
+    if (tt_hit && tt_entry.score != SCORE_NONE && (tt_entry.flag() & (tt_entry.score > eval ? Bound::FAIL_HIGH : Bound::FAIL_LOW)))
         eval = tt_entry.score;
 
     // implements the improving heuristic, an idea that if our static eval is not improving from two plys ago, we can be more aggressive with pruning and reductions
@@ -439,7 +439,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             if (score >= probcut_beta)
             {
                 // update tranposition table
-                transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, BOUND::FAIL_HIGH);
+                transposition_table.insert(board, curr_move, score, uncorrected_static_eval, depth - 3, ss->ply, age, Bound::FAIL_HIGH);
 
                 return score;
             }
@@ -527,7 +527,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         // move excluded to see if any other moves can beat it.
         if (!in_root && depth >= 8 && curr_move == tt_move && !ss->exclude_tt_move)
         {
-            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != BOUND::FAIL_LOW && std::abs(tt_entry.score) < TB_WIN_IN_MAX_PLY;
+            const bool is_accurate_tt_score = tt_entry.depth + 4 >= depth && tt_entry.flag() != Bound::FAIL_LOW && std::abs(tt_entry.score) < TB_WIN_IN_MAX_PLY;
 
             if (is_accurate_tt_score)
             {
@@ -731,17 +731,17 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
     // add to TT if we aren't in singular search
     if (!ss->exclude_tt_move)
     {
-        uint8_t bound_flag = BOUND::EXACT;
+        uint8_t bound_flag = Bound::EXACT;
 
         if (alpha >= beta)
         {
             // beta cutoff, fail high
-            bound_flag = BOUND::FAIL_HIGH;
+            bound_flag = Bound::FAIL_HIGH;
         }
         else if (alpha <= original_alpha)
         {
             // failed to raise alpha, fail low
-            bound_flag = BOUND::FAIL_LOW;
+            bound_flag = Bound::FAIL_LOW;
         }
         if (best_score != -INF)
             transposition_table.insert(board, best_move, best_score, uncorrected_static_eval, depth, ss->ply, age, bound_flag);
