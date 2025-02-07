@@ -26,7 +26,7 @@ jobs:
         run: |
           make EXE=spaghet
           output=$(./spaghet bench)
-          bench_nodes=$(echo $output | grep -oE '[0-9]+ nodes [0-9]+ nps' | grep -oE '[0-9]+ nodes')
+          bench_nodes=$(echo "$output" | grep -oE '[0-9]+ nodes [0-9]+ nps' | grep -oE '[0-9]+ nodes' | sed 's/ nodes//')
           echo "$bench_nodes" > tests/bench.txt
 
       - name: Verify Bench File and Commit Changes
