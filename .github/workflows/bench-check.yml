@@ -1,0 +1,40 @@
+name: Bench Validation
+
+permissions:
+  contents: write 
+  
+on:
+  push:
+    branches:
+      - '*'
+      - '**'
+
+jobs:
+  run-bench:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Build and Run Bench
+        run: |
+          make EXE=spaghet
+          output=$(./spaghet bench)
+          bench_nodes=$(echo "$output" | grep -oE '[0-9]+ nodes [0-9]+ nps' | grep -oE '[0-9]+ nodes' | sed 's/ nodes//')
+          echo "$bench_nodes" > tests/bench.txt
+
+      - name: Verify Bench File and Commit Changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          bench_message=$(cat tests/bench.txt)
+          echo $(date) >> tests/bench.txt
+          git add tests/bench.txt
+          git commit -m "bench $bench_message"
+          git push
