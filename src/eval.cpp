@@ -811,7 +811,7 @@ void init_pesto_tables()
     }
 }
 
-int pesto_eval(Board &board)
+int pesto_eval(const Board &board)
 {
     int mg[2];
     int eg[2];
@@ -870,31 +870,33 @@ int pesto_eval(Board &board)
 
 int evaluate(const Board &board, std::vector<Accumulator> &accumulators, SearchStack *ss)
 {
-    int counter = 0;
-    SearchStack *ss_copy = ss;
 
-    // we keep going until we have a clean, updated accumulator
-    while (!ss_copy->updated_accumulator)
-    {
-        ++counter;
-        --ss_copy;
-    }
+    return pesto_eval(board);
+    // int counter = 0;
+    // SearchStack *ss_copy = ss;
 
-    int starting = ss_copy->ply;
-    const int ending = ss->ply;
+    // // we keep going until we have a clean, updated accumulator
+    // while (!ss_copy->updated_accumulator)
+    // {
+    //     ++counter;
+    //     --ss_copy;
+    // }
 
-    for (; starting < ending; ++starting, ++ss_copy)
-    {
-        accumulators[starting + 1] = accumulators[starting];
-        (ss_copy + 1)->updated_accumulator = true;
+    // int starting = ss_copy->ply;
+    // const int ending = ss->ply;
 
-        if (ss_copy->null_moved)
-            continue;
+    // for (; starting < ending; ++starting, ++ss_copy)
+    // {
+    //     accumulators[starting + 1] = accumulators[starting];
+    //     (ss_copy + 1)->updated_accumulator = true;
 
-        accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
-    }
+    //     if (ss_copy->null_moved)
+    //         continue;
 
-    return evaluate(board, accumulators[ending]);
+    //     accumulators[starting + 1].make_move(ss_copy->board, ss_copy->move_played);
+    // }
+
+    // return evaluate(board, accumulators[ending]);
 }
 
 int evaluate(const Board &board, const Accumulator &accumulator)

@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
     std::cout << "\n\n\n";
 
     // initialize psqt
-    NNUE::init("random stuff");
-    // init_pesto_tables();
+    // NNUE::init("random stuff");
+    init_pesto_tables();
 
     // for (int i = 0; i < INPUT_WEIGHTS; ++i)
     //     for (int j = 0; j < HIDDEN_SIZE; ++j)
