@@ -6,6 +6,7 @@
 class UciOptions
 {
 public:
+    bool minimal = false;
     int hash_size = 16;
     int age = 0;
     int threads = 1;

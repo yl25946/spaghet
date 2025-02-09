@@ -23,7 +23,7 @@
 
 __extension__ typedef unsigned __int128 uint128_t;
 
-#define VERSION "Spaghet BologNNese 1.1.1"
+#define VERSION "Spaghet BologNNese 1.1.2"
 
 // toss random imports and shit in here
 #define NAME "   _____                   _          _   \n  / ____|                 | |        | |  \n | (___  _ __   __ _  __ _| |__   ___| |_ \n  \\___ \\| '_ \\ / _` |/ _` | '_ \\ / _ \\ __|\n  ____) | |_) | (_| | (_| | | | |  __/ |_ \n |_____/| .__/ \\__,_|\\__, |_| |_|\\___|\\__|\n        | |           __/ |               \n        |_|          |___/                "
