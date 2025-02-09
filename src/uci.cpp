@@ -251,7 +251,7 @@ void UCI_loop()
         {
             std::cout << "id name " << VERSION << "\n"
                       << "id author Li Ying\n"
-                      << "option name Minimal type spin default false \n"
+                      << "option name Minimal type check default false \n"
                       << "option name Hash type spin default 16 min 1 max " << MAX_HASH << "\n"
                       << "option name Threads type spin default 1 min 1 max " << MAX_THREADS << "\n"
                       << "uciok" << std::endl;
