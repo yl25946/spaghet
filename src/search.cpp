@@ -756,6 +756,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
 void Searcher::search()
 {
+    bool minimal = thread_manager.options.minimal;
+    // used to store the last line in uci minimal
+    std::stringstream info;
     int best_score = -INF;
     Move previous_best_move(a8, a8, 0);
     Move best_move(a8, a8, 0);
@@ -835,6 +838,8 @@ void Searcher::search()
         if (stopped)
             break;
 
+        // everything after here is only done if we're successfully cleared a depth
+
         // everything we do down here is about time management and info printing, if we aren't in the main thread, we don't do anything
         if (!is_main_thread)
             continue;
@@ -861,13 +866,6 @@ void Searcher::search()
             draw = 1000 - win - loss;
         }
 
-        if (is_mate_score(best_score))
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
-                      << std::endl;
-        else
-            std::cout << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << normalize_eval(board, best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
-                      << std::endl;
-
         if (nodes > max_nodes)
             break;
 
@@ -888,14 +886,31 @@ void Searcher::search()
             scale_time(best_move_stability_factor);
         }
 
+        average_score = (average_score != -INF) ? (2 * best_score + average_score) / 3 : best_score;
+
+        // resets the stream in preperation for printing the next line
+        info.str("");
+        info.clear();
+
+        if (is_mate_score(best_score))
+            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+                 << std::endl;
+        else
+            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << normalize_eval(board, best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+                 << std::endl;
+
+        if (!minimal)
+            std::cout << info.str();
+
         if (get_time() > optimum_stop_time)
             break;
-
-        average_score = (average_score != -INF) ? (2 * best_score + average_score) / 3 : best_score;
     }
 
     if (is_main_thread)
     {
+        if (minimal)
+            std::cout << info.str();
+
         if (nodes_set)
             std::cout << "bestmove " << previous_best_move.to_string() << " " << std::endl;
         else
