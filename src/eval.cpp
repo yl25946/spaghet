@@ -857,7 +857,8 @@ int pesto_eval(Board &board)
 
     int mgPhase = gamePhase;
     if (mgPhase > 24)
-        mgPhase = 24; /* in case of early promotion */
+        mgPhase = 24; /* in case of early prom
+        otion */
     int egPhase = 24 - mgPhase;
     int pesto_score = (mgScore * mgPhase + egScore * egPhase) / 24;
 

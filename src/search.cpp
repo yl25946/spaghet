@@ -383,13 +383,6 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             return null_move_score;
     }
 
-    // Interal Iterative Reduction: If we don't have a TT move, that means our move ordering isn't as good, so we reduce the depth.
-    // alternatively if it is a cutnode, that means it's very likely that we fail high, so we can reduce the depth for a quicker search
-    if (depth >= 4 && !has_tt_move && (inPV || cutnode))
-    {
-        depth -= 1;
-    }
-
     // Probcut: If we have a really good capture/queen promotion and a reduced search returns a value much higher than beta, we can prune
     int probcut_beta = beta + 350;
     if (!inPV && !ss->in_check && depth > 3 && !is_mate_score(beta) &&
