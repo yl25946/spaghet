@@ -53,7 +53,7 @@ void Searcher::scale_time(int best_move_stability_factor)
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
     const Move best_move = thread_data.search_stack[4].pv[0];
     const double not_best_move_nodes_fraction = 1.0 - static_cast<double>(nodes_spent_table[best_move.from_square()][best_move.to_square()]) / static_cast<double>(nodes);
-    const double node_scaling_factor = std::max(2 * not_best_move_nodes_fraction + 0.4, 0.5);
+    const double node_scaling_factor = std::max(2.3 * not_best_move_nodes_fraction + 0.45, 0.55);
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
     // scal9e the time based on how many nodes we spent ond how the best move changed
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
