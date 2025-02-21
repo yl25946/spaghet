@@ -63,7 +63,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
             if (move_flag == MOVE_FLAG::EN_PASSANT_CAPTURE)
             {
                 // just hardcoded
-                curr_move.score += mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, curr_move, threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+                curr_move.score += 16 * mvv_values[PIECES::WHITE_PAWN] + (SEE(ss->board, curr_move, threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
                 continue;
             }
 
@@ -85,7 +85,7 @@ void MovePicker::score(SearchStack *ss, ThreadData &thread_data, Move tt_move, b
                     promotion_piece_value = mvv_values[PIECES::WHITE_KNIGHT];
             }
 
-            curr_move.score += captured_piece_value + promotion_piece_value + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
+            curr_move.score += 16 * (captured_piece_value + promotion_piece_value) + (SEE(ss->board, move_list.moves[i], threshold) ? CAPTURE_BONUS : -CAPTURE_BONUS);
 
             continue;
         }
