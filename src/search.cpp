@@ -552,7 +552,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
                     // int double_margin = 290 * inPV - 200 * !tt_move.is_capture();
 
                     int double_margin = 0;
-                    int triple_margin = 80;
+                    int triple_margin = 100;
 
                     extensions += 1 + (!inPV && singular_score < singular_beta - double_margin) +
                                   (!inPV && tt_move.is_quiet() && singular_score < singular_beta - triple_margin);
