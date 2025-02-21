@@ -70,7 +70,8 @@ public:
     uint64_t nodes = 0;
     uint64_t max_nodes = UINT64_MAX;
 
-    std::array<uint64_t, 64 * 64> nodes_spent_table;
+    // [from][to]
+    std::array<std::array<uint64_t, 64>, 64> nodes_spent_table;
 
     Searcher(Board board, const std::vector<Move> &move_list, TranspositionTable &transposition_table, ThreadData &thread_data, ThreadManager &thread_manager, uint32_t age, bool is_main_thread);
 

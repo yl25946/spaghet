@@ -13,7 +13,9 @@ Searcher::Searcher(Board board, const std::vector<Move> &move_list, Transpositio
         game_history.push_back(board.hash);
     }
 
-    nodes_spent_table.fill(0);
+    for(int i = 0; i < 64; ++i)
+        for(int j = 0; j < 64; ++j)
+            nodes_spent_table[i][j] = 0;
 
     this->board = board;
 
@@ -50,9 +52,8 @@ void Searcher::scale_time(int best_move_stability_factor)
 {
     constexpr double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
     const Move best_move = thread_data.search_stack[4].pv[0];
-    const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_to()]) / static_cast<double>(nodes);
-    // const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
-    const double node_scaling_factor = 1.0;
+    const double best_move_nodes_fraction = static_cast<double>(nodes_spent_table[best_move.from_square()][best_move.to_square()]) / static_cast<double>(nodes);
+    const double node_scaling_factor = (1.52 - best_move_nodes_fraction) * 1.74;
     const double best_move_scaling_factor = best_move_scale[best_move_stability_factor];
     // scal9e the time based on how many nodes we spent ond how the best move changed
     optimum_stop_time = std::min<uint64_t>(start_time + optimum_stop_time_duration * node_scaling_factor * best_move_scaling_factor, max_stop_time);
@@ -662,7 +663,7 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
 
         if (in_root)
         {
-            nodes_spent_table[curr_move.from_to()] += nodes - nodes_before_search;
+            nodes_spent_table[curr_move.from_square()][curr_move.to_square()] += nodes - nodes_before_search;
         }
 
         if (stopped)
