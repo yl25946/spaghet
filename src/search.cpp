@@ -576,15 +576,8 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
         }
 
         // check extensions after SE, because we alter the search stack
-        if (copy.is_in_check())
-        {
-            (ss + 1)->in_check = true;
-            ++extensions;
-        }
-        else
-        {
-            (ss + 1)->in_check = false;
-        }
+
+        (ss + 1)->in_check = copy.is_in_check();
 
         new_depth += extensions;
 
