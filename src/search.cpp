@@ -437,6 +437,9 @@ int Searcher::negamax(int alpha, int beta, int depth, bool cutnode, SearchStack 
             if (score >= probcut_beta)
                 score = -negamax<nonPV>(-probcut_beta, -probcut_beta + 1, depth - 4, !cutnode, ss + 1);
 
+            if (stopped)
+                return 0;
+
             if (score >= probcut_beta)
             {
                 // update tranposition table
