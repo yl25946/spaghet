@@ -31,6 +31,9 @@ void init_lmr_reduction_tables();
 bool is_mate_score(int score);
 int mate_score_to_moves(int score);
 
+// x/y
+inline size_t ceil_division(size_t x, size_t y) { return x / y + (x % y == 0); }
+
 // checks if a Piece (enum) is white
 // NOTE: no_piece is white
 // bool isWhite(uint8_t piece);

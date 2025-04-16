@@ -12,13 +12,13 @@ public:
     int threads = 1;
     TranspositionTable transposition_table;
 
-    UciOptions() : transposition_table(hash_size) {}
+    UciOptions() : transposition_table(hash_size, threads) {}
 
     // resizes the transposition_table
     void resize(int new_hash_size)
     {
         hash_size = new_hash_size;
-        transposition_table.resize(new_hash_size);
+        transposition_table.resize(new_hash_size, threads);
     }
 
     void reset()
@@ -26,6 +26,6 @@ public:
         hash_size = 16;
         age = 0;
         threads = 0;
-        transposition_table.resize(hash_size);
+        transposition_table.resize(hash_size, threads);
     }
 };
