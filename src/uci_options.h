@@ -15,7 +15,7 @@ public:
     UciOptions() : transposition_table(hash_size, threads) {}
 
     // resizes the transposition_table
-    void resize(int new_hash_size)
+    void resize(size_t new_hash_size)
     {
         hash_size = new_hash_size;
         transposition_table.resize(new_hash_size, threads);

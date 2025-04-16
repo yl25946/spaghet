@@ -36,7 +36,7 @@ public:
         options.resize(options.hash_size);
         resize(thread_data.size());
     }
-    void resize_tt(int new_hash_size) { options.resize(new_hash_size); }
+    void resize_tt(size_t new_hash_size) { options.resize(new_hash_size); }
 
     uint64_t get_nodes();
 
