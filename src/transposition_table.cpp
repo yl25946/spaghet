@@ -162,10 +162,10 @@ void TranspositionTable::clear(int thread_count)
     for (int i = 0; i < thread_count; ++i)
     {
         threads.emplace_back([this, chunk_size, i]
-                             { const int start = chunk_size * i;
-                             const int end = std::min(start + chunk_size, size);
+                             { const size_t start = chunk_size * i;
+                             const size_t end = std::min(start + chunk_size, size);
                              
-                            const int count = end - start;
+                            const size_t count = end - start;
                             
                             std::memset(&hashtable[start], 0, count * sizeof(TT_Entry)); });
     }
