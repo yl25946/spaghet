@@ -30,22 +30,23 @@ public:
 
 class TranspositionTable
 {
-    std::vector<TT_Entry> hashtable;
+    TT_Entry *hashtable = nullptr;
     // number of elements stored in here
     uint64_t size = 0;
 
 public:
-    // Size of TT in MB
-    TranspositionTable(size_t size);
+    // Size of TT in MiB
+    TranspositionTable(size_t mib, int thread_count);
+    ~TranspositionTable();
     // clears the transposition table
-    void resize(size_t size);
+    void resize(size_t mib, int thread);
     void prefetch(const Board &board);
     void insert(const Board &board, Move best_move, int16_t best_score, int16_t static_eval, uint8_t depth, uint8_t ply, uint32_t age, uint8_t flag);
-    void clear();
+    void clear(int thread_count);
     // prints out permille what percent of the hashtable is full
     int hash_full();
     TT_Entry &probe(const Board &board);
 
 private:
-    inline size_t index(const Board &board) { return (static_cast<uint128_t>(board.hash) * static_cast<uint128_t>(hashtable.size())) >> 64; };
+    inline size_t index(const Board &board) { return (static_cast<uint128_t>(board.hash) * static_cast<uint128_t>(size)) >> 64; };
 };

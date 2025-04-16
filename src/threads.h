@@ -33,7 +33,7 @@ public:
     void resize(int new_thread_count);
     void ucinewgame()
     {
-        options.transposition_table.clear();
+        options.resize(options.hash_size);
         resize(thread_data.size());
     }
     void resize_tt(int new_hash_size) { options.resize(new_hash_size); }

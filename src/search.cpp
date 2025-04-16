@@ -897,10 +897,10 @@ void Searcher::search()
         info.clear();
 
         if (is_mate_score(best_score))
-            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score mate " << mate_score_to_moves(best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " hashfull " << transposition_table.hash_full() << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                  << std::endl;
         else
-            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << normalize_eval(board, best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " pv " << thread_data.search_stack[4].pv.to_string() << " "
+            info << "info depth " << static_cast<int>(root_depth) << " seldepth " << seldepth << " score cp " << normalize_eval(board, best_score) << " wdl " << win << " " << draw << " " << loss << " nodes " << all_thread_node_count << " time " << time_elapsed << " nps " << static_cast<uint64_t>(static_cast<double>(all_thread_node_count) / time_elapsed * 1000) << " hashfull " << transposition_table.hash_full() << " pv " << thread_data.search_stack[4].pv.to_string() << " "
                  << std::endl;
 
         if (!minimal)

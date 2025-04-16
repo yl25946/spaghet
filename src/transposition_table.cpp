@@ -76,30 +76,27 @@ int16_t TT_Entry::usable_score(int ply) const
     return score;
 }
 
-TranspositionTable::TranspositionTable(size_t size)
+TranspositionTable::TranspositionTable(size_t mib, int thread_count)
 {
-    size_t entry_size = sizeof(TT_Entry);
-
-    size_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
-
-    // size is now 0
-    hashtable.clear();
-
-    this->hashtable.resize(tt_entry_count);
+    resize(mib, thread_count);
 }
 
-void TranspositionTable::resize(size_t size)
+TranspositionTable::~TranspositionTable()
 {
-    size_t entry_size = sizeof(TT_Entry);
+    if (hashtable != nullptr)
+        std::free(hashtable);
+}
 
-    size_t tt_entry_count = (size * megabytes_to_bytes) / entry_size;
+void TranspositionTable::resize(size_t mib, int thread_count)
+{
+    if (hashtable != nullptr)
+        std::free(hashtable);
 
-    // std::cout << tt_entry_count << "\n";
+    const size_t bytes = mib * 1024 * 1024;
+    hashtable = static_cast<TT_Entry *>(std::malloc(bytes));
+    size = mib * 1024 * 1024 / sizeof(TT_Entry);
 
-    // size is now 0
-    hashtable.clear();
-
-    hashtable.resize(tt_entry_count, TT_Entry());
+    clear(thread_count);
 }
 
 void TranspositionTable::prefetch(const Board &board)
@@ -155,16 +152,39 @@ TT_Entry &TranspositionTable::probe(const Board &board)
     return hashtable[hash_location];
 }
 
-void TranspositionTable::clear()
+void TranspositionTable::clear(int thread_count)
 {
-    size_t original_size = hashtable.size();
+    std::vector<std::jthread> threads{};
+    threads.reserve(thread_count);
 
-    hashtable.clear();
+    const size_t chunk_size = ceil_division(size, thread_count);
 
-    hashtable.resize(original_size);
+    for (int i = 0; i < thread_count; ++i)
+    {
+        threads.emplace_back([this, chunk_size, i]
+                             { const int start = chunk_size * i;
+                             const int end = std::min(start + chunk_size, size);
+                             
+                            const int count = end - start;
+                            
+                            std::memset(&hashtable[start], 0, count * sizeof(TT_Entry)); });
+    }
+
+    for (std::jthread &thread : threads)
+        thread.join();
 }
 
 int TranspositionTable::hash_full()
 {
-    return 0;
+    size_t filled_entries = 0;
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        TT_Entry &entry = hashtable[i];
+
+        if (entry.flag() != BOUND::NONE)
+            ++filled_entries;
+    }
+
+    return filled_entries;
 }
