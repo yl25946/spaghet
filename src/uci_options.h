@@ -25,7 +25,7 @@ public:
     {
         hash_size = 16;
         age = 0;
-        threads = 0;
+        threads = 1;
         transposition_table.resize(hash_size, threads);
     }
 };

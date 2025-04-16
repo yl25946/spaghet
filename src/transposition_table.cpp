@@ -84,15 +84,16 @@ TranspositionTable::TranspositionTable(size_t mib, int thread_count)
 TranspositionTable::~TranspositionTable()
 {
     if (hashtable != nullptr)
-        free(hashtable);
+        std::free(hashtable);
 }
 
 void TranspositionTable::resize(size_t mib, int thread_count)
 {
     if (hashtable != nullptr)
-        free(hashtable);
+        std::free(hashtable);
 
-    hashtable = static_cast<TT_Entry *>(malloc(mib * 1024 * 1024));
+    const size_t bytes = mib * 1024 * 1024;
+    hashtable = static_cast<TT_Entry *>(std::malloc(bytes));
     size = mib * 1024 * 1024 / sizeof(TT_Entry);
 
     clear(thread_count);
@@ -175,5 +176,15 @@ void TranspositionTable::clear(int thread_count)
 
 int TranspositionTable::hash_full()
 {
-    return 0;
+    size_t filled_entries = 0;
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        TT_Entry &entry = hashtable[i];
+
+        if (entry.flag() != BOUND::NONE)
+            ++filled_entries;
+    }
+
+    return filled_entries;
 }
